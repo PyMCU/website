@@ -1,18 +1,57 @@
 import type { APIRoute } from 'astro';
 import { createClient } from '@supabase/supabase-js';
+import { checkRateLimit, getClientIP, RATE_LIMITS } from '../../utils/rate-limiter';
 
 // This endpoint needs to be server-rendered to handle GET requests
 export const prerender = false;
 
-export const GET: APIRoute = async ({ url }) => {
+export const GET: APIRoute = async ({ request, url }) => {
   try {
-    const token = url.searchParams.get('token');
-
-    if (!token) {
+    // Rate limiting check
+    const clientIP = getClientIP(request);
+    const rateLimitResult = checkRateLimit(clientIP, RATE_LIMITS.confirm);
+    
+    if (!rateLimitResult.allowed) {
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: 'Confirmation token is required' 
+          error: 'Too many requests. Please try again later.',
+          resetTime: rateLimitResult.resetTime
+        }),
+        { 
+          status: 429,
+          headers: { 
+            'Content-Type': 'application/json',
+            'Retry-After': Math.ceil((rateLimitResult.resetTime! - Date.now()) / 1000).toString()
+          }
+        }
+      );
+    }
+
+    const token = url.searchParams.get('token');
+
+    // Input validation
+    if (!token || typeof token !== 'string' || token.length !== 64) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Invalid confirmation token' 
+        }),
+        { 
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
+    // Sanitize token (remove any non-hex characters)
+    const sanitizedToken = token.replace(/[^a-f0-9]/gi, '');
+    
+    if (sanitizedToken.length !== 64) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Invalid confirmation token format' 
         }),
         { 
           status: 400,
@@ -26,10 +65,14 @@ export const GET: APIRoute = async ({ url }) => {
     const supabaseServiceKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!supabaseUrl || !supabaseServiceKey) {
+      // Log detailed error only in development
+      if (import.meta.env.MODE === 'development') {
+        console.error('Missing Supabase configuration');
+      }
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: 'Database configuration error' 
+          error: 'Service temporarily unavailable' 
         }),
         { 
           status: 500,
@@ -49,7 +92,7 @@ export const GET: APIRoute = async ({ url }) => {
     const { data: user, error: findError } = await supabase
       .from('waitlist')
       .select('id, email, status, created_at')
-      .eq('confirmation_token', token)
+      .eq('confirmation_token', sanitizedToken)
       .single();
 
     if (findError || !user) {
@@ -110,11 +153,14 @@ export const GET: APIRoute = async ({ url }) => {
       .single();
 
     if (updateError) {
-      console.error('Failed to confirm user:', updateError);
+      // Log detailed error only in development
+      if (import.meta.env.MODE === 'development') {
+        console.error('Failed to confirm user:', updateError);
+      }
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: 'Failed to confirm registration. Please try again.' 
+          error: 'Service temporarily unavailable' 
         }),
         { 
           status: 500,
@@ -141,12 +187,15 @@ export const GET: APIRoute = async ({ url }) => {
     );
 
   } catch (error) {
-    console.error('Confirmation API error:', error);
+    // Log detailed error only in development
+    if (import.meta.env.MODE === 'development') {
+      console.error('Confirmation API error:', error);
+    }
     
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: 'Internal server error' 
+        error: 'An unexpected error occurred. Please try again.' 
       }),
       { 
         status: 500,

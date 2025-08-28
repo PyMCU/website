@@ -2,12 +2,35 @@ import type { APIRoute } from 'astro';
 import { createClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
+import { checkRateLimit, getClientIP, RATE_LIMITS } from '../../utils/rate-limiter';
+import { createSecureResponse, handleCORSPreflight } from '../../utils/security-headers';
 
 // This endpoint needs to be server-rendered to handle POST requests
 export const prerender = false;
 
+// Handle CORS preflight requests
+export const OPTIONS: APIRoute = async ({ request }) => {
+  const corsResponse = handleCORSPreflight(request);
+  return corsResponse || createSecureResponse({ message: 'Method not allowed' }, 405);
+};
+
 export const POST: APIRoute = async ({ request }) => {
   try {
+    // Rate limiting check
+    const clientIP = getClientIP(request);
+    const rateLimitResult = checkRateLimit(clientIP, RATE_LIMITS.waitlist);
+    
+    if (!rateLimitResult.allowed) {
+      return createSecureResponse(
+        { 
+          success: false, 
+          error: 'Too many requests. Please try again later.',
+          resetTime: rateLimitResult.resetTime
+        },
+        429
+      );
+    }
+
     // Parse form data
     const formData = await request.formData();
     const email = formData.get('email') as string;
@@ -15,49 +38,72 @@ export const POST: APIRoute = async ({ request }) => {
     const experience = formData.get('experience') as string;
     const updates = formData.get('updates') === 'true';
 
-    // Validate email
+    // Comprehensive input validation
     if (!email) {
-      return new Response(
-        JSON.stringify({ 
+      return createSecureResponse(
+        { 
           success: false, 
           error: 'Email is required' 
-        }),
-        { 
-          status: 400,
-          headers: { 'Content-Type': 'application/json' }
-        }
+        },
+        400
       );
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'Invalid email format' 
-        }),
+      return createSecureResponse(
         { 
-          status: 400,
-          headers: { 'Content-Type': 'application/json' }
-        }
+          success: false, 
+          error: 'Please enter a valid email address' 
+        },
+        400
       );
     }
+
+    // Validate role field
+    const allowedRoles = ['developer', 'student', 'maker', 'researcher', 'educator', 'hobbyist', 'other'];
+    if (role && !allowedRoles.includes(role.toLowerCase())) {
+      return createSecureResponse(
+        { 
+          success: false, 
+          error: 'Invalid role selection' 
+        },
+        400
+      );
+    }
+
+    // Validate experience field
+    const allowedExperience = ['beginner', 'intermediate', 'advanced'];
+    if (experience && !allowedExperience.includes(experience.toLowerCase())) {
+      return createSecureResponse(
+        { 
+          success: false, 
+          error: 'Invalid experience level' 
+        },
+        400
+      );
+    }
+
+    // Sanitize inputs
+    const sanitizedEmail = email.trim().toLowerCase();
+    const sanitizedRole = role ? role.trim().toLowerCase() : null;
+    const sanitizedExperience = experience ? experience.trim().toLowerCase() : null;
 
     // Initialize Supabase client
     const supabaseUrl = import.meta.env.SUPABASE_URL;
     const supabaseServiceKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!supabaseUrl || !supabaseServiceKey) {
-      console.error('Missing Supabase configuration');
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'Database configuration error' 
-        }),
+      // Log detailed error only in development
+      if (import.meta.env.MODE === 'development') {
+        console.error('Missing Supabase configuration');
+      }
+      return createSecureResponse(
         { 
-          status: 500,
-          headers: { 'Content-Type': 'application/json' }
-        }
+          success: false, 
+          error: 'Service temporarily unavailable' 
+        },
+        500
       );
     }
 
@@ -73,9 +119,9 @@ export const POST: APIRoute = async ({ request }) => {
     
     // Prepare data for insertion with double opt-in support
     const waitlistData = {
-      email: email.toLowerCase().trim(),
-      role: role || null,
-      experience: experience || null,
+      email: sanitizedEmail,
+      role: sanitizedRole,
+      experience: sanitizedExperience,
       updates: updates,
       status: 'pending',
       confirmation_token: confirmationToken
@@ -89,7 +135,10 @@ export const POST: APIRoute = async ({ request }) => {
       .single();
 
     if (error) {
-      console.error('Supabase error:', error);
+      // Log detailed error only in development
+      if (import.meta.env.MODE === 'development') {
+        console.error('Supabase error:', error);
+      }
       
       // Handle duplicate email - check if already confirmed or pending
       if (error.code === '23505' || error.message.includes('duplicate') || error.message.includes('unique')) {
@@ -101,68 +150,62 @@ export const POST: APIRoute = async ({ request }) => {
           .single();
           
         if (existingUser?.status === 'confirmed') {
-          return new Response(
-            JSON.stringify({ 
+          return createSecureResponse(
+            { 
               success: true, 
               message: 'Great news! This email is already confirmed on the waitlist. You\'re all set for the PyMCU Alpha release! 🚀' 
-            }),
-            { 
-              status: 200,
-              headers: { 'Content-Type': 'application/json' }
-            }
+            },
+            200
           );
         } else if (existingUser?.status === 'pending') {
-          return new Response(
-            JSON.stringify({ 
+          return createSecureResponse(
+            { 
               success: true, 
               message: 'We\'ve already sent a confirmation email to this address. Please check your inbox and spam folder! 📧' 
-            }),
-            { 
-              status: 200,
-              headers: { 'Content-Type': 'application/json' }
-            }
+            },
+            200
           );
         }
       }
       
       // Handle RLS policy violation
       if (error.code === '42501' || error.message.includes('row-level security')) {
-        console.error('RLS Policy Error - Check Supabase service role key and RLS policies');
-        return new Response(
-          JSON.stringify({ 
-            success: false, 
-            error: 'Database permission error. Please check your service role key configuration.' 
-          }),
+        // Log detailed error only in development
+        if (import.meta.env.MODE === 'development') {
+          console.error('RLS Policy Error - Check Supabase service role key and RLS policies');
+        }
+        return createSecureResponse(
           { 
-            status: 403,
-            headers: { 'Content-Type': 'application/json' }
-          }
+            success: false, 
+            error: 'Service temporarily unavailable' 
+          },
+          500
         );
       }
       
-      return new Response(
-        JSON.stringify({ 
+      return createSecureResponse(
+        { 
           success: false, 
           error: 'Database error occurred. Please try again.' 
-        }),
-        { 
-          status: 500,
-          headers: { 'Content-Type': 'application/json' }
-        }
+        },
+        500
       );
     }
 
     // Send confirmation email
     try {
-      await sendConfirmationEmail(email, confirmationToken);
+      await sendConfirmationEmail(sanitizedEmail, confirmationToken);
     } catch (emailError) {
-      console.error('Failed to send confirmation email:', emailError);
+      // Log detailed error only in development
+      if (import.meta.env.MODE === 'development') {
+        console.error('Failed to send confirmation email:', emailError);
+      }
       // Don't fail the registration if email fails - user can still be manually confirmed
     }
 
 
-    return new Response(
-      JSON.stringify({ 
+    return createSecureResponse(
+      { 
         success: true, 
         message: 'Almost there! We\'ve sent a confirmation email to your inbox. Please click the link to complete your registration for the PyMCU Alpha waitlist! 📧',
         data: {
@@ -171,25 +214,22 @@ export const POST: APIRoute = async ({ request }) => {
           status: 'pending',
           created_at: data.created_at
         }
-      }),
-      { 
-        status: 201,
-        headers: { 'Content-Type': 'application/json' }
-      }
+      },
+      201
     );
 
   } catch (error) {
-    console.error('Waitlist API error:', error);
+    // Log detailed error only in development
+    if (import.meta.env.MODE === 'development') {
+      console.error('Waitlist API error:', error);
+    }
     
-    return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: 'Internal server error' 
-      }),
+    return createSecureResponse(
       { 
-        status: 500,
-        headers: { 'Content-Type': 'application/json' }
-      }
+        success: false, 
+        error: 'An unexpected error occurred. Please try again.' 
+      },
+      500
     );
   }
 };
@@ -254,7 +294,10 @@ async function sendConfirmationEmail(email: string, token: string) {
     
     return response;
   } catch (error) {
-    console.error('Failed to send confirmation email via SES:', error);
+    // Log detailed error only in development
+    if (import.meta.env.MODE === 'development') {
+      console.error('Failed to send confirmation email via SES:', error);
+    }
     throw error;
   }
 }

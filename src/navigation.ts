@@ -22,10 +22,6 @@ export const headerData = {
       text: 'FAQ',
       href: '#faqs',
     },
-    {
-      text: 'Join Alpha',
-      href: '#waitlist',
-    },
   ],
   actions: [{ text: 'Join the Waitlist', href: getPermalink('/#waitlist') }],
 };
@@ -84,11 +80,12 @@ export const footerData = {
     { text: 'Privacy Policy', href: getPermalink('/privacy') },
   ],
   socialLinks: [
-    { ariaLabel: 'X', icon: 'tabler:brand-x', href: '#' },
+    /*{ ariaLabel: 'X', icon: 'tabler:brand-x', href: '#' },
     { ariaLabel: 'Instagram', icon: 'tabler:brand-instagram', href: '#' },
     { ariaLabel: 'Facebook', icon: 'tabler:brand-facebook', href: '#' },
-    { ariaLabel: 'RSS', icon: 'tabler:rss', href: getAsset('/rss.xml') },
-    { ariaLabel: 'Github', icon: 'tabler:brand-github', href: 'https://github.com/arthelokyo/astrowind' },
+    { ariaLabel: 'RSS', icon: 'tabler:rss', href: getAsset('/rss.xml') },*/
+    { ariaLabel: 'Github', icon: 'tabler:brand-github', href: 'https://github.com/PyMCU' },
+    { ariaLabel: 'Ko-FI', icon: 'tabler:coffee', href: 'https://ko-fi.com/pymcu' },
   ],
   footNote: ``,
 };
