@@ -1,0 +1,228 @@
+---
+import WidgetWrapper from '~/components/ui/WidgetWrapper.astro';
+import Headline from '~/components/ui/Headline.astro';
+import Button from '~/components/ui/Button.astro';
+import { Icon } from 'astro-icon/components';
+import type { Widget } from '~/types';
+
+export interface Props extends Widget {
+  title?: string;
+  subtitle?: string;
+  tagline?: string;
+  description?: string;
+  successMessage?: string;
+  classes?: Record<string, string>;
+}
+
+const {
+  title = await Astro.slots.render('title'),
+  subtitle = await Astro.slots.render('subtitle'),
+  tagline = await Astro.slots.render('tagline'),
+  description = "Be among the first to experience PyMCU Alpha. Get early access, exclusive updates, and help shape the future of Python on microcontrollers.",
+  successMessage = "Thank you! You've been added to the PyMCU Alpha waitlist. We'll notify you when Alpha 1 is ready.",
+  
+  id,
+  isDark = false,
+  classes = {},
+  bg = await Astro.slots.render('bg'),
+} = Astro.props;
+---
+
+<WidgetWrapper id={id} isDark={isDark} containerClass={`max-w-4xl mx-auto ${classes?.container ?? ''}`} bg={bg}>
+  <Headline title={title} subtitle={subtitle} tagline={tagline} />
+  
+  <div class="flex flex-col max-w-2xl mx-auto">
+    {description && (
+      <div class="text-center mb-8">
+        <p class="text-lg text-gray-600 dark:text-gray-300">{description}</p>
+      </div>
+    )}
+    
+    <div class="rounded-lg backdrop-blur border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-900 shadow-lg p-6 sm:p-8">
+      <form id="waitlist-form" class="space-y-6">
+        <!-- Email Field -->
+        <div>
+          <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Email Address *
+          </label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            required
+            placeholder="your.email@example.com"
+            class="w-full py-3 px-4 text-md rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+          />
+        </div>
+
+        <!-- Role/Interest Field -->
+        <div>
+          <label for="role" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Primary Interest
+          </label>
+          <select
+            id="role"
+            name="role"
+            class="w-full py-3 px-4 text-md rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+          >
+            <option value="">Select your primary interest</option>
+            <option value="embedded-developer">Embedded Systems Developer</option>
+            <option value="python-developer">Python Developer</option>
+            <option value="iot-engineer">IoT Engineer</option>
+            <option value="researcher">Academic/Researcher</option>
+            <option value="hobbyist">Maker/Hobbyist</option>
+            <option value="student">Student</option>
+            <option value="partner">Partner</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <!-- Experience Level -->
+        <div>
+          <label for="experience" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            MCU Experience Level
+          </label>
+          <select
+            id="experience"
+            name="experience"
+            class="w-full py-3 px-4 text-md rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+          >
+            <option value="">Select your experience level</option>
+            <option value="beginner">Beginner (New to MCUs)</option>
+            <option value="intermediate">Intermediate (Some MCU experience)</option>
+            <option value="advanced">Advanced (Experienced with MCUs)</option>
+            <option value="expert">Expert (Professional MCU developer)</option>
+          </select>
+        </div>
+
+        <!-- Updates Checkbox -->
+        <div class="flex items-start">
+          <div class="flex items-center h-5">
+            <input
+              id="updates"
+              name="updates"
+              type="checkbox"
+              value="true"
+              checked
+              class="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary dark:focus:ring-primary dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+            />
+            <input type="hidden" name="updates" value="false" />
+          </div>
+          <div class="ml-3 text-sm">
+            <label for="updates" class="text-gray-600 dark:text-gray-400">
+              I want to receive development updates and early access notifications
+            </label>
+          </div>
+        </div>
+
+        <!-- Privacy Notice -->
+        <div class="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-slate-800 p-3 rounded-lg">
+          <Icon name="tabler:shield-check" class="w-4 h-4 inline mr-1" />
+          Your information will only be used for <span class="font-semibold">PyMCU</span> communications. We respect your privacy and won't share your data with third parties.
+        </div>
+
+        <!-- Submit Button -->
+        <div class="pt-4">
+          <Button 
+            variant="primary" 
+            type="submit"
+            class="w-full justify-center"
+          >
+            <Icon name="tabler:rocket" class="w-5 h-5 mr-2" />
+            Join Alpha Waitlist
+          </Button>
+        </div>
+      </form>
+    </div>
+  </div>
+</WidgetWrapper>
+
+<script>
+  // Client-side form handling to prevent page reload
+  document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('waitlist-form');
+    
+    if (form) {
+      form.addEventListener('submit', async function(e) {
+        e.preventDefault(); // Prevent default form submission and page reload
+        
+        const submitButton = form.querySelector('button[type="submit"]');
+        const originalText = submitButton?.textContent;
+        
+        // Show loading state
+        if (submitButton) {
+          submitButton.disabled = true;
+          submitButton.textContent = 'Joining...';
+        }
+        
+        try {
+          // Get form data
+          const formData = new FormData(form);
+          
+          // Submit to API endpoint
+          const response = await fetch('/api/waitlist', {
+            method: 'POST',
+            body: formData
+          });
+          
+          const result = await response.json();
+          
+          if (result.success) {
+            // Show success message
+            showMessage('success', 'Welcome to the Waitlist!', result.message || 'Thank you! You\'ve been added to the PyMCU Alpha waitlist.');
+            form.reset();
+          } else {
+            // Show error message
+            showMessage('error', 'Registration Failed', result.error || 'An error occurred. Please try again.');
+          }
+        } catch (error) {
+          console.error('Form submission error:', error);
+          showMessage('error', 'Network Error', 'Unable to connect to server. Please check your connection and try again.');
+        } finally {
+          // Re-enable submit button
+          if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.textContent = originalText || 'Join Alpha Waitlist';
+          }
+        }
+      });
+    }
+  });
+  
+  function showMessage(type, title, message) {
+    // Create and show a toast/modal message
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm ${
+      type === 'success' 
+        ? 'bg-green-100 border border-green-400 text-green-700 dark:bg-green-900 dark:border-green-600 dark:text-green-300'
+        : 'bg-red-100 border border-red-400 text-red-700 dark:bg-red-900 dark:border-red-600 dark:text-red-300'
+    }`;
+    
+    messageDiv.innerHTML = `
+      <div class="flex items-start">
+        <div class="flex-shrink-0">
+          ${type === 'success' 
+            ? '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>'
+            : '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>'
+          }
+        </div>
+        <div class="ml-3">
+          <h3 class="text-sm font-medium">${title}</h3>
+          <p class="mt-1 text-sm">${message}</p>
+        </div>
+        <button class="ml-auto pl-3" onclick="this.parentElement.parentElement.remove()">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+        </button>
+      </div>
+    `;
+    
+    document.body.appendChild(messageDiv);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+      if (messageDiv.parentElement) {
+        messageDiv.remove();
+      }
+    }, 5000);
+  }
+</script>

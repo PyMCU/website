@@ -1,0 +1,116 @@
+---
+import Layout from '~/layouts/PageLayout.astro';
+import Hero from '~/components/widgets/Hero.astro';
+
+// This page needs to be server-rendered to handle confirmation
+export const prerender = false;
+
+const { searchParams } = Astro.url;
+const token = searchParams.get('token');
+
+let confirmationResult = null;
+let error = null;
+
+if (token) {
+  try {
+    const response = await fetch(`${Astro.url.origin}/api/confirm?token=${token}`);
+    confirmationResult = await response.json();
+  } catch (e) {
+    error = 'Failed to process confirmation';
+  }
+}
+
+const metadata = {
+  title: 'Email Confirmation - PyMCU',
+  description: 'Confirm your email address for the PyMCU Alpha waitlist',
+  ignoreTitleTemplate: true,
+};
+---
+
+<Layout metadata={metadata}>
+  <Hero
+    tagline="Email Confirmation"
+    title={confirmationResult?.success ? 'Welcome to PyMCU! 🎉' : 'Confirmation Status'}
+    subtitle={
+      !token 
+        ? 'No confirmation token provided. Please check your email for the correct confirmation link.'
+        : error 
+        ? 'There was an error processing your confirmation. Please try again or contact support.'
+        : confirmationResult?.success
+        ? confirmationResult.message
+        : confirmationResult?.error || 'Unknown error occurred'
+    }
+    actions={
+      confirmationResult?.success 
+        ? [
+            {
+              variant: 'primary',
+              text: 'Back to Home',
+              href: '/',
+            },
+          ]
+        : [
+            {
+              variant: 'primary',
+              text: 'Try Again',
+              href: '/#waitlist',
+            },
+            {
+              variant: 'secondary',
+              text: 'Contact Support',
+              href: 'mailto:contact@pymcu.org',
+            },
+          ]
+    }
+  />
+
+  {confirmationResult?.success && (
+    <section class="py-16 md:py-20">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6">
+        <div class="mx-auto max-w-3xl text-center">
+          <div class="rounded-lg bg-green-50 dark:bg-green-900/20 p-6 border border-green-200 dark:border-green-800">
+            <div class="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-green-100 dark:bg-green-800 rounded-full">
+              <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-green-800 dark:text-green-200 mb-2">
+              Confirmation Successful!
+            </h3>
+            <p class="text-green-700 dark:text-green-300 mb-4">
+              Your email <strong>{confirmationResult.data?.email}</strong> has been confirmed for the PyMCU Alpha waitlist.
+            </p>
+            <p class="text-sm text-green-600 dark:text-green-400">
+              You'll be among the first to know when PyMCU Alpha is ready for testing!
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  )}
+
+  {!confirmationResult?.success && token && (
+    <section class="py-16 md:py-20">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6">
+        <div class="mx-auto max-w-3xl text-center">
+          <div class="rounded-lg bg-red-50 dark:bg-red-900/20 p-6 border border-red-200 dark:border-red-800">
+            <div class="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 dark:bg-red-800 rounded-full">
+              <svg class="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">
+              Confirmation Failed
+            </h3>
+            <p class="text-red-700 dark:text-red-300 mb-4">
+              {error || confirmationResult?.error || 'Unknown error occurred'}
+            </p>
+            <p class="text-sm text-red-600 dark:text-red-400">
+              The confirmation link may have expired or been used already. Please try registering again.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  )}
+</Layout>

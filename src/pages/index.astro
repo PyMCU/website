@@ -1,4 +1,7 @@
 ---
+// Keep this page static in hybrid mode
+export const prerender = false;
+
 import Layout from '~/layouts/PageLayout.astro';
 
 import Hero from '~/components/widgets/Hero.astro';
@@ -11,9 +14,12 @@ import BlogLatestPosts from '~/components/widgets/BlogLatestPosts.astro';
 import FAQs from '~/components/widgets/FAQs.astro';
 import Stats from '~/components/widgets/Stats.astro';
 import CallToAction from '~/components/widgets/CallToAction.astro';
+import RoadmapArchitectures from "../components/widgets/RoadmapArchitectures.astro";
+import Countdown from "../components/widgets/Countdown.astro";
+import Waitlist from "../components/widgets/Waitlist.astro";
 
 const metadata = {
-  title: 'AstroWind — Free template for creating websites with Astro + Tailwind CSS',
+  title: 'PyMCU — Python to MCUs. Free. Deterministic. AOT.',
   ignoreTitleTemplate: true,
 };
 ---
@@ -25,77 +31,73 @@ const metadata = {
     actions={[
       {
         variant: 'primary',
-        text: 'Get template',
-        href: 'https://github.com/arthelokyo/astrowind',
-        target: '_blank',
-        icon: 'tabler:download',
-      },
-      { text: 'Learn more', href: '#features' },
+        text: 'Join the Waitlist',
+        href: '#waitlist'
+      }
     ]}
-    image={{ src: '~/assets/images/hero-image.png', alt: 'AstroWind Hero Image' }}
+    image={{ src: '~/assets/images/pymcu-logo.png', alt: 'PyMCU Logo' }}
   >
     <Fragment slot="title">
-      Free template for <span class="hidden xl:inline">creating websites with</span>
-      <span class="text-accent dark:text-white"> Astro 5.0</span> + Tailwind CSS
+      Py<span class="text-accent dark:text-white">MCU</span>
     </Fragment>
 
     <Fragment slot="subtitle">
       <span class="hidden sm:inline">
-        <span class="font-semibold">AstroWind</span> is a free, customizable and production-ready template for Astro 5.0
-        + Tailwind CSS.</span
-      >
-      <span class="block mb-1 sm:hidden font-bold text-blue-600">AstroWind: Production-ready.</span>
-      Suitable for Startups, Small Business, SaaS websites, Professional Portfolios, Marketing websites, Landing Pages &
-      Blogs.
+        <span class="font-semibold">PyMCU</span> is a free, deterministic compiler that brings 
+        <span class="font-semibold">Python</span> to microcontrollers. It turns a safe subset 
+        of Python into <span class="font-semibold">ASM</span> or <span class="font-semibold">C</span> 
+        without OS or garbage collection, with planned toolchain support. Ideal for prototyping, 
+        education, makers, and future 8-bit & 32-bit architectures.
+      </span>
     </Fragment>
   </Hero>
 
   <!-- Note Widget ******************* -->
 
-  <Note title="Philosophy:" description="Simplicity, Best Practices and High Performance" />
+  <Note title="Philosophy:" description="Determinism, No OS and High Performance" />
 
   <!-- Features Widget *************** -->
 
   <Features
     id="features"
     tagline="Features"
-    title="What you get with AstroWind"
-    subtitle="One of the most professional and comprehensive templates currently on the market. Most starred & forked Astro theme in 2022, 2023 and 2024."
+    title="What you will get with PyMCU"
+    subtitle="A free, deterministic compiler designed to bring the simplicity of Python to microcontrollers. A new way to write embedded software that is predictable, efficient and accessible."
     items={[
       {
-        title: 'Astro + Tailwind CSS Integration',
+        title: 'Python to Low-Level Compilation',
         description:
-          'A seamless integration between two great frameworks that offer high productivity, performance and versatility.',
-        icon: 'tabler:brand-tailwind',
+          'A seamless way to bring Python into embedded systems, compiling a safe subset into ASM or C for predictable and efficient execution.',
+        icon: 'tabler:terminal-2',
       },
       {
-        title: 'Ready-to-use Components',
+        title: 'Ready-to-use HALs',
         description:
-          'Widgets made with Tailwind CSS ready to be used in Marketing Websites, SaaS, Blogs, Personal Profiles, Small Business...',
-        icon: 'tabler:components',
+          'Hardware Abstraction Layers that make GPIO, timers and peripherals easy to use, accelerating development for makers, students and professionals.',
+        icon: 'tabler:plug-connected',
       },
       {
         title: 'Best Practices',
         description:
-          'Creating secure, efficient, and user-friendly websites that deliver exceptional experiences and lasting value.',
-        icon: 'tabler:list-check',
+          'Building firmware that is deterministic, efficient and production-ready, with predictable timing and no garbage collection.',
+        icon: 'tabler:shield-check',
       },
       {
-        title: 'Excellent Page Speed',
+        title: 'Excellent Performance',
         description:
-          'Having a good page speed impacts organic search ranking, improves user experience (UI/UX) and increase conversion rates.',
-        icon: 'tabler:rocket',
+          'Ahead-Of-Time compilation ensures binaries run close to the hardware, making the most of limited 8-bit and 32-bit resources.',
+        icon: 'tabler:gauge',
       },
       {
-        title: 'Search Engine Optimization (SEO)',
+        title: 'Ecosystem & Future Support',
         description:
-          "SEO lies in its ability to enhance a website's visibility, driving organic traffic and enabling it to reach a wider audience.",
-        icon: 'tabler:arrows-right-left',
+          "Planned compatibility with standard toolchains and architectures, opening the door to broader adoption and long-term growth.",
+        icon: 'tabler:layers-linked',
       },
       {
         title: 'Open to new ideas and contributions',
         description:
-          'Embracing a culture that is open to new ideas and contributions is integral fostering innovation, collaboration, and a dynamic user experience.',
+          'PyMCU is community-driven, open to feedback and contributions that foster innovation, collaboration and a growing ecosystem.',
         icon: 'tabler:bulb',
       },
     ]}
@@ -104,34 +106,35 @@ const metadata = {
   <!-- Content Widget **************** -->
 
   <Content
+    id="inside-pymcu"
     isReversed
-    tagline="Inside template"
-    title="AstroWind's Blueprint: Fun Meets Functionality!"
+    tagline="Inside PyMCU"
+    title="PyMCU's Blueprint: Python Meets Bare Metal!"
     items={[
       {
-        title: 'Built on top of Astro 5.0',
+        title: 'Built on top of a safe Python subset',
         description:
-          'Benefiting from the performance and developer-friendly features of this modern static site generator.',
+          'Benefit from a language millions already know, adapted for deterministic, embedded use.',
       },
       {
-        title: 'Styled using Tailwind CSS',
+        title: 'Simplified learning curve',
         description:
-          'Facilitating rapid design and consistent styling with this highly popular utility-first CSS framework.',
+          'Facilitating faster onboarding for students, makers, and professionals by lowering the entry barrier to firmware development.',
       },
       {
-        title: 'Cross-browser compatibility',
+        title: 'Cross-toolchain compatibility',
         description:
-          'Ensure your website looks and functions consistently across various web browsers, delivering a seamless experience to all users.',
+          'Ensuring your Python-to-ASM/C workflow can integrate smoothly with existing toolchains and future 8-bit & 32-bit architectures.',
       },
     ]}
     image={{
-      src: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
-      alt: 'Colorful Image',
+      src: '~/assets/images/embedded-engineer.png',
+      alt: 'Embedded Engineer',
     }}
   >
     <Fragment slot="content">
-      <h3 class="text-2xl font-bold tracking-tight dark:text-white sm:text-3xl mb-2">Building on modern foundations</h3>
-      Gain a competitive advantage by incorporating industry leading practices
+      <h3 class="text-2xl font-bold tracking-tight dark:text-white sm:text-3xl mb-2">Building on deterministic foundations</h3>
+      Gain an advantage by leveraging the simplicity and readability of Python as your starting point.
     </Fragment>
 
     <Fragment slot="bg">
@@ -145,31 +148,31 @@ const metadata = {
     isAfterContent
     items={[
       {
-        title: 'High level of customization',
-        description: `Tailor the template effortlessly to match your brand's identity and requirements, making your website distinct and saving you time.`,
+        title: 'Make your first firmware fast and simple',
+        description: `Start coding right away with ready-to-use project presets that include minimal HALs for GPIO and timers.`,
       },
       {
-        title: 'Multiple layout possibilities',
+        title: 'Direct to low-level',
         description:
-          'Explore various layout options to find the structure that best presents your content, enhancing user engagement and navigation.',
+          'Transform Python directly into ASM or C, producing binaries that run close to the hardware without extra layers.',
       },
       {
-        title: 'Fully responsive design',
+        title: 'Reliable timing',
         description:
-          "Ensure your website's optimal performance on various devices and screen sizes, providing a consistent and enjoyable user experience.",
+          "Enjoy predictable execution with no garbage collection or operating system interruptions.",
       },
       {
-        title: 'Integration of media',
+        title: 'Built to expand',
         description:
-          'Seamlessly incorporate images, videos, and multimedia elements that enhance your content and engage visitors effectively.',
+          'The alpha focuses on small 8-bit targets, with a roadmap toward richer peripherals, more architectures, and broader toolchain support.',
       },
     ]}
     image={{
-      src: 'https://images.unsplash.com/photo-1600132806370-bf17e65e942f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2194&q=80',
-      alt: 'Blueprint Image',
+      src: '~/assets/images/embedded-python.png',
+      alt: 'Embedded Python',
     }}
   >
-    <Fragment slot="content">Ensure your online presence truly represents you.</Fragment>
+    <Fragment slot="content">Ensure your firmware truly represents your code.</Fragment>
 
     <Fragment slot="bg">
       <div class="absolute inset-0 bg-blue-50 dark:bg-transparent"></div>
@@ -183,31 +186,31 @@ const metadata = {
     isAfterContent
     items={[
       {
-        title: 'Enhanced user engagement',
+        title: 'Early prototyping',
         description:
-          'Captivate your audience with interactive elements, intuitive navigation, and visually appealing layouts, encouraging longer visits.',
+          'Quickly bring ideas to life with minimal configuration, turning concepts into working firmware in record time.',
       },
       {
-        title: 'Continuous improvement',
+        title: 'Ongoing evolution',
         description:
-          'Ensure your website stays aligned with the latest trends and technologies through regular updates and enhancements.',
+          'Stay aligned with the roadmap as PyMCU grows to support more architectures, peripherals, and workflows.',
       },
       {
-        title: 'Time and resource efficiency',
+        title: 'Efficiency for developers',
         description:
-          'Skip the time-consuming process of building a website from scratch and launch your online presence sooner with AstroWind.',
+          'Skip complex toolchain setups and focus on coding, reducing the time and effort needed to test firmware on real hardware.',
       },
       {
-        title: 'Community support',
-        description: `Join the growing AstroWind community for insights, resources, and assistance, ensuring you're never alone on your web development journey.`,
+        title: 'Community-driven',
+        description: `Be part of the PyMCU community—sharing knowledge, building resources, and shaping the future of Python in embedded systems together.`,
       },
     ]}
     image={{
-      src: 'https://images.unsplash.com/photo-1611462985358-60d3498e0364?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+      src: '~/assets/images/collaboration-pymcu.png',
       alt: 'Astronauts Image',
     }}
   >
-    <Fragment slot="content">Designed to foster growth and success.</Fragment>
+    <Fragment slot="content">Designed to empower embedded innovation.</Fragment>
 
     <Fragment slot="bg">
       <div class="absolute inset-0 bg-blue-50 dark:bg-transparent"></div>
@@ -217,25 +220,26 @@ const metadata = {
   <!-- Steps Widget ****************** -->
 
   <Steps
-    title="Get your dream website up and running in no time with AstroWind."
+    id="steps"
+    title="Get your first firmware running in no time with PyMCU."
     items={[
       {
-        title: 'Step 1: <span class="font-medium">Download</span>',
+        title: 'Step 1: <span class="font-medium">Install</span>',
         description:
-          "Kickstart with GitHub! Either fork the AstroWind template or simply click 'Use this template'. Your canvas awaits, ready for your digital masterpiece. In just a few clicks, you've already set the foundation.",
+          "Kickstart with GitHub! Clone the PyMCU repository or grab the prebuilt package. Future releases will also be available through package managers like Homebrew or Chocolatey, making setup even easier.",
         icon: 'tabler:package',
       },
       {
-        title: 'Step 2: <span class="font-medium">Add content</span>',
+        title: 'Step 2: <span class="font-medium">Write code</span>',
         description:
-          "Pour your vision into it. Add images, text, and all that jazz to breathe life into your digital space. Remember, it's the content that tells your story, so make it captivating.",
-        icon: 'tabler:letter-case',
+          "Bring your ideas to life. Write in a safe subset of Python, which is simple, familiar, and clean. Your code turns directly into ASM or C, ready for real hardware.",
+        icon: 'tabler:brand-python',
       },
       {
-        title: 'Step 3: <span class="font-medium">Customize styles</span>',
+        title: 'Step 3: <span class="font-medium">Flash & test</span>',
         description:
-          'Give it your personal touch. Tailor colors, fonts, and layouts until it feels just right. Your unique flair, amplified by AstroWind! Precision in design ensures a seamless user experience.',
-        icon: 'tabler:paint',
+          'Load the generated binary into your microcontroller and watch it run with deterministic timing. Fast iterations, predictable results.',
+        icon: 'tabler:usb',
       },
       {
         title: 'Ready!',
@@ -248,72 +252,23 @@ const metadata = {
     }}
   />
 
-  <!-- Features2 Widget ************** -->
+  <!-- Roadmap Widget ******* -->
 
-  <Features2
-    title="Most used widgets"
-    subtitle="Provides frequently used components for building websites using Tailwind CSS"
-    tagline="Components"
-    items={[
-      {
-        title: 'Headers',
-        description: "Ever tried driving without GPS? Boom! That's why websites need headers for direction.",
-        icon: 'flat-color-icons:template',
-      },
-      {
-        title: 'Heros',
-        description:
-          "Picture a superhero landing – epic, right? That's the job of a Hero section, making grand entrances!",
-        icon: 'flat-color-icons:gallery',
-      },
-      {
-        title: 'Features',
-        description:
-          'Where websites strut their stuff and show off superpowers. No holding back on the bragging rights here!',
-        icon: 'flat-color-icons:approval',
-      },
-      {
-        title: 'Content',
-        description:
-          "Dive into the meat and potatoes of a site; without it, you'd just be window shopping. Content is king.",
-        icon: 'flat-color-icons:document',
-      },
-      {
-        title: 'Call-to-Action',
-        description:
-          'That enthusiastic friend who\'s always urging, "Do it! Do it!"? Yeah, that\'s this button nudging you towards adventure.',
-        icon: 'flat-color-icons:advertising',
-      },
-      {
-        title: 'Pricing',
-        description: 'Behold the dessert menu of the website world. Tempting choices await, can you resist?',
-        icon: 'flat-color-icons:currency-exchange',
-      },
-      {
-        title: 'Testimonial',
-        description: 'Step into the gossip corner! Here, other visitors spill the beans and share the juicy details.',
-        icon: 'flat-color-icons:voice-presentation',
-      },
-      {
-        title: 'Contact',
-        description:
-          'Like a digital mailbox, but faster! Drop a line, ask a question, or send a virtual high-five. Ding! Message in.',
-        icon: 'flat-color-icons:business-contact',
-      },
-      {
-        title: 'Footers',
-        description: "The footer's like the credits of a movie but sprinkled with easter eggs. Time to hunt!",
-        icon: 'flat-color-icons:database',
-      },
-    ]}
+  <RoadmapArchitectures
+    id="roadmap"
+    tagline="Roadmap"
+    title="Architecture Support Timeline"
+    subtitle="Our planned microcontroller support roadmap"
+    columns={2}
   >
     <Fragment slot="bg">
       <div class="absolute inset-0 bg-blue-50 dark:bg-transparent"></div>
     </Fragment>
-  </Features2>
+  </RoadmapArchitectures>
 
   <!-- HighlightedPosts Widget ******* -->
 
+  <!--
   <BlogLatestPosts
     title="Find out more content in our Blog"
     information={`The blog is used to display AstroWind documentation.
@@ -321,79 +276,73 @@ const metadata = {
                         Astro is a very interesting technology. Thanks.
                 `}
   />
+  -->
 
   <!-- FAQs Widget ******************* -->
 
   <FAQs
+    id="faqs"
     title="Frequently Asked Questions"
-    subtitle="Dive into the following questions to gain insights into the powerful features that AstroWind offers and how it can elevate your web development journey."
+    subtitle="Dive into the following questions to gain insights into what PyMCU is, where it’s going, and how it can reshape embedded development with Python."
     tagline="FAQs"
     classes={{ container: 'max-w-6xl' }}
     items={[
       {
-        title: 'Why AstroWind?',
+        title: 'What is PyMCU?',
         description:
-          "Michael Knight a young loner on a crusade to champion the cause of the innocent. The helpless. The powerless in a world of criminals who operate above the law. Here he comes Here comes Speed Racer. He's a demon on wheels.",
+          "PyMCU is an experimental compiler that translates a safe subset of Python into ASM or C for microcontrollers. It is designed to be deterministic, lightweight, and Ahead-Of-Time (AOT), bringing the simplicity of Python into the world of bare-metal development.",
       },
       {
-        title: 'What do I need to start?',
+        title: 'Is PyMCU production-ready?',
         description:
-          'Space, the final frontier. These are the voyages of the Starship Enterprise. Its five-year mission: to explore strange new worlds. Many say exploration is part of our destiny, but it’s actually our duty to future generations.',
+          'Not yet. PyMCU is currently in an early, experimental stage. Its progress will depend on community interest, contributions, and feedback. While there is no guarantee of a full release, every step forward is aimed at building something valuable and open for embedded developers.',
       },
       {
-        title: 'How to install the Astro + Tailwind CSS template?',
+        title: 'How is PyMCU being built?',
         description:
-          "Well, the way they make shows is, they make one show. That show's called a pilot. Then they show that show to the people who make shows, and on the strength of that one show they decide if they're going to make more shows.",
+          "The compiler is written in C++, using a Parsing Expression Grammar (PEG) to have fine-grained control over the Python subset. This allows PyMCU to stay minimal, predictable, and tailored for embedded systems.",
       },
       {
-        title: "What's something that you don't understand?",
+        title: "What license will PyMCU use?",
         description:
-          "A flower in my garden, a mystery in my panties. Heart attack never stopped old Big Bear. I didn't even know we were calling him Big Bear.",
+          "PyMCU will be released under the MIT License — simple, permissive, and open. This ensures anyone can use, adapt, or contribute to the project with full transparency.",
       },
       {
-        title: 'What is something that you would like to try again?',
+        title: 'Will it support official toolchains?',
         description:
-          "A business big enough that it could be listed on the NASDAQ goes belly up. Disappears! It ceases to exist without me. No, you clearly don't know who you're talking to, so let me clue you in.",
+          "Yes, the long-term plan is to align with official toolchains provided by each vendor (such as those for PIC, AVR, ARM Cortex-M, and ESP32). This will let developers combine PyMCU with trusted ecosystems they already know.",
       },
       {
-        title: 'If you could only ask one question to each person you meet, what would that question be?',
-        description:
-          "This is not about revenge. This is about justice. A lot of things can change in twelve years, Admiral. Well, that's certainly good to know. About four years. I got tired of hearing how young I looked.",
+        title: 'Which architectures are on the roadmap?',
+        description: "The roadmap — outlined in its own dedicated section — begins with PIC10F/12F (ASM) in late Q4 2025, followed by AVR8/ATmega (C with ASM option) in early Q1 2026, ARM Cortex-M (C with ASM option) in mid Q2 2026, and ESP32 (C with ASM option and Wi-Fi stubs) in late Q3 2026. Future architectures will be evaluated and prioritized based on community input.",
       },
+      {
+        title: "How does it differ from MicroPython or CircuitPython?",
+        description: "PyMCU is not an interpreter. It doesn’t run a VM or rely on dynamic memory. Instead, it compiles directly to low-level code, with deterministic timing and no garbage collection. It is designed for developers who need Python’s clarity but firmware’s reliability."
+      },
+      {
+        title: "How can I get involved?",
+        description: "You will soon be able to take part in shaping PyMCU from the ground up — by following the project on GitHub, sharing feedback on features and roadmap priorities, and contributing code, documentation, or testing. Once these channels are available, every contribution will help strengthen and grow the ecosystem."
+      }
     ]}
   />
 
-  <!-- Stats Widget ****************** -->
-
-  <Stats
-    stats={[
-      { title: 'Downloads', amount: '132K' },
-      { title: 'Stars', amount: '24.8K' },
-      { title: 'Forks', amount: '10.3K' },
-      { title: 'Users', amount: '48.4K' },
-    ]}
+  <!-- Countdown Widget ****************** -->
+  
+  <Countdown
+    title="Alpha 1"
+    subtitle="Join us on this exciting journey to bring Python to microcontrollers."
+    tagline="Coming soon"
+    targetDate="2025-12-15T00:00:00"
   />
 
   <!-- CallToAction Widget *********** -->
 
-  <CallToAction
-    actions={[
-      {
-        variant: 'primary',
-        text: 'Get template',
-        href: 'https://github.com/arthelokyo/astrowind',
-        target: '_blank',
-        icon: 'tabler:download',
-      },
-    ]}
-  >
-    <Fragment slot="title">
-      Astro&nbsp;+&nbsp;<br class="block sm:hidden" /><span class="sm:whitespace-nowrap">Tailwind CSS</span>
-    </Fragment>
+  <Waitlist
+    id="waitlist"
+    title="Join the Alpha"
+    subtitle="Be the first to experience PyMCU"
+    tagline="Early Access"
+  />
 
-    <Fragment slot="subtitle">
-      Be very surprised by these huge fake numbers you are seeing on this page. <br class="hidden md:inline" />Don't
-      waste more time! :P
-    </Fragment>
-  </CallToAction>
 </Layout>

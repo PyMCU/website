@@ -1,0 +1,106 @@
+---
+import WidgetWrapper from '~/components/ui/WidgetWrapper.astro';
+import Headline from '~/components/ui/Headline.astro';
+import { Icon } from 'astro-icon/components';
+import type { Widget } from '~/types';
+
+export interface Props extends Widget {
+  title?: string;
+  subtitle?: string;
+  tagline?: string;
+  targetDate?: string;
+  classes?: Record<string, string>;
+}
+
+const {
+  title = await Astro.slots.render('title'),
+  subtitle = await Astro.slots.render('subtitle'),
+  tagline,
+  targetDate = "2025-12-31T23:59:59", // Default target date for Alpha 1
+  
+  id,
+  isDark = false,
+  classes = {},
+  bg = await Astro.slots.render('bg'),
+} = Astro.props;
+
+// Calculate time remaining (server-side for initial render)
+const now = new Date();
+const target = new Date(targetDate);
+const timeDiff = target.getTime() - now.getTime();
+
+const days = Math.max(0, Math.floor(timeDiff / (1000 * 60 * 60 * 24)));
+const hours = Math.max(0, Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)));
+const minutes = Math.max(0, Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60)));
+const seconds = Math.max(0, Math.floor((timeDiff % (1000 * 60)) / 1000));
+
+const countdownItems = [
+  { value: days, label: "Days", icon: "tabler:calendar" },
+  { value: hours, label: "Hours", icon: "tabler:clock" },
+  { value: minutes, label: "Minutes", icon: "tabler:clock-hour-3" },
+  { value: seconds, label: "Seconds", icon: "tabler:clock-hour-1" }
+];
+---
+
+<WidgetWrapper id={id} isDark={isDark} containerClass={`max-w-6xl mx-auto ${classes?.container ?? ''}`} bg={bg}>
+  <Headline title={title} subtitle={subtitle} tagline={tagline} />
+  
+  <div class="flex flex-wrap justify-center -m-4 text-center">
+    {countdownItems.map(({ value, label, icon }, index) => (
+      <div class="p-4 md:w-1/4 sm:w-1/2 w-full min-w-[220px] text-center md:border-r md:last:border-none dark:md:border-slate-500 intersect-once motion-safe:md:opacity-0 motion-safe:md:intersect:animate-fade intersect-quarter">
+        <div class="flex items-center justify-center mx-auto mb-4 text-primary">
+          <Icon name={icon} class="w-10 h-10" />
+        </div>
+        <div 
+          class="font-heading text-primary text-[2.6rem] font-bold dark:text-white lg:text-5xl xl:text-6xl countdown-value"
+          data-label={label.toLowerCase()}
+        >
+          {value.toString().padStart(2, '0')}
+        </div>
+        <div class="text-sm font-medium uppercase tracking-widest text-gray-800 dark:text-slate-400 lg:text-base">
+          {label}
+        </div>
+      </div>
+    ))}
+  </div>
+</WidgetWrapper>
+
+<script>
+  // Client-side countdown update
+  function updateCountdown() {
+    const targetDate = document.querySelector('[data-target-date]')?.getAttribute('data-target-date') || "2025-12-31T23:59:59";
+    const now = new Date().getTime();
+    const target = new Date(targetDate).getTime();
+    const timeDiff = target - now;
+
+    if (timeDiff <= 0) {
+      // Countdown finished
+      document.querySelectorAll('.countdown-value').forEach(el => {
+        el.textContent = '00';
+      });
+      return;
+    }
+
+    const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+
+    const values = { days, hours, minutes, seconds };
+
+    document.querySelectorAll('.countdown-value').forEach(el => {
+      const label = el.getAttribute('data-label');
+      if (label && values[label] !== undefined) {
+        el.textContent = values[label].toString().padStart(2, '0');
+      }
+    });
+  }
+
+  // Update countdown every second
+  if (typeof window !== 'undefined') {
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+  }
+</script>
+
+<div data-target-date={targetDate} style="display: none;"></div>
