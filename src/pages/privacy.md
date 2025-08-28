@@ -1,6 +1,7 @@
 ---
 title: 'Privacy Policy'
 layout: '~/layouts/MarkdownLayout.astro'
+prerender: true
 ---
 
 _Last updated_: August 27, 2025
