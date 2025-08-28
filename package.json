@@ -1,10 +1,10 @@
 {
-  "name": "",
-  "version": "1.0.0-beta.52",
-  "description": "AstroWind: A free template using Astro 5.0 and Tailwind CSS. Astro starter theme.",
+  "name": "pymcu-landing",
+  "version": "1.0.0",
+  "description": "PyMCU Landing Page - Modern web application for PyMCU project built with Astro, Tailwind CSS, Supabase, and AWS SES.",
   "type": "module",
   "engines": {
-    "node": "^18.17.1 || ^20.3.0 || >= 21.0.0"
+    "node": ">=20.0.0"
   },
   "scripts": {
     "dev": "astro dev",
@@ -21,9 +21,9 @@
     "fix:prettier": "prettier -w ."
   },
   "dependencies": {
-    "@astrojs/node": "^9.4.3",
     "@astrojs/rss": "^4.0.12",
     "@astrojs/sitemap": "^3.4.2",
+    "@astrojs/vercel": "^8.2.6",
     "@astrolib/analytics": "^0.6.1",
     "@astrolib/seo": "^1.0.0-beta.8",
     "@aws-sdk/client-ses": "^3.876.0",
@@ -66,5 +66,25 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.39.0",
     "unist-util-visit": "^5.0.0"
+  },
+  "keywords": [
+    "pymcu",
+    "python",
+    "microcontroller",
+    "embedded",
+    "astro",
+    "tailwindcss",
+    "landing-page",
+    "typescript"
+  ],
+  "author": "PyMCU Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pymcu/pymcu-landing"
+  },
+  "homepage": "https://pymcu.com",
+  "bugs": {
+    "url": "https://github.com/pymcu/pymcu-landing/issues"
   }
 }
