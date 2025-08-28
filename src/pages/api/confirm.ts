@@ -10,20 +10,20 @@ export const GET: APIRoute = async ({ request, url }) => {
     // Rate limiting check
     const clientIP = getClientIP(request);
     const rateLimitResult = checkRateLimit(clientIP, RATE_LIMITS.confirm);
-    
+
     if (!rateLimitResult.allowed) {
       return new Response(
-        JSON.stringify({ 
-          success: false, 
+        JSON.stringify({
+          success: false,
           error: 'Too many requests. Please try again later.',
-          resetTime: rateLimitResult.resetTime
+          resetTime: rateLimitResult.resetTime,
         }),
-        { 
+        {
           status: 429,
-          headers: { 
+          headers: {
             'Content-Type': 'application/json',
-            'Retry-After': Math.ceil((rateLimitResult.resetTime! - Date.now()) / 1000).toString()
-          }
+            'Retry-After': Math.ceil((rateLimitResult.resetTime! - Date.now()) / 1000).toString(),
+          },
         }
       );
     }
@@ -33,29 +33,29 @@ export const GET: APIRoute = async ({ request, url }) => {
     // Input validation
     if (!token || typeof token !== 'string' || token.length !== 64) {
       return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'Invalid confirmation token' 
+        JSON.stringify({
+          success: false,
+          error: 'Invalid confirmation token',
         }),
-        { 
+        {
           status: 400,
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         }
       );
     }
 
     // Sanitize token (remove any non-hex characters)
     const sanitizedToken = token.replace(/[^a-f0-9]/gi, '');
-    
+
     if (sanitizedToken.length !== 64) {
       return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'Invalid confirmation token format' 
+        JSON.stringify({
+          success: false,
+          error: 'Invalid confirmation token format',
         }),
-        { 
+        {
           status: 400,
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         }
       );
     }
@@ -70,13 +70,13 @@ export const GET: APIRoute = async ({ request, url }) => {
         console.error('Missing Supabase configuration');
       }
       return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'Service temporarily unavailable' 
+        JSON.stringify({
+          success: false,
+          error: 'Service temporarily unavailable',
         }),
-        { 
+        {
           status: 500,
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         }
       );
     }
@@ -84,8 +84,8 @@ export const GET: APIRoute = async ({ request, url }) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
         autoRefreshToken: false,
-        persistSession: false
-      }
+        persistSession: false,
+      },
     });
 
     // Find user by confirmation token
@@ -97,13 +97,13 @@ export const GET: APIRoute = async ({ request, url }) => {
 
     if (findError || !user) {
       return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'Invalid or expired confirmation token' 
+        JSON.stringify({
+          success: false,
+          error: 'Invalid or expired confirmation token',
         }),
-        { 
+        {
           status: 404,
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         }
       );
     }
@@ -111,17 +111,17 @@ export const GET: APIRoute = async ({ request, url }) => {
     // Check if already confirmed
     if (user.status === 'confirmed') {
       return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: 'Email already confirmed! You\'re all set for the PyMCU Alpha release! 🚀',
+        JSON.stringify({
+          success: true,
+          message: "Email already confirmed! You're all set for the PyMCU Alpha release! 🚀",
           data: {
             email: user.email,
-            status: 'confirmed'
-          }
+            status: 'confirmed',
+          },
         }),
-        { 
+        {
           status: 200,
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         }
       );
     }
@@ -129,13 +129,13 @@ export const GET: APIRoute = async ({ request, url }) => {
     // Check if unsubscribed
     if (user.status === 'unsubscribed') {
       return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'This email has been unsubscribed from the waitlist' 
+        JSON.stringify({
+          success: false,
+          error: 'This email has been unsubscribed from the waitlist',
         }),
-        { 
+        {
           status: 410,
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         }
       );
     }
@@ -143,10 +143,10 @@ export const GET: APIRoute = async ({ request, url }) => {
     // Update status to confirmed
     const { data: updatedUser, error: updateError } = await supabase
       .from('waitlist')
-      .update({ 
+      .update({
         status: 'confirmed',
         confirmed_at: new Date().toISOString(),
-        confirmation_token: null // Clear token for security
+        confirmation_token: null, // Clear token for security
       })
       .eq('id', user.id)
       .select()
@@ -158,48 +158,46 @@ export const GET: APIRoute = async ({ request, url }) => {
         console.error('Failed to confirm user:', updateError);
       }
       return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'Service temporarily unavailable' 
+        JSON.stringify({
+          success: false,
+          error: 'Service temporarily unavailable',
         }),
-        { 
+        {
           status: 500,
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         }
       );
     }
 
-
     return new Response(
-      JSON.stringify({ 
-        success: true, 
+      JSON.stringify({
+        success: true,
         message: 'Email confirmed successfully! Welcome to the PyMCU Alpha waitlist! 🎉',
         data: {
           email: updatedUser.email,
           status: 'confirmed',
-          confirmed_at: updatedUser.confirmed_at
-        }
+          confirmed_at: updatedUser.confirmed_at,
+        },
       }),
-      { 
+      {
         status: 200,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       }
     );
-
   } catch (error) {
     // Log detailed error only in development
     if (import.meta.env.MODE === 'development') {
       console.error('Confirmation API error:', error);
     }
-    
+
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: 'An unexpected error occurred. Please try again.' 
+      JSON.stringify({
+        success: false,
+        error: 'An unexpected error occurred. Please try again.',
       }),
-      { 
+      {
         status: 500,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       }
     );
   }

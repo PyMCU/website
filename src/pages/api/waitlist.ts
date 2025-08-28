@@ -19,13 +19,13 @@ export const POST: APIRoute = async ({ request }) => {
     // Rate limiting check
     const clientIP = getClientIP(request);
     const rateLimitResult = checkRateLimit(clientIP, RATE_LIMITS.waitlist);
-    
+
     if (!rateLimitResult.allowed) {
       return createSecureResponse(
-        { 
-          success: false, 
+        {
+          success: false,
           error: 'Too many requests. Please try again later.',
-          resetTime: rateLimitResult.resetTime
+          resetTime: rateLimitResult.resetTime,
         },
         429
       );
@@ -41,9 +41,9 @@ export const POST: APIRoute = async ({ request }) => {
     // Comprehensive input validation
     if (!email) {
       return createSecureResponse(
-        { 
-          success: false, 
-          error: 'Email is required' 
+        {
+          success: false,
+          error: 'Email is required',
         },
         400
       );
@@ -52,9 +52,9 @@ export const POST: APIRoute = async ({ request }) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return createSecureResponse(
-        { 
-          success: false, 
-          error: 'Please enter a valid email address' 
+        {
+          success: false,
+          error: 'Please enter a valid email address',
         },
         400
       );
@@ -64,9 +64,9 @@ export const POST: APIRoute = async ({ request }) => {
     const allowedRoles = ['developer', 'student', 'maker', 'researcher', 'educator', 'hobbyist', 'other'];
     if (role && !allowedRoles.includes(role.toLowerCase())) {
       return createSecureResponse(
-        { 
-          success: false, 
-          error: 'Invalid role selection' 
+        {
+          success: false,
+          error: 'Invalid role selection',
         },
         400
       );
@@ -76,9 +76,9 @@ export const POST: APIRoute = async ({ request }) => {
     const allowedExperience = ['beginner', 'intermediate', 'advanced'];
     if (experience && !allowedExperience.includes(experience.toLowerCase())) {
       return createSecureResponse(
-        { 
-          success: false, 
-          error: 'Invalid experience level' 
+        {
+          success: false,
+          error: 'Invalid experience level',
         },
         400
       );
@@ -99,9 +99,9 @@ export const POST: APIRoute = async ({ request }) => {
         console.error('Missing Supabase configuration');
       }
       return createSecureResponse(
-        { 
-          success: false, 
-          error: 'Service temporarily unavailable' 
+        {
+          success: false,
+          error: 'Service temporarily unavailable',
         },
         500
       );
@@ -110,13 +110,13 @@ export const POST: APIRoute = async ({ request }) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
         autoRefreshToken: false,
-        persistSession: false
-      }
+        persistSession: false,
+      },
     });
 
     // Generate confirmation token
     const confirmationToken = crypto.randomBytes(32).toString('hex');
-    
+
     // Prepare data for insertion with double opt-in support
     const waitlistData = {
       email: sanitizedEmail,
@@ -124,22 +124,18 @@ export const POST: APIRoute = async ({ request }) => {
       experience: sanitizedExperience,
       updates: updates,
       status: 'pending',
-      confirmation_token: confirmationToken
+      confirmation_token: confirmationToken,
     };
 
     // Insert into Supabase
-    const { data, error } = await supabase
-      .from('waitlist')
-      .insert([waitlistData])
-      .select()
-      .single();
+    const { data, error } = await supabase.from('waitlist').insert([waitlistData]).select().single();
 
     if (error) {
       // Log detailed error only in development
       if (import.meta.env.MODE === 'development') {
         console.error('Supabase error:', error);
       }
-      
+
       // Handle duplicate email - check if already confirmed or pending
       if (error.code === '23505' || error.message.includes('duplicate') || error.message.includes('unique')) {
         // Check existing registration status
@@ -148,26 +144,28 @@ export const POST: APIRoute = async ({ request }) => {
           .select('status, email')
           .eq('email', email.toLowerCase().trim())
           .single();
-          
+
         if (existingUser?.status === 'confirmed') {
           return createSecureResponse(
-            { 
-              success: true, 
-              message: 'Great news! This email is already confirmed on the waitlist. You\'re all set for the PyMCU Alpha release! 🚀' 
+            {
+              success: true,
+              message:
+                "Great news! This email is already confirmed on the waitlist. You're all set for the PyMCU Alpha release! 🚀",
             },
             200
           );
         } else if (existingUser?.status === 'pending') {
           return createSecureResponse(
-            { 
-              success: true, 
-              message: 'We\'ve already sent a confirmation email to this address. Please check your inbox and spam folder! 📧' 
+            {
+              success: true,
+              message:
+                "We've already sent a confirmation email to this address. Please check your inbox and spam folder! 📧",
             },
             200
           );
         }
       }
-      
+
       // Handle RLS policy violation
       if (error.code === '42501' || error.message.includes('row-level security')) {
         // Log detailed error only in development
@@ -175,18 +173,18 @@ export const POST: APIRoute = async ({ request }) => {
           console.error('RLS Policy Error - Check Supabase service role key and RLS policies');
         }
         return createSecureResponse(
-          { 
-            success: false, 
-            error: 'Service temporarily unavailable' 
+          {
+            success: false,
+            error: 'Service temporarily unavailable',
           },
           500
         );
       }
-      
+
       return createSecureResponse(
-        { 
-          success: false, 
-          error: 'Database error occurred. Please try again.' 
+        {
+          success: false,
+          error: 'Database error occurred. Please try again.',
         },
         500
       );
@@ -203,31 +201,30 @@ export const POST: APIRoute = async ({ request }) => {
       // Don't fail the registration if email fails - user can still be manually confirmed
     }
 
-
     return createSecureResponse(
-      { 
-        success: true, 
-        message: 'Almost there! We\'ve sent a confirmation email to your inbox. Please click the link to complete your registration for the PyMCU Alpha waitlist! 📧',
+      {
+        success: true,
+        message:
+          "Almost there! We've sent a confirmation email to your inbox. Please click the link to complete your registration for the PyMCU Alpha waitlist! 📧",
         data: {
           id: data.id,
           email: data.email,
           status: 'pending',
-          created_at: data.created_at
-        }
+          created_at: data.created_at,
+        },
       },
       201
     );
-
   } catch (error) {
     // Log detailed error only in development
     if (import.meta.env.MODE === 'development') {
       console.error('Waitlist API error:', error);
     }
-    
+
     return createSecureResponse(
-      { 
-        success: false, 
-        error: 'An unexpected error occurred. Please try again.' 
+      {
+        success: false,
+        error: 'An unexpected error occurred. Please try again.',
       },
       500
     );
@@ -238,7 +235,7 @@ export const POST: APIRoute = async ({ request }) => {
 async function sendConfirmationEmail(email: string, token: string) {
   const confirmationUrl = `${import.meta.env.SITE || 'http://localhost:4321'}/confirm?token=${token}`;
   const unsubscribeUrl = `${import.meta.env.SITE || 'http://localhost:4321'}/unsubscribe?email=${encodeURIComponent(email)}`;
-  
+
   // Check if SES is configured
   const awsRegion = import.meta.env.AWS_REGION;
   const awsAccessKeyId = import.meta.env.AWS_ACCESS_KEY_ID;
@@ -291,7 +288,7 @@ async function sendConfirmationEmail(email: string, token: string) {
   try {
     const command = new SendEmailCommand(params);
     const response = await sesClient.send(command);
-    
+
     return response;
   } catch (error) {
     // Log detailed error only in development

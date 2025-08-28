@@ -36,6 +36,7 @@
 **PyMCU** is a groundbreaking Python-to-C compiler that brings the simplicity and power of Python to microcontroller development. Our mission is to democratize embedded programming by allowing developers to write Python code that compiles to efficient C code for microcontrollers.
 
 ### Key Benefits:
+
 - 🐍 **Write Python, Run on MCUs** - Use familiar Python syntax for embedded development
 - ⚡ **High Performance** - Compiles to optimized C code for maximum efficiency
 - 🎯 **Multiple Architectures** - Support for ARM Cortex-M, ESP32, and more
@@ -65,23 +66,27 @@ This landing page is built with modern web technologies:
 ### Quick Start
 
 1. **Clone the repository**
+
    ```bash
    git clone <repository-url>
    cd pymcu-landing
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Set up environment variables**
+
    ```bash
    cp .env.example .env
    # Edit .env with your Supabase and AWS SES credentials
    ```
 
 4. **Run the development server**
+
    ```bash
    npm run dev
    ```
@@ -132,6 +137,7 @@ pymcu-landing/
 ```
 
 ### Key Directories:
+
 - **`src/pages/api/`** - Backend API endpoints for waitlist functionality
 - **`src/components/widgets/`** - PyMCU-specific UI components
 - **`src/utils/`** - Security and utility functions
@@ -143,32 +149,35 @@ pymcu-landing/
 
 All commands are run from the root of the project:
 
-| Command             | Action                                             |
-| :------------------ | :------------------------------------------------- |
-| `npm install`       | Install dependencies                               |
-| `npm run dev`       | Start development server at `localhost:4321`      |
-| `npm run build`     | Build production site to `./dist/`                |
-| `npm run preview`   | Preview build locally before deploying            |
-| `npm run check`     | Run TypeScript, ESLint, and Prettier checks       |
-| `npm run fix`       | Auto-fix ESLint and Prettier issues               |
-| `npm run astro ...` | Run Astro CLI commands                             |
+| Command             | Action                                       |
+| :------------------ | :------------------------------------------- |
+| `npm install`       | Install dependencies                         |
+| `npm run dev`       | Start development server at `localhost:4321` |
+| `npm run build`     | Build production site to `./dist/`           |
+| `npm run preview`   | Preview build locally before deploying       |
+| `npm run check`     | Run TypeScript, ESLint, and Prettier checks  |
+| `npm run fix`       | Auto-fix ESLint and Prettier issues          |
+| `npm run astro ...` | Run Astro CLI commands                       |
 
 ## 🔒 Security Features
 
 This project implements enterprise-grade security measures:
 
 ### 🛡️ Rate Limiting
+
 - **IP-based rate limiting** on all API endpoints
 - **Configurable limits** per endpoint (waitlist: 5/min, confirm: 10/min, unsubscribe: 3/min)
 - **In-memory storage** with automatic cleanup
 
 ### 🔐 Input Validation & Sanitization
+
 - **Email validation** with regex patterns
 - **Role and experience validation** against whitelists
 - **Token sanitization** for confirmation links
 - **XSS prevention** through input sanitization
 
 ### 🛡️ Security Headers
+
 - **Content Security Policy (CSP)** - Prevents XSS attacks
 - **X-Frame-Options** - Prevents clickjacking
 - **X-Content-Type-Options** - Prevents MIME sniffing
@@ -177,6 +186,7 @@ This project implements enterprise-grade security measures:
 - **CORS** - Controlled cross-origin requests
 
 ### 📝 Secure Logging
+
 - **Conditional logging** - Detailed errors only in development
 - **No sensitive data exposure** in production logs
 - **Generic error messages** for users
@@ -190,7 +200,7 @@ Create a `.env` file in the root directory with the following variables:
 SUPABASE_URL=your_supabase_project_url
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 
-# Amazon SES Configuration  
+# Amazon SES Configuration
 AWS_ACCESS_KEY_ID=your_aws_access_key
 AWS_SECRET_ACCESS_KEY=your_aws_secret_key
 AWS_REGION=us-east-1
@@ -212,6 +222,7 @@ SITE=https://yourdomain.com
 ### Manual Deployment
 
 1. **Build the project**
+
    ```bash
    npm run build
    ```

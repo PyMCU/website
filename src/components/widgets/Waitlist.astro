@@ -18,8 +18,8 @@ const {
   title = await Astro.slots.render('title'),
   subtitle = await Astro.slots.render('subtitle'),
   tagline = await Astro.slots.render('tagline'),
-  description = "Be among the first to experience PyMCU Alpha. Get early access, exclusive updates, and help shape the future of Python on microcontrollers.",
-  
+  description = 'Be among the first to experience PyMCU Alpha. Get early access, exclusive updates, and help shape the future of Python on microcontrollers.',
+
   id,
   isDark = false,
   classes = {},
@@ -29,15 +29,19 @@ const {
 
 <WidgetWrapper id={id} isDark={isDark} containerClass={`max-w-4xl mx-auto ${classes?.container ?? ''}`} bg={bg}>
   <Headline title={title} subtitle={subtitle} tagline={tagline} />
-  
+
   <div class="flex flex-col max-w-2xl mx-auto">
-    {description && (
-      <div class="text-center mb-8">
-        <p class="text-lg text-gray-600 dark:text-gray-300">{description}</p>
-      </div>
-    )}
-    
-    <div class="rounded-lg backdrop-blur border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-900 shadow-lg p-6 sm:p-8">
+    {
+      description && (
+        <div class="text-center mb-8">
+          <p class="text-lg text-gray-600 dark:text-gray-300">{description}</p>
+        </div>
+      )
+    }
+
+    <div
+      class="rounded-lg backdrop-blur border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-900 shadow-lg p-6 sm:p-8"
+    >
       <form id="waitlist-form" class="space-y-6">
         <!-- Email Field -->
         <div>
@@ -117,16 +121,13 @@ const {
         <!-- Privacy Notice -->
         <div class="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-slate-800 p-3 rounded-lg">
           <Icon name="tabler:shield-check" class="w-4 h-4 inline mr-1" />
-          Your information will only be used for <span class="font-semibold">PyMCU</span> communications. We respect your privacy and won't share your data with third parties.
+          Your information will only be used for <span class="font-semibold">PyMCU</span> communications. We respect your
+          privacy and won't share your data with third parties.
         </div>
 
         <!-- Submit Button -->
         <div class="pt-4">
-          <Button 
-            variant="primary" 
-            type="submit"
-            class="w-full justify-center"
-          >
+          <Button variant="primary" type="submit" class="w-full justify-center">
             <Icon name="tabler:rocket" class="w-5 h-5 mr-2" />
             Join Alpha Waitlist
           </Button>
@@ -138,37 +139,41 @@ const {
 
 <script>
   // Client-side form handling to prevent page reload
-  document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('waitlist-form') as HTMLFormElement;
-    
+
     if (form) {
-      form.addEventListener('submit', async function(e) {
+      form.addEventListener('submit', async function (e) {
         e.preventDefault(); // Prevent default form submission and page reload
-        
+
         const submitButton = form.querySelector('button[type="submit"]') as HTMLButtonElement;
         const originalText = submitButton?.textContent;
-        
+
         // Show loading state
         if (submitButton) {
           submitButton.disabled = true;
           submitButton.textContent = 'Joining...';
         }
-        
+
         try {
           // Get form data
           const formData = new FormData(form);
-          
+
           // Submit to API endpoint
           const response = await fetch('/api/waitlist', {
             method: 'POST',
-            body: formData
+            body: formData,
           });
-          
+
           const result = await response.json();
-          
+
           if (result.success) {
             // Show success message
-            showMessage('success', 'Welcome to the Waitlist!', result.message || 'Thank you! You\'ve been added to the PyMCU Alpha waitlist.');
+            showMessage(
+              'success',
+              'Welcome to the Waitlist!',
+              result.message || "Thank you! You've been added to the PyMCU Alpha waitlist."
+            );
             (form as HTMLFormElement).reset();
           } else {
             // Show error message
@@ -176,7 +181,11 @@ const {
           }
         } catch (error) {
           console.error('Form submission error:', error);
-          showMessage('error', 'Network Error', 'Unable to connect to server. Please check your connection and try again.');
+          showMessage(
+            'error',
+            'Network Error',
+            'Unable to connect to server. Please check your connection and try again.'
+          );
         } finally {
           // Re-enable submit button
           if (submitButton) {
@@ -187,22 +196,23 @@ const {
       });
     }
   });
-  
+
   function showMessage(type: string, title: string, message: string) {
     // Create and show a toast/modal message
     const messageDiv = document.createElement('div');
     messageDiv.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm ${
-      type === 'success' 
+      type === 'success'
         ? 'bg-green-100 border border-green-400 text-green-700 dark:bg-green-900 dark:border-green-600 dark:text-green-300'
         : 'bg-red-100 border border-red-400 text-red-700 dark:bg-red-900 dark:border-red-600 dark:text-red-300'
     }`;
-    
+
     messageDiv.innerHTML = `
       <div class="flex items-start">
         <div class="flex-shrink-0">
-          ${type === 'success' 
-            ? '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>'
-            : '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>'
+          ${
+            type === 'success'
+              ? '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>'
+              : '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>'
           }
         </div>
         <div class="ml-3">
@@ -214,9 +224,9 @@ const {
         </button>
       </div>
     `;
-    
+
     document.body.appendChild(messageDiv);
-    
+
     // Auto-remove after 5 seconds
     setTimeout(() => {
       if (messageDiv.parentElement) {

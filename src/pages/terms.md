@@ -33,6 +33,7 @@ The Service is intended for individuals **13+**. If required by your jurisdictio
 ## Acceptable Use
 
 You agree not to misuse the Service, including (without limitation):
+
 - Breaking the law or infringing rights of others.
 - Introducing malware, attempting unauthorized access, scraping at abusive rates, or disrupting availability.
 - Posting unlawful, offensive, or misleading content.

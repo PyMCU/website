@@ -33,115 +33,127 @@ const metadata = {
   <Hero
     tagline="Unsubscribe"
     title={unsubscribeResult?.success ? 'Successfully Unsubscribed' : 'Unsubscribe from PyMCU'}
-    subtitle={
-      !email && !unsubscribeResult
-        ? 'Enter your email address below to unsubscribe from the PyMCU Alpha waitlist.'
-        : error 
+    subtitle={!email && !unsubscribeResult
+      ? 'Enter your email address below to unsubscribe from the PyMCU Alpha waitlist.'
+      : error
         ? 'There was an error processing your unsubscribe request. Please try again or contact support.'
         : unsubscribeResult?.success
-        ? unsubscribeResult.message
-        : unsubscribeResult?.error || 'Unknown error occurred'
-    }
+          ? unsubscribeResult.message
+          : unsubscribeResult?.error || 'Unknown error occurred'}
   />
 
-  {!email && !unsubscribeResult && (
-    <section class="py-16 md:py-20">
-      <div class="mx-auto max-w-7xl px-4 sm:px-6">
-        <div class="mx-auto max-w-md">
-          <div class="rounded-lg backdrop-blur border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-900 shadow-lg p-6">
-            <form id="unsubscribe-form" class="space-y-6">
-              <div>
-                <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  required
-                  placeholder="Enter your email address"
-                  class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-slate-800 dark:text-white"
-                />
+  {
+    !email && !unsubscribeResult && (
+      <section class="py-16 md:py-20">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6">
+          <div class="mx-auto max-w-md">
+            <div class="rounded-lg backdrop-blur border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-900 shadow-lg p-6">
+              <form id="unsubscribe-form" class="space-y-6">
+                <div>
+                  <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    required
+                    placeholder="Enter your email address"
+                    class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-slate-800 dark:text-white"
+                  />
+                </div>
+
+                <Button type="submit" variant="primary" class="w-full">
+                  Unsubscribe
+                </Button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  {
+    unsubscribeResult?.success && (
+      <section class="py-16 md:py-20">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6">
+          <div class="mx-auto max-w-3xl text-center">
+            <div class="rounded-lg bg-blue-50 dark:bg-blue-900/20 p-6 border border-blue-200 dark:border-blue-800">
+              <div class="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-blue-100 dark:bg-blue-800 rounded-full">
+                <svg
+                  class="w-6 h-6 text-blue-600 dark:text-blue-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
               </div>
-              
-              <Button type="submit" variant="primary" class="w-full">
-                Unsubscribe
-              </Button>
-            </form>
-          </div>
-        </div>
-      </div>
-    </section>
-  )}
-
-  {unsubscribeResult?.success && (
-    <section class="py-16 md:py-20">
-      <div class="mx-auto max-w-7xl px-4 sm:px-6">
-        <div class="mx-auto max-w-3xl text-center">
-          <div class="rounded-lg bg-blue-50 dark:bg-blue-900/20 p-6 border border-blue-200 dark:border-blue-800">
-            <div class="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-blue-100 dark:bg-blue-800 rounded-full">
-              <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-              </svg>
+              <h3 class="text-lg font-semibold text-blue-800 dark:text-blue-200 mb-2">Removed Successfully</h3>
+              <p class="text-blue-700 dark:text-blue-300 mb-4">
+                The email <strong>{unsubscribeResult.data?.email}</strong> has been completely removed from the PyMCU
+                Alpha waitlist and deleted from our system.
+              </p>
+              <p class="text-sm text-blue-600 dark:text-blue-400">
+                Your data has been permanently deleted in compliance with privacy regulations. You can always register
+                again if you change your mind.
+              </p>
             </div>
-            <h3 class="text-lg font-semibold text-blue-800 dark:text-blue-200 mb-2">
-              Removed Successfully
-            </h3>
-            <p class="text-blue-700 dark:text-blue-300 mb-4">
-              The email <strong>{unsubscribeResult.data?.email}</strong> has been completely removed from the PyMCU Alpha waitlist and deleted from our system.
-            </p>
-            <p class="text-sm text-blue-600 dark:text-blue-400">
-              Your data has been permanently deleted in compliance with privacy regulations. You can always register again if you change your mind.
-            </p>
           </div>
         </div>
-      </div>
-    </section>
-  )}
+      </section>
+    )
+  }
 
-  {!unsubscribeResult?.success && email && (
-    <section class="py-16 md:py-20">
-      <div class="mx-auto max-w-7xl px-4 sm:px-6">
-        <div class="mx-auto max-w-3xl text-center">
-          <div class="rounded-lg bg-red-50 dark:bg-red-900/20 p-6 border border-red-200 dark:border-red-800">
-            <div class="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 dark:bg-red-800 rounded-full">
-              <svg class="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-              </svg>
+  {
+    !unsubscribeResult?.success && email && (
+      <section class="py-16 md:py-20">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6">
+          <div class="mx-auto max-w-3xl text-center">
+            <div class="rounded-lg bg-red-50 dark:bg-red-900/20 p-6 border border-red-200 dark:border-red-800">
+              <div class="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 dark:bg-red-800 rounded-full">
+                <svg
+                  class="w-6 h-6 text-red-600 dark:text-red-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </div>
+              <h3 class="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">Unsubscribe Failed</h3>
+              <p class="text-red-700 dark:text-red-300 mb-4">
+                {error || unsubscribeResult?.error || 'Unknown error occurred'}
+              </p>
+              <p class="text-sm text-red-600 dark:text-red-400">
+                Please try again or contact support if the problem persists.
+              </p>
             </div>
-            <h3 class="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">
-              Unsubscribe Failed
-            </h3>
-            <p class="text-red-700 dark:text-red-300 mb-4">
-              {error || unsubscribeResult?.error || 'Unknown error occurred'}
-            </p>
-            <p class="text-sm text-red-600 dark:text-red-400">
-              Please try again or contact support if the problem persists.
-            </p>
           </div>
         </div>
-      </div>
-    </section>
-  )}
+      </section>
+    )
+  }
 </Layout>
 
 <script>
   // Handle unsubscribe form submission
-  document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('unsubscribe-form') as HTMLFormElement;
-    
+
     if (form) {
-      form.addEventListener('submit', async function(e) {
+      form.addEventListener('submit', async function (e) {
         e.preventDefault();
-        
+
         const formData = new FormData(form);
         const email = formData.get('email');
-        
+
         if (!email) {
           alert('Please enter your email address');
           return;
         }
-        
+
         // Redirect to unsubscribe page with email parameter
         window.location.href = `/unsubscribe?email=${encodeURIComponent(email as string)}`;
       });

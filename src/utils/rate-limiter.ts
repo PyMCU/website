@@ -14,14 +14,15 @@ export interface RateLimitConfig {
 }
 
 export function checkRateLimit(
-  identifier: string, 
+  identifier: string,
   config: RateLimitConfig
 ): { allowed: boolean; resetTime?: number; remaining?: number } {
   const now = Date.now();
   const entry = rateLimitStore.get(identifier);
 
   // Clean up expired entries periodically
-  if (Math.random() < 0.01) { // 1% chance to clean up
+  if (Math.random() < 0.01) {
+    // 1% chance to clean up
     cleanupExpiredEntries(now);
   }
 
@@ -29,14 +30,14 @@ export function checkRateLimit(
     // First request or window expired, create new entry
     const newEntry: RateLimitEntry = {
       count: 1,
-      resetTime: now + config.windowMs
+      resetTime: now + config.windowMs,
     };
     rateLimitStore.set(identifier, newEntry);
-    
+
     return {
       allowed: true,
       resetTime: newEntry.resetTime,
-      remaining: config.maxRequests - 1
+      remaining: config.maxRequests - 1,
     };
   }
 
@@ -45,7 +46,7 @@ export function checkRateLimit(
     return {
       allowed: false,
       resetTime: entry.resetTime,
-      remaining: 0
+      remaining: 0,
     };
   }
 
@@ -56,7 +57,7 @@ export function checkRateLimit(
   return {
     allowed: true,
     resetTime: entry.resetTime,
-    remaining: config.maxRequests - entry.count
+    remaining: config.maxRequests - entry.count,
   };
 }
 
@@ -74,20 +75,20 @@ export function getClientIP(request: Request): string {
   const forwarded = request.headers.get('x-forwarded-for');
   const realIP = request.headers.get('x-real-ip');
   const cfConnectingIP = request.headers.get('cf-connecting-ip');
-  
+
   if (forwarded) {
     // x-forwarded-for can contain multiple IPs, take the first one
     return forwarded.split(',')[0].trim();
   }
-  
+
   if (realIP) {
     return realIP;
   }
-  
+
   if (cfConnectingIP) {
     return cfConnectingIP;
   }
-  
+
   // Fallback - this won't work in production behind a proxy
   return 'unknown';
 }
@@ -96,14 +97,14 @@ export function getClientIP(request: Request): string {
 export const RATE_LIMITS = {
   waitlist: {
     windowMs: 15 * 60 * 1000, // 15 minutes
-    maxRequests: 3 // 3 registrations per 15 minutes per IP
+    maxRequests: 3, // 3 registrations per 15 minutes per IP
   },
   confirm: {
     windowMs: 5 * 60 * 1000, // 5 minutes
-    maxRequests: 10 // 10 confirmation attempts per 5 minutes per IP
+    maxRequests: 10, // 10 confirmation attempts per 5 minutes per IP
   },
   unsubscribe: {
     windowMs: 5 * 60 * 1000, // 5 minutes
-    maxRequests: 5 // 5 unsubscribe attempts per 5 minutes per IP
-  }
+    maxRequests: 5, // 5 unsubscribe attempts per 5 minutes per IP
+  },
 } as const;

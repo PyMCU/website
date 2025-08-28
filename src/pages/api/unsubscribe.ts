@@ -10,20 +10,20 @@ export const GET: APIRoute = async ({ request, url }) => {
     // Rate limiting check
     const clientIP = getClientIP(request);
     const rateLimitResult = checkRateLimit(clientIP, RATE_LIMITS.unsubscribe);
-    
+
     if (!rateLimitResult.allowed) {
       return new Response(
-        JSON.stringify({ 
-          success: false, 
+        JSON.stringify({
+          success: false,
           error: 'Too many requests. Please try again later.',
-          resetTime: rateLimitResult.resetTime
+          resetTime: rateLimitResult.resetTime,
         }),
-        { 
+        {
           status: 429,
-          headers: { 
+          headers: {
             'Content-Type': 'application/json',
-            'Retry-After': Math.ceil((rateLimitResult.resetTime! - Date.now()) / 1000).toString()
-          }
+            'Retry-After': Math.ceil((rateLimitResult.resetTime! - Date.now()) / 1000).toString(),
+          },
         }
       );
     }
@@ -33,13 +33,13 @@ export const GET: APIRoute = async ({ request, url }) => {
     // Input validation
     if (!email || typeof email !== 'string') {
       return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'Valid email parameter is required' 
+        JSON.stringify({
+          success: false,
+          error: 'Valid email parameter is required',
         }),
-        { 
+        {
           status: 400,
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         }
       );
     }
@@ -48,20 +48,19 @@ export const GET: APIRoute = async ({ request, url }) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'Invalid email format' 
+        JSON.stringify({
+          success: false,
+          error: 'Invalid email format',
         }),
-        { 
+        {
           status: 400,
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         }
       );
     }
 
     // Sanitize email
     const sanitizedEmail = email.toLowerCase().trim();
-
 
     // Initialize Supabase client
     const supabaseUrl = import.meta.env.SUPABASE_URL;
@@ -73,13 +72,13 @@ export const GET: APIRoute = async ({ request, url }) => {
         console.error('Missing Supabase configuration');
       }
       return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'Service temporarily unavailable' 
+        JSON.stringify({
+          success: false,
+          error: 'Service temporarily unavailable',
         }),
-        { 
+        {
           status: 500,
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         }
       );
     }
@@ -87,8 +86,8 @@ export const GET: APIRoute = async ({ request, url }) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
         autoRefreshToken: false,
-        persistSession: false
-      }
+        persistSession: false,
+      },
     });
 
     // Find user by email
@@ -100,13 +99,13 @@ export const GET: APIRoute = async ({ request, url }) => {
 
     if (findError || !user) {
       return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'Email not found in waitlist' 
+        JSON.stringify({
+          success: false,
+          error: 'Email not found in waitlist',
         }),
-        { 
+        {
           status: 404,
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         }
       );
     }
@@ -127,13 +126,13 @@ export const GET: APIRoute = async ({ request, url }) => {
         console.error('Failed to delete user:', deleteError);
       }
       return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'Service temporarily unavailable' 
+        JSON.stringify({
+          success: false,
+          error: 'Service temporarily unavailable',
         }),
-        { 
+        {
           status: 500,
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         }
       );
     }
@@ -141,46 +140,46 @@ export const GET: APIRoute = async ({ request, url }) => {
     // Check if any rows were actually deleted
     if (!deleteData || deleteData.length === 0) {
       return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'User not found or could not be deleted.' 
+        JSON.stringify({
+          success: false,
+          error: 'User not found or could not be deleted.',
         }),
-        { 
+        {
           status: 404,
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         }
       );
     }
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: 'You have been successfully removed from the PyMCU waitlist. Your email has been completely deleted from our system.',
+      JSON.stringify({
+        success: true,
+        message:
+          'You have been successfully removed from the PyMCU waitlist. Your email has been completely deleted from our system.',
         data: {
           email: user.email,
-          removed_at: new Date().toISOString()
-        }
+          removed_at: new Date().toISOString(),
+        },
       }),
-      { 
+      {
         status: 200,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       }
     );
-
   } catch (error) {
     // Log detailed error only in development
     if (import.meta.env.MODE === 'development') {
       console.error('Unsubscribe API error:', error);
     }
-    
+
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: 'An unexpected error occurred. Please try again.' 
+      JSON.stringify({
+        success: false,
+        error: 'An unexpected error occurred. Please try again.',
       }),
-      { 
+      {
         status: 500,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       }
     );
   }
@@ -192,20 +191,20 @@ export const POST: APIRoute = async ({ request }) => {
     // Rate limiting check
     const clientIP = getClientIP(request);
     const rateLimitResult = checkRateLimit(clientIP, RATE_LIMITS.unsubscribe);
-    
+
     if (!rateLimitResult.allowed) {
       return new Response(
-        JSON.stringify({ 
-          success: false, 
+        JSON.stringify({
+          success: false,
           error: 'Too many requests. Please try again later.',
-          resetTime: rateLimitResult.resetTime
+          resetTime: rateLimitResult.resetTime,
         }),
-        { 
+        {
           status: 429,
-          headers: { 
+          headers: {
             'Content-Type': 'application/json',
-            'Retry-After': Math.ceil((rateLimitResult.resetTime! - Date.now()) / 1000).toString()
-          }
+            'Retry-After': Math.ceil((rateLimitResult.resetTime! - Date.now()) / 1000).toString(),
+          },
         }
       );
     }
@@ -216,13 +215,13 @@ export const POST: APIRoute = async ({ request }) => {
     // Input validation
     if (!email || typeof email !== 'string') {
       return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'Valid email is required' 
+        JSON.stringify({
+          success: false,
+          error: 'Valid email is required',
         }),
-        { 
+        {
           status: 400,
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         }
       );
     }
@@ -231,13 +230,13 @@ export const POST: APIRoute = async ({ request }) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'Invalid email format' 
+        JSON.stringify({
+          success: false,
+          error: 'Invalid email format',
         }),
-        { 
+        {
           status: 400,
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         }
       );
     }
@@ -245,33 +244,32 @@ export const POST: APIRoute = async ({ request }) => {
     // Create a new request for the GET handler
     const getUrl = new URL('/api/unsubscribe', import.meta.env.SITE || 'http://localhost:4321');
     getUrl.searchParams.set('email', email);
-    
+
     // Create a new GET request
     const getRequest = new Request(getUrl.toString(), {
       method: 'GET',
-      headers: request.headers
+      headers: request.headers,
     });
-    
-    // Call the GET handler with a minimal context
-    return await GET({ 
-      request: getRequest, 
-      url: getUrl 
-    } as unknown as Parameters<typeof GET>[0]);
 
+    // Call the GET handler with a minimal context
+    return await GET({
+      request: getRequest,
+      url: getUrl,
+    } as unknown as Parameters<typeof GET>[0]);
   } catch (error) {
     // Log detailed error only in development
     if (import.meta.env.MODE === 'development') {
       console.error('Unsubscribe POST API error:', error);
     }
-    
+
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: 'An unexpected error occurred. Please try again.' 
+      JSON.stringify({
+        success: false,
+        error: 'An unexpected error occurred. Please try again.',
       }),
-      { 
+      {
         status: 500,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       }
     );
   }

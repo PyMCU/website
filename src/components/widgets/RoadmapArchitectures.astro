@@ -30,135 +30,129 @@ type RoadmapItem = {
 
 const defaultItems: RoadmapItem[] = [
   {
-    quarter: "Late Q4 2025",
-    title: "PIC10F/12F (8-bit)",
-    subtitle: "Initial alpha target for ultra-small devices",
-    output: ["ASM"],
-    hal: ["GPIO", "Timers", "Basic digital I/O"],
-    icon: "tabler:cpu",
-    note: "Alpha 1",
-    progress: 10
+    quarter: 'Late Q4 2025',
+    title: 'PIC10F/12F (8-bit)',
+    subtitle: 'Initial alpha target for ultra-small devices',
+    output: ['ASM'],
+    hal: ['GPIO', 'Timers', 'Basic digital I/O'],
+    icon: 'tabler:cpu',
+    note: 'Alpha 1',
+    progress: 10,
   },
   {
-    quarter: "Late Q2 2026",
-    title: "AVR8 / ATmega",
-    subtitle: "Maker-friendly 8-bit classics",
-    output: ["C", "ASM"],
-    hal: ["GPIO", "Timers", "UART", "SPI", "I²C"],
-    icon: "tabler:cpu-2",
-    note: "Alpha 2",
-    progress: 1
+    quarter: 'Late Q2 2026',
+    title: 'AVR8 / ATmega',
+    subtitle: 'Maker-friendly 8-bit classics',
+    output: ['C', 'ASM'],
+    hal: ['GPIO', 'Timers', 'UART', 'SPI', 'I²C'],
+    icon: 'tabler:cpu-2',
+    note: 'Alpha 2',
+    progress: 1,
   },
   {
-    quarter: "Late Q4 2026",
-    title: "ARM Cortex-M (M0/M3)",
-    subtitle: "Scalable 32-bit MCUs for serious projects",
-    output: ["C", "ASM"],
-    hal: ["GPIO", "Timers", "NVIC", "UART", "SPI", "I²C"],
-    icon: "tabler:device-desktop-analytics",
-    note: "Alpha 3",
-    progress: 1
+    quarter: 'Late Q4 2026',
+    title: 'ARM Cortex-M (M0/M3)',
+    subtitle: 'Scalable 32-bit MCUs for serious projects',
+    output: ['C', 'ASM'],
+    hal: ['GPIO', 'Timers', 'NVIC', 'UART', 'SPI', 'I²C'],
+    icon: 'tabler:device-desktop-analytics',
+    note: 'Alpha 3',
+    progress: 1,
   },
   {
-    quarter: "Early Q1 2026",
-    title: "ESP32 (Xtensa)",
-    subtitle: "Connected devices and prototypes",
-    output: ["C", "ASM"],
-    hal: ["GPIO", "Timers", "UART", "SPI", "I²C", "Wi-Fi (stub)"],
-    icon: "tabler:wifi",
-    note: "Beta 1",
-    progress: 1
-  }
+    quarter: 'Early Q1 2026',
+    title: 'ESP32 (Xtensa)',
+    subtitle: 'Connected devices and prototypes',
+    output: ['C', 'ASM'],
+    hal: ['GPIO', 'Timers', 'UART', 'SPI', 'I²C', 'Wi-Fi (stub)'],
+    icon: 'tabler:wifi',
+    note: 'Beta 1',
+    progress: 1,
+  },
 ];
 
-const roadmapItems: RoadmapItem[] = items.length > 0 ? items as RoadmapItem[] : defaultItems;
-
+const roadmapItems: RoadmapItem[] = items.length > 0 ? (items as RoadmapItem[]) : defaultItems;
 ---
 
 <WidgetWrapper id={id} isDark={isDark} containerClass={`max-w-7xl mx-auto ${classes?.container ?? ''}`} bg={bg}>
   <Headline title={title} subtitle={subtitle} tagline={tagline} classes={classes?.headline as Record<string, string>} />
-  
-  {roadmapItems && roadmapItems.length > 0 && (
-    <div class={`grid gap-4 md:gap-6 ${
-      columns === 4
-        ? 'lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2'
-        : columns === 3
-          ? 'lg:grid-cols-3 sm:grid-cols-2'
-          : columns === 2
-            ? 'sm:grid-cols-2'
-            : ''
-    }`}>
-      {roadmapItems.map((item) => (
-        <div class="relative flex flex-col intersect-once intersect-quarter intersect-no-queue motion-safe:md:opacity-0 motion-safe:md:intersect:animate-fade rounded-lg shadow-[0_4px_30px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_30px_rgba(0,0,0,0.1)] backdrop-blur border border-[#ffffff29] bg-white dark:bg-slate-900 p-6">
-          
-          <!-- Header with icon, title and quarter -->
-          <div class="flex items-start justify-between mb-4">
-            <div class="flex items-center gap-3 flex-1">
-              <div class="flex justify-center items-center w-10 h-10 md:w-12 md:h-12 rounded-full bg-primary text-white">
-                <Icon name={item.icon} class="h-5 w-5 md:h-6 md:w-6" />
+
+  {
+    roadmapItems && roadmapItems.length > 0 && (
+      <div
+        class={`grid gap-4 md:gap-6 ${
+          columns === 4
+            ? 'lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2'
+            : columns === 3
+              ? 'lg:grid-cols-3 sm:grid-cols-2'
+              : columns === 2
+                ? 'sm:grid-cols-2'
+                : ''
+        }`}
+      >
+        {roadmapItems.map((item) => (
+          <div class="relative flex flex-col intersect-once intersect-quarter intersect-no-queue motion-safe:md:opacity-0 motion-safe:md:intersect:animate-fade rounded-lg shadow-[0_4px_30px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_30px_rgba(0,0,0,0.1)] backdrop-blur border border-[#ffffff29] bg-white dark:bg-slate-900 p-6">
+            {/* Header with icon, title and quarter */}
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex items-center gap-3 flex-1">
+                <div class="flex justify-center items-center w-10 h-10 md:w-12 md:h-12 rounded-full bg-primary text-white">
+                  <Icon name={item.icon} class="h-5 w-5 md:h-6 md:w-6" />
+                </div>
+                <div>
+                  <div class="text-xl font-bold">{item.title}</div>
+                  <p class="text-sm text-muted mt-1">{item.quarter}</p>
+                </div>
               </div>
-              <div>
-                <div class="text-xl font-bold">{item.title}</div>
-                <p class="text-sm text-muted mt-1">{item.quarter}</p>
+              {item.note && (
+                <span class="inline-flex items-center rounded-full bg-primary text-white px-3 py-1 text-xs font-medium ml-2">
+                  {item.note}
+                </span>
+              )}
+            </div>
+
+            {/* Description */}
+            <p class="text-muted mt-2 mb-4">{item.subtitle}</p>
+
+            {/* Output Info */}
+            <div class="mb-4">
+              <h4 class="text-xs font-medium text-muted uppercase tracking-wide mb-2">Output</h4>
+              <div class="flex flex-wrap gap-2">
+                {item.output.map((format) => (
+                  <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-gray-100 dark:bg-gray-800 text-default border border-gray-200 dark:border-gray-700">
+                    {format}
+                  </span>
+                ))}
               </div>
             </div>
-            {item.note && (
-              <span class="inline-flex items-center rounded-full bg-primary text-white px-3 py-1 text-xs font-medium ml-2">
-                {item.note}
-              </span>
-            )}
-          </div>
-          
-          <!-- Description -->
-          <p class="text-muted mt-2 mb-4">{item.subtitle}</p>
 
-          <!-- Output Info -->
-          <div class="mb-4">
-            <h4 class="text-xs font-medium text-muted uppercase tracking-wide mb-2">
-              Output
-            </h4>
-            <div class="flex flex-wrap gap-2">
-              {item.output.map((format) => (
-                <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-gray-100 dark:bg-gray-800 text-default border border-gray-200 dark:border-gray-700">
-                  {format}
-                </span>
-              ))}
+            {/* HAL Scope */}
+            <div class="mb-6">
+              <h4 class="text-xs font-medium text-muted uppercase tracking-wide mb-2">HAL Scope</h4>
+              <div class="flex flex-wrap gap-2">
+                {item.hal.map((h) => (
+                  <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-gray-100 dark:bg-gray-800 text-default border border-gray-200 dark:border-gray-700">
+                    {h}
+                  </span>
+                ))}
+              </div>
             </div>
-          </div>
 
-          <!-- HAL Scope -->
-          <div class="mb-6">
-            <h4 class="text-xs font-medium text-muted uppercase tracking-wide mb-2">
-              HAL Scope
-            </h4>
-            <div class="flex flex-wrap gap-2">
-              {item.hal.map((h) => (
-                <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-gray-100 dark:bg-gray-800 text-default border border-gray-200 dark:border-gray-700">
-                  {h}
-                </span>
-              ))}
+            {/* Progress Bar */}
+            <div class="mt-auto">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-medium text-muted">Progress</span>
+                <span class="text-xs font-medium text-default">{item.progress}%</span>
+              </div>
+              <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                <div
+                  class="bg-primary h-2 rounded-full transition-all duration-500 ease-out"
+                  style={`width: ${item.progress}%`}
+                />
+              </div>
             </div>
           </div>
-
-          <!-- Progress Bar -->
-          <div class="mt-auto">
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-xs font-medium text-muted">
-                Progress
-              </span>
-              <span class="text-xs font-medium text-default">
-                {item.progress}%
-              </span>
-            </div>
-            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-              <div 
-                class="bg-primary h-2 rounded-full transition-all duration-500 ease-out"
-                style={`width: ${item.progress}%`}
-              ></div>
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  )}
+        ))}
+      </div>
+    )
+  }
 </WidgetWrapper>

@@ -10,9 +10,9 @@ import Features from '~/components/widgets/Features.astro';
 import Steps from '~/components/widgets/Steps.astro';
 import Content from '~/components/widgets/Content.astro';
 import FAQs from '~/components/widgets/FAQs.astro';
-import RoadmapArchitectures from "../components/widgets/RoadmapArchitectures.astro";
-import Countdown from "../components/widgets/Countdown.astro";
-import Waitlist from "../components/widgets/Waitlist.astro";
+import RoadmapArchitectures from '../components/widgets/RoadmapArchitectures.astro';
+import Countdown from '../components/widgets/Countdown.astro';
+import Waitlist from '../components/widgets/Waitlist.astro';
 
 const metadata = {
   title: 'PyMCU — Python to MCUs. Free. Deterministic. AOT.',
@@ -28,8 +28,8 @@ const metadata = {
       {
         variant: 'primary',
         text: 'Join the Waitlist',
-        href: '#waitlist'
-      }
+        href: '#waitlist',
+      },
     ]}
     image={{ src: '~/assets/images/pymcu-logo.png', alt: 'PyMCU Logo' }}
   >
@@ -39,11 +39,12 @@ const metadata = {
 
     <Fragment slot="subtitle">
       <span class="hidden sm:inline">
-        <span class="font-semibold">PyMCU</span> is a free, deterministic compiler that brings 
-        <span class="font-semibold">Python</span> to microcontrollers. It turns a safe subset 
-        of Python into <span class="font-semibold">ASM</span> or <span class="font-semibold">C</span> 
-        without OS or garbage collection, with planned toolchain support. Ideal for prototyping, 
-        education, makers, and future 8-bit & 32-bit architectures.
+        <span class="font-semibold">PyMCU</span> is a free, deterministic compiler that brings
+        <span class="font-semibold">Python</span> to microcontrollers. It turns a safe subset of Python into <span
+          class="font-semibold">ASM</span
+        > or <span class="font-semibold">C</span>
+        without OS or garbage collection, with planned toolchain support. Ideal for prototyping, education, makers, and future
+        8-bit & 32-bit architectures.
       </span>
     </Fragment>
   </Hero>
@@ -87,7 +88,7 @@ const metadata = {
       {
         title: 'Ecosystem & Future Support',
         description:
-          "Planned compatibility with standard toolchains and architectures, opening the door to broader adoption and long-term growth.",
+          'Planned compatibility with standard toolchains and architectures, opening the door to broader adoption and long-term growth.',
         icon: 'tabler:layers-linked',
       },
       {
@@ -109,8 +110,7 @@ const metadata = {
     items={[
       {
         title: 'Built on top of a safe Python subset',
-        description:
-          'Benefit from a language millions already know, adapted for deterministic, embedded use.',
+        description: 'Benefit from a language millions already know, adapted for deterministic, embedded use.',
       },
       {
         title: 'Simplified learning curve',
@@ -129,7 +129,9 @@ const metadata = {
     }}
   >
     <Fragment slot="content">
-      <h3 class="text-2xl font-bold tracking-tight dark:text-white sm:text-3xl mb-2">Building on deterministic foundations</h3>
+      <h3 class="text-2xl font-bold tracking-tight dark:text-white sm:text-3xl mb-2">
+        Building on deterministic foundations
+      </h3>
       Gain an advantage by leveraging the simplicity and readability of Python as your starting point.
     </Fragment>
 
@@ -154,8 +156,7 @@ const metadata = {
       },
       {
         title: 'Reliable timing',
-        description:
-          "Enjoy predictable execution with no garbage collection or operating system interruptions.",
+        description: 'Enjoy predictable execution with no garbage collection or operating system interruptions.',
       },
       {
         title: 'Built to expand',
@@ -222,13 +223,13 @@ const metadata = {
       {
         title: 'Step 1: <span class="font-medium">Install</span>',
         description:
-          "Kickstart with GitHub! Clone the PyMCU repository or grab the prebuilt package. Future releases will also be available through package managers like Homebrew or Chocolatey, making setup even easier.",
+          'Kickstart with GitHub! Clone the PyMCU repository or grab the prebuilt package. Future releases will also be available through package managers like Homebrew or Chocolatey, making setup even easier.',
         icon: 'tabler:package',
       },
       {
         title: 'Step 2: <span class="font-medium">Write code</span>',
         description:
-          "Bring your ideas to life. Write in a safe subset of Python, which is simple, familiar, and clean. Your code turns directly into ASM or C, ready for real hardware.",
+          'Bring your ideas to life. Write in a safe subset of Python, which is simple, familiar, and clean. Your code turns directly into ASM or C, ready for real hardware.',
         icon: 'tabler:brand-python',
       },
       {
@@ -286,7 +287,7 @@ const metadata = {
       {
         title: 'What is PyMCU?',
         description:
-          "PyMCU is an experimental compiler that translates a safe subset of Python into ASM or C for microcontrollers. It is designed to be deterministic, lightweight, and Ahead-Of-Time (AOT), bringing the simplicity of Python into the world of bare-metal development.",
+          'PyMCU is an experimental compiler that translates a safe subset of Python into ASM or C for microcontrollers. It is designed to be deterministic, lightweight, and Ahead-Of-Time (AOT), bringing the simplicity of Python into the world of bare-metal development.',
       },
       {
         title: 'Is PyMCU production-ready?',
@@ -296,35 +297,38 @@ const metadata = {
       {
         title: 'How is PyMCU being built?',
         description:
-          "The compiler is written in C++, using a Parsing Expression Grammar (PEG) to have fine-grained control over the Python subset. This allows PyMCU to stay minimal, predictable, and tailored for embedded systems.",
+          'The compiler is written in C++, using a Parsing Expression Grammar (PEG) to have fine-grained control over the Python subset. This allows PyMCU to stay minimal, predictable, and tailored for embedded systems.',
       },
       {
-        title: "What license will PyMCU use?",
+        title: 'What license will PyMCU use?',
         description:
-          "PyMCU will be released under the MIT License — simple, permissive, and open. This ensures anyone can use, adapt, or contribute to the project with full transparency.",
+          'PyMCU will be released under the MIT License — simple, permissive, and open. This ensures anyone can use, adapt, or contribute to the project with full transparency.',
       },
       {
         title: 'Will it support official toolchains?',
         description:
-          "Yes, the long-term plan is to align with official toolchains provided by each vendor (such as those for PIC, AVR, ARM Cortex-M, and ESP32). This will let developers combine PyMCU with trusted ecosystems they already know.",
+          'Yes, the long-term plan is to align with official toolchains provided by each vendor (such as those for PIC, AVR, ARM Cortex-M, and ESP32). This will let developers combine PyMCU with trusted ecosystems they already know.',
       },
       {
         title: 'Which architectures are on the roadmap?',
-        description: "The roadmap — outlined in its own dedicated section — begins with PIC10F/12F (ASM) in late Q4 2025, followed by AVR8/ATmega (C with ASM option) in early Q1 2026, ARM Cortex-M (C with ASM option) in mid Q2 2026, and ESP32 (C with ASM option and Wi-Fi stubs) in late Q3 2026. Future architectures will be evaluated and prioritized based on community input.",
+        description:
+          'The roadmap — outlined in its own dedicated section — begins with PIC10F/12F (ASM) in late Q4 2025, followed by AVR8/ATmega (C with ASM option) in early Q1 2026, ARM Cortex-M (C with ASM option) in mid Q2 2026, and ESP32 (C with ASM option and Wi-Fi stubs) in late Q3 2026. Future architectures will be evaluated and prioritized based on community input.',
       },
       {
-        title: "How does it differ from MicroPython or CircuitPython?",
-        description: "PyMCU is not an interpreter. It doesn’t run a VM or rely on dynamic memory. Instead, it compiles directly to low-level code, with deterministic timing and no garbage collection. It is designed for developers who need Python’s clarity but firmware’s reliability."
+        title: 'How does it differ from MicroPython or CircuitPython?',
+        description:
+          'PyMCU is not an interpreter. It doesn’t run a VM or rely on dynamic memory. Instead, it compiles directly to low-level code, with deterministic timing and no garbage collection. It is designed for developers who need Python’s clarity but firmware’s reliability.',
       },
       {
-        title: "How can I get involved?",
-        description: "You will soon be able to take part in shaping PyMCU from the ground up — by following the project on GitHub, sharing feedback on features and roadmap priorities, and contributing code, documentation, or testing. Once these channels are available, every contribution will help strengthen and grow the ecosystem."
-      }
+        title: 'How can I get involved?',
+        description:
+          'You will soon be able to take part in shaping PyMCU from the ground up — by following the project on GitHub, sharing feedback on features and roadmap priorities, and contributing code, documentation, or testing. Once these channels are available, every contribution will help strengthen and grow the ecosystem.',
+      },
     ]}
   />
 
   <!-- Countdown Widget ****************** -->
-  
+
   <Countdown
     title="Alpha 1"
     subtitle="Join us on this exciting journey to bring Python to microcontrollers."
@@ -334,11 +338,5 @@ const metadata = {
 
   <!-- CallToAction Widget *********** -->
 
-  <Waitlist
-    id="waitlist"
-    title="Join the Alpha"
-    subtitle="Be the first to experience PyMCU"
-    tagline="Early Access"
-  />
-
+  <Waitlist id="waitlist" title="Join the Alpha" subtitle="Be the first to experience PyMCU" tagline="Early Access" />
 </Layout>
