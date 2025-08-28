@@ -10,7 +10,6 @@ const {
   tagline = await Astro.slots.render('tagline'),
   items = [],
   columns = 2,
-  defaultIcon,
 
   id,
   isDark = false,
@@ -72,7 +71,7 @@ const defaultItems: RoadmapItem[] = [
   }
 ];
 
-const roadmapItems: RoadmapItem[] = items.length > 0 ? items : defaultItems;
+const roadmapItems: RoadmapItem[] = items.length > 0 ? items as RoadmapItem[] : defaultItems;
 
 ---
 

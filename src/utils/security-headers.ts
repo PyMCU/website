@@ -79,7 +79,7 @@ export function addSecurityHeaders(
 
 // Helper function to create a secure JSON response
 export function createSecureResponse(
-  data: any, 
+  data: Record<string, unknown>, 
   status: number = 200, 
   config: SecurityHeadersConfig = {}
 ): Response {

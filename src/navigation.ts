@@ -1,4 +1,4 @@
-import { getPermalink, getBlogPermalink, getAsset } from './utils/permalinks';
+import { getPermalink } from './utils/permalinks';
 
 export const headerData = {
   links: [
@@ -27,7 +27,6 @@ export const headerData = {
 };
 
 export const footerData = {
-  /*
   links: [
     {
       title: 'Product',
@@ -74,7 +73,6 @@ export const footerData = {
       ],
     },
   ],
-  */
   secondaryLinks: [
     { text: 'Terms', href: getPermalink('/terms') },
     { text: 'Privacy Policy', href: getPermalink('/privacy') },

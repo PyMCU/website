@@ -1,6 +1,7 @@
 ---
 import Layout from '~/layouts/PageLayout.astro';
 import Hero from '~/components/widgets/Hero.astro';
+import type { ConfirmApiResponse } from '~/types/api';
 
 // This page needs to be server-rendered to handle confirmation
 export const prerender = false;
@@ -8,14 +9,14 @@ export const prerender = false;
 const { searchParams } = Astro.url;
 const token = searchParams.get('token');
 
-let confirmationResult = null;
-let error = null;
+let confirmationResult: ConfirmApiResponse | null = null;
+let error: string | null = null;
 
 if (token) {
   try {
     const response = await fetch(`${Astro.url.origin}/api/confirm?token=${token}`);
     confirmationResult = await response.json();
-  } catch (e) {
+  } catch {
     error = 'Failed to process confirmation';
   }
 }

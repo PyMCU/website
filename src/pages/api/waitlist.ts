@@ -303,7 +303,7 @@ async function sendConfirmationEmail(email: string, token: string) {
 }
 
 // Create HTML email template matching PyMCU website design
-function createConfirmationEmailHTML(email: string, confirmationUrl: string, unsubscribeUrl: string): string {
+function createConfirmationEmailHTML(_email: string, confirmationUrl: string, unsubscribeUrl: string): string {
   return `
 <!DOCTYPE html>
 <html lang="en">
@@ -530,7 +530,7 @@ function createConfirmationEmailHTML(email: string, confirmationUrl: string, uns
 }
 
 // Create plain text email template
-function createConfirmationEmailText(email: string, confirmationUrl: string, unsubscribeUrl: string): string {
+function createConfirmationEmailText(_email: string, confirmationUrl: string, unsubscribeUrl: string): string {
   return `
 PyMCU Alpha Waitlist - Email Confirmation Required
 

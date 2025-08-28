@@ -19,7 +19,6 @@ const {
   subtitle = await Astro.slots.render('subtitle'),
   tagline = await Astro.slots.render('tagline'),
   description = "Be among the first to experience PyMCU Alpha. Get early access, exclusive updates, and help shape the future of Python on microcontrollers.",
-  successMessage = "Thank you! You've been added to the PyMCU Alpha waitlist. We'll notify you when Alpha 1 is ready.",
   
   id,
   isDark = false,
@@ -140,13 +139,13 @@ const {
 <script>
   // Client-side form handling to prevent page reload
   document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('waitlist-form');
+    const form = document.getElementById('waitlist-form') as HTMLFormElement;
     
     if (form) {
       form.addEventListener('submit', async function(e) {
         e.preventDefault(); // Prevent default form submission and page reload
         
-        const submitButton = form.querySelector('button[type="submit"]');
+        const submitButton = form.querySelector('button[type="submit"]') as HTMLButtonElement;
         const originalText = submitButton?.textContent;
         
         // Show loading state
@@ -170,7 +169,7 @@ const {
           if (result.success) {
             // Show success message
             showMessage('success', 'Welcome to the Waitlist!', result.message || 'Thank you! You\'ve been added to the PyMCU Alpha waitlist.');
-            form.reset();
+            (form as HTMLFormElement).reset();
           } else {
             // Show error message
             showMessage('error', 'Registration Failed', result.error || 'An error occurred. Please try again.');
@@ -181,7 +180,7 @@ const {
         } finally {
           // Re-enable submit button
           if (submitButton) {
-            submitButton.disabled = false;
+            (submitButton as HTMLButtonElement).disabled = false;
             submitButton.textContent = originalText || 'Join Alpha Waitlist';
           }
         }
@@ -189,7 +188,7 @@ const {
     }
   });
   
-  function showMessage(type, title, message) {
+  function showMessage(type: string, title: string, message: string) {
     // Create and show a toast/modal message
     const messageDiv = document.createElement('div');
     messageDiv.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm ${

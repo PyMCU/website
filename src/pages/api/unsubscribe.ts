@@ -242,12 +242,21 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    // Redirect to GET handler with email parameter
-    const url = new URL('/api/unsubscribe', import.meta.env.SITE || 'http://localhost:4321');
-    url.searchParams.set('email', email);
+    // Create a new request for the GET handler
+    const getUrl = new URL('/api/unsubscribe', import.meta.env.SITE || 'http://localhost:4321');
+    getUrl.searchParams.set('email', email);
     
-    // Call the GET handler internally
-    return await GET({ request, url } as any);
+    // Create a new GET request
+    const getRequest = new Request(getUrl.toString(), {
+      method: 'GET',
+      headers: request.headers
+    });
+    
+    // Call the GET handler with a minimal context
+    return await GET({ 
+      request: getRequest, 
+      url: getUrl 
+    } as unknown as Parameters<typeof GET>[0]);
 
   } catch (error) {
     // Log detailed error only in development

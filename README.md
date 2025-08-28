@@ -1,302 +1,314 @@
-# 🚀 AstroWind
+# 🐍 PyMCU Landing Page
 
-<img src="https://raw.githubusercontent.com/arthelokyo/.github/main/resources/astrowind/lighthouse-score.png" align="right"
-     alt="AstroWind Lighthouse Score" width="100" height="358">
+<img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" align="right" alt="Python Badge">
 
-🌟 _Most *starred* & *forked* Astro theme in 2022, 2023 & 2024_. 🌟
+🚀 **The future of Python on microcontrollers is here!** 🚀
 
-**AstroWind** is a free and open-source template to make your website using **[Astro 5.0](https://astro.build/) + [Tailwind CSS](https://tailwindcss.com/)**. Ready to start a new project and designed taking into account web best practices.
+**PyMCU** is a revolutionary Python-to-C compiler designed specifically for microcontrollers. This landing page showcases PyMCU's capabilities and provides early access to the Alpha release.
 
-- ✅ **Production-ready** scores in **PageSpeed Insights** reports.
-- ✅ Integration with **Tailwind CSS** supporting **Dark mode** and **_RTL_**.
-- ✅ **Fast and SEO friendly blog** with automatic **RSS feed**, **MDX** support, **Categories & Tags**, **Social Share**, ...
-- ✅ **Image Optimization** (using new **Astro Assets** and **Unpic** for Universal image CDN).
-- ✅ Generation of **project sitemap** based on your routes.
-- ✅ **Open Graph tags** for social media sharing.
-- ✅ **Analytics** built-in Google Analytics, and Splitbee integration.
+## ✨ Features
 
-<br>
-
-![AstroWind Theme Screenshot](https://raw.githubusercontent.com/arthelokyo/.github/main/resources/astrowind/screenshot-astrowind-1.0.png)
-
-[![arthelokyo](https://custom-icon-badges.demolab.com/badge/made%20by%20-arthelokyo-556bf2?style=flat-square&logo=arthelokyo&logoColor=white&labelColor=101827)](https://github.com/arthelokyo)
-[![License](https://img.shields.io/github/license/arthelokyo/astrowind?style=flat-square&color=dddddd&labelColor=000000)](https://github.com/arthelokyo/astrowind/blob/main/LICENSE.md)
-[![Maintained](https://img.shields.io/badge/maintained%3F-yes-brightgreen.svg?style=flat-square)](https://github.com/arthelokyo)
-[![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat-square)](https://github.com/arthelokyo/astrowind#contributing)
-[![Known Vulnerabilities](https://snyk.io/test/github/arthelokyo/astrowind/badge.svg?style=flat-square)](https://snyk.io/test/github/arthelokyo/astrowind)
-[![Stars](https://img.shields.io/github/stars/arthelokyo/astrowind.svg?style=social&label=stars&maxAge=86400&color=ff69b4)](https://github.com/arthelokyo/astrowind)
-[![Forks](https://img.shields.io/github/forks/arthelokyo/astrowind.svg?style=social&label=forks&maxAge=86400&color=ff69b4)](https://github.com/arthelokyo/astrowind)
+- ✅ **Secure & Production-Ready** - Enterprise-grade security with rate limiting, input validation, and security headers
+- ✅ **Modern Tech Stack** - Built with **[Astro 5.0](https://astro.build/)** + **[Tailwind CSS](https://tailwindcss.com/)**
+- ✅ **Alpha Waitlist System** - Email confirmation with **Supabase** backend and **Amazon SES**
+- ✅ **Responsive Design** - Mobile-first approach with dark mode support
+- ✅ **Performance Optimized** - Lightning-fast loading with perfect Lighthouse scores
+- ✅ **SEO Optimized** - Meta tags, Open Graph, and structured data
+- ✅ **TypeScript** - Fully typed codebase with zero errors
 
 <br>
 
-<details open>
-<summary>Table of Contents</summary>
+## 📋 Table of Contents
 
-- [Demo](#demo)
-- [Upcoming: AstroWind 2.0 – We Need Your Vision!](#-upcoming-astrowind-20--we-need-your-vision)
-- [TL;DR](#tldr)
-- [Getting started](#getting-started)
-  - [Project structure](#project-structure)
-  - [Commands](#commands)
-  - [Configuration](#configuration)
-  - [Deploy](#deploy)
-- [Frequently Asked Questions](#frequently-asked-questions)
-- [Related Projects](#related-projects)
-- [Contributing](#contributing)
-- [Acknowledgements](#acknowledgements)
-- [License](#license)
+- [🚀 About PyMCU](#-about-pymcu)
+- [🛠️ Tech Stack](#️-tech-stack)
+- [🔧 Getting Started](#-getting-started)
+- [📁 Project Structure](#-project-structure)
+- [⚡ Commands](#-commands)
+- [🔒 Security Features](#-security-features)
+- [🌐 Environment Setup](#-environment-setup)
+- [🚀 Deployment](#-deployment)
+- [🤝 Contributing](#-contributing)
+- [📄 License](#-license)
 
-</details>
+## 🚀 About PyMCU
 
-<br>
+**PyMCU** is a groundbreaking Python-to-C compiler that brings the simplicity and power of Python to microcontroller development. Our mission is to democratize embedded programming by allowing developers to write Python code that compiles to efficient C code for microcontrollers.
 
-## Demo
+### Key Benefits:
+- 🐍 **Write Python, Run on MCUs** - Use familiar Python syntax for embedded development
+- ⚡ **High Performance** - Compiles to optimized C code for maximum efficiency
+- 🎯 **Multiple Architectures** - Support for ARM Cortex-M, ESP32, and more
+- 🔧 **Rich HAL Support** - GPIO, Timers, UART, SPI, I²C, and wireless connectivity
+- 📚 **Easy Learning Curve** - Perfect for beginners transitioning to embedded development
 
-📌 [https://astrowind.vercel.app/](https://astrowind.vercel.app/)
+## 🛠️ Tech Stack
 
-<br>
+This landing page is built with modern web technologies:
 
-## 🔔 Upcoming: AstroWind 2.0 – We Need Your Vision!
+- **Frontend**: [Astro 5.0](https://astro.build/) + [Tailwind CSS](https://tailwindcss.com/)
+- **Backend**: [Supabase](https://supabase.com/) (PostgreSQL + RLS)
+- **Email**: [Amazon SES](https://aws.amazon.com/ses/)
+- **Language**: TypeScript (100% type-safe)
+- **Security**: Rate limiting, input validation, security headers
+- **Deployment**: Vercel/Netlify ready
 
-We're embarking on an exciting journey with **AstroWind 2.0**, and we want you to be a part of it! We're currently taking the first steps in developing this new version and your insights are invaluable. Join the discussion and share your feedback, ideas, and suggestions to help shape the future of **AstroWind**. Let's make **AstroWind 2.0** even better, together!
+## 🔧 Getting Started
 
-[Share Your Feedback in Our Discussion!](https://github.com/arthelokyo/astrowind/discussions/392)
+### Prerequisites
 
-<br>
+- **Node.js** 18+ and npm
+- **Supabase** account for database
+- **Amazon SES** account for email sending
+- **Git** for version control
 
-## TL;DR
+### Quick Start
 
-```shell
-npm create astro@latest -- --template arthelokyo/astrowind
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd pymcu-landing
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your Supabase and AWS SES credentials
+   ```
+
+4. **Run the development server**
+   ```bash
+   npm run dev
+   ```
+
+5. **Open your browser**
+   Navigate to `http://localhost:4321`
+
+## 📁 Project Structure
+
+The PyMCU landing page follows a clean, organized structure:
+
 ```
-
-## Getting started
-
-**AstroWind** tries to give you quick access to creating a website using [Astro 5.0](https://astro.build/) + [Tailwind CSS](https://tailwindcss.com/). It's a free theme which focuses on simplicity, good practices and high performance.
-
-Very little vanilla javascript is used only to provide basic functionality so that each developer decides which framework (React, Vue, Svelte, Solid JS...) to use and how to approach their goals.
-
-In this version the template supports all the options in the `output` configuration, `static`, `hybrid` and `server`, but the blog only works with `prerender = true`. We are working on the next version and aim to make it fully compatible with SSR.
-
-### Project structure
-
-Inside **AstroWind** template, you'll see the following folders and files:
-
-```
-/
-├── public/
-│   ├── _headers
-│   └── robots.txt
+pymcu-landing/
+├── public/                    # Static assets
+│   ├── _headers              # Netlify headers config
+│   └── robots.txt            # SEO robots file
 ├── src/
-│   ├── assets/
-│   │   ├── favicons/
-│   │   ├── images/
-│   │   └── styles/
-│   │       └── tailwind.css
-│   ├── components/
-│   │   ├── blog/
-│   │   ├── common/
-│   │   ├── ui/
-│   │   ├── widgets/
+│   ├── assets/               # Images, styles, favicons
+│   ├── components/           # Reusable UI components
+│   │   ├── ui/              # Basic UI elements
+│   │   ├── widgets/         # Complex components
 │   │   │   ├── Header.astro
+│   │   │   ├── Footer.astro
+│   │   │   ├── Waitlist.astro
 │   │   │   └── ...
-│   │   ├── CustomStyles.astro
-│   │   ├── Favicons.astro
 │   │   └── Logo.astro
-│   ├── content/
-│   │   ├── post/
-│   │   │   ├── post-slug-1.md
-│   │   │   ├── post-slug-2.mdx
-│   │   │   └── ...
-│   │   └-- config.ts
-│   ├── layouts/
-│   │   ├── Layout.astro
-│   │   ├── MarkdownLayout.astro
+│   ├── layouts/             # Page layouts
 │   │   └── PageLayout.astro
-│   ├── pages/
-│   │   ├── [...blog]/
-│   │   │   ├── [category]/
-│   │   │   ├── [tag]/
-│   │   │   ├── [...page].astro
-│   │   │   └── index.astro
-│   │   ├── index.astro
-│   │   ├── 404.astro
-│   │   ├-- rss.xml.ts
-│   │   └── ...
-│   ├── utils/
-│   ├── config.yaml
-│   └── navigation.js
+│   ├── pages/               # Routes and API endpoints
+│   │   ├── api/            # Backend API routes
+│   │   │   ├── waitlist.ts # Waitlist registration
+│   │   │   ├── confirm.ts  # Email confirmation
+│   │   │   └── unsubscribe.ts
+│   │   ├── index.astro     # Homepage
+│   │   ├── confirm.astro   # Confirmation page
+│   │   └── unsubscribe.astro
+│   ├── types/              # TypeScript type definitions
+│   │   └── api.ts          # API response types
+│   ├── utils/              # Utility functions
+│   │   ├── rate-limiter.ts # Rate limiting logic
+│   │   └── security-headers.ts # Security headers
+│   ├── config.yaml         # Site configuration
+│   └── navigation.ts       # Navigation structure
+├── .env.example            # Environment variables template
 ├── package.json
 ├── astro.config.ts
-└── ...
+└── README.md
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
-
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
-
-Any static assets, like images, can be placed in the `public/` directory if they do not require any transformation or in the `assets/` directory if they are imported directly.
-
-[![Edit AstroWind on CodeSandbox](https://codesandbox.io/static/img/play-codesandbox.svg)](https://githubbox.com/arthelokyo/astrowind/tree/main) [![Open in Gitpod](https://svgshare.com/i/xdi.svg)](https://gitpod.io/?on=gitpod#https://github.com/arthelokyo/astrowind) [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/arthelokyo/astrowind)
-
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file `README.md`. Update `src/config.yaml` and contents. Have fun!
+### Key Directories:
+- **`src/pages/api/`** - Backend API endpoints for waitlist functionality
+- **`src/components/widgets/`** - PyMCU-specific UI components
+- **`src/utils/`** - Security and utility functions
+- **`src/types/`** - TypeScript type definitions for type safety
 
 <br>
 
-### Commands
+## ⚡ Commands
 
-All commands are run from the root of the project, from a terminal:
+All commands are run from the root of the project:
 
 | Command             | Action                                             |
 | :------------------ | :------------------------------------------------- |
-| `npm install`       | Installs dependencies                              |
-| `npm run dev`       | Starts local dev server at `localhost:4321`        |
-| `npm run build`     | Build your production site to `./dist/`            |
-| `npm run preview`   | Preview your build locally, before deploying       |
-| `npm run check`     | Check your project for errors                      |
-| `npm run fix`       | Run Eslint and format codes with Prettier          |
-| `npm run astro ...` | Run CLI commands like `astro add`, `astro preview` |
+| `npm install`       | Install dependencies                               |
+| `npm run dev`       | Start development server at `localhost:4321`      |
+| `npm run build`     | Build production site to `./dist/`                |
+| `npm run preview`   | Preview build locally before deploying            |
+| `npm run check`     | Run TypeScript, ESLint, and Prettier checks       |
+| `npm run fix`       | Auto-fix ESLint and Prettier issues               |
+| `npm run astro ...` | Run Astro CLI commands                             |
 
-<br>
+## 🔒 Security Features
 
-### Configuration
+This project implements enterprise-grade security measures:
 
-Basic configuration file: `./src/config.yaml`
+### 🛡️ Rate Limiting
+- **IP-based rate limiting** on all API endpoints
+- **Configurable limits** per endpoint (waitlist: 5/min, confirm: 10/min, unsubscribe: 3/min)
+- **In-memory storage** with automatic cleanup
 
-```yaml
-site:
-  name: 'Example'
-  site: 'https://example.com'
-  base: '/' # Change this if you need to deploy to Github Pages, for example
-  trailingSlash: false # Generate permalinks with or without "/" at the end
+### 🔐 Input Validation & Sanitization
+- **Email validation** with regex patterns
+- **Role and experience validation** against whitelists
+- **Token sanitization** for confirmation links
+- **XSS prevention** through input sanitization
 
-  googleSiteVerificationId: false # Or some value,
+### 🛡️ Security Headers
+- **Content Security Policy (CSP)** - Prevents XSS attacks
+- **X-Frame-Options** - Prevents clickjacking
+- **X-Content-Type-Options** - Prevents MIME sniffing
+- **Referrer-Policy** - Controls referrer information
+- **HSTS** - Enforces HTTPS connections
+- **CORS** - Controlled cross-origin requests
 
-# Default SEO metadata
-metadata:
-  title:
-    default: 'Example'
-    template: '%s — Example'
-  description: 'This is the default meta description of Example website'
-  robots:
-    index: true
-    follow: true
-  openGraph:
-    site_name: 'Example'
-    images:
-      - url: '~/assets/images/default.png'
-        width: 1200
-        height: 628
-    type: website
-  twitter:
-    handle: '@twitter_user'
-    site: '@twitter_user'
-    cardType: summary_large_image
+### 📝 Secure Logging
+- **Conditional logging** - Detailed errors only in development
+- **No sensitive data exposure** in production logs
+- **Generic error messages** for users
 
-i18n:
-  language: en
-  textDirection: ltr
+## 🌐 Environment Setup
 
-apps:
-  blog:
-    isEnabled: true # If the blog will be enabled
-    postsPerPage: 6 # Number of posts per page
+Create a `.env` file in the root directory with the following variables:
 
-    post:
-      isEnabled: true
-      permalink: '/blog/%slug%' # Variables: %slug%, %year%, %month%, %day%, %hour%, %minute%, %second%, %category%
-      robots:
-        index: true
+```bash
+# Supabase Configuration
+SUPABASE_URL=your_supabase_project_url
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 
-    list:
-      isEnabled: true
-      pathname: 'blog' # Blog main path, you can change this to "articles" (/articles)
-      robots:
-        index: true
+# Amazon SES Configuration  
+AWS_ACCESS_KEY_ID=your_aws_access_key
+AWS_SECRET_ACCESS_KEY=your_aws_secret_key
+AWS_REGION=us-east-1
+SES_FROM_EMAIL=noreply@yourdomain.com
 
-    category:
-      isEnabled: true
-      pathname: 'category' # Category main path /category/some-category, you can change this to "group" (/group/some-category)
-      robots:
-        index: true
-
-    tag:
-      isEnabled: true
-      pathname: 'tag' # Tag main path /tag/some-tag, you can change this to "topics" (/topics/some-category)
-      robots:
-        index: false
-
-    isRelatedPostsEnabled: true # If a widget with related posts is to be displayed below each post
-    relatedPostsCount: 4 # Number of related posts to display
-
-analytics:
-  vendors:
-    googleAnalytics:
-      id: null # or "G-XXXXXXXXXX"
-
-ui:
-  theme: 'system' # Values: "system" | "light" | "dark" | "light:only" | "dark:only"
+# Site Configuration
+SITE=https://yourdomain.com
 ```
 
-<br>
+### Database Setup (Supabase)
 
-#### Customize Design
+1. **Create a new Supabase project**
+2. **Run the SQL schema** (see `supabase-schema.sql`)
+3. **Set up Row Level Security** policies
+4. **Configure email templates** for confirmations
 
-To customize Font families, Colors or more Elements refer to the following files:
+## 🚀 Deployment
 
-- `src/components/CustomStyles.astro`
-- `src/assets/styles/tailwind.css`
+### Manual Deployment
 
-### Deploy
+1. **Build the project**
+   ```bash
+   npm run build
+   ```
 
-#### Deploy to production (manual)
+2. **Deploy the `dist/` folder** to your hosting provider
 
-You can create an optimized production build with:
+### Vercel Deployment (Recommended)
 
-```shell
-npm run build
-```
+1. **Connect your GitHub repository** to Vercel
+2. **Set environment variables** in Vercel dashboard
+3. **Deploy automatically** on every push to main branch
 
-Now, your website is ready to be deployed. All generated files are located at
-`dist` folder, which you can deploy the folder to any hosting service you
-prefer.
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new)
 
-#### Deploy to Netlify
+### Netlify Deployment
 
-Clone this repository on your own GitHub account and deploy it to Netlify:
+1. **Connect your GitHub repository** to Netlify
+2. **Configure build settings**:
+   - Build command: `npm run build`
+   - Publish directory: `dist`
+3. **Set environment variables** in Netlify dashboard
 
-[![Netlify Deploy button](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/arthelokyo/astrowind)
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start)
 
-#### Deploy to Vercel
+### Environment Variables for Production
 
-Clone this repository on your own GitHub account and deploy to Vercel:
+Make sure to set these environment variables in your hosting platform:
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Farthelokyo%2Fastrowind)
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+- `AWS_REGION`
+- `SES_FROM_EMAIL`
+- `SITE`
 
-<br>
+## 🤝 Contributing
 
-## Frequently Asked Questions
+We welcome contributions to the PyMCU landing page! Here's how you can help:
 
-- Why?
--
--
+### Development Workflow
 
-<br>
+1. **Fork the repository**
+2. **Create a feature branch**
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+3. **Make your changes**
+4. **Run tests and checks**
+   ```bash
+   npm run check
+   npm run fix
+   ```
+5. **Commit your changes**
+   ```bash
+   git commit -m "feat: add your feature description"
+   ```
+6. **Push to your fork**
+   ```bash
+   git push origin feature/your-feature-name
+   ```
+7. **Create a Pull Request**
 
-## Related projects
+### Code Standards
 
-- [TailNext](https://tailnext.vercel.app/) - Free template using Next.js 14 and Tailwind CSS with the new App Router.
-- [Qwind](https://qwind.pages.dev/) - Free template to make your website using Qwik + Tailwind CSS.
+- ✅ **TypeScript** - All code must be properly typed
+- ✅ **ESLint** - Follow the configured linting rules
+- ✅ **Prettier** - Code must be properly formatted
+- ✅ **Security** - Follow security best practices
+- ✅ **Testing** - Add tests for new features
 
-## Contributing
+### Areas for Contribution
 
-If you have any ideas, suggestions or find any bugs, feel free to open a discussion, an issue or create a pull request.
-That would be very useful for all of us and we would be happy to listen and take action.
+- 🐛 **Bug fixes** and performance improvements
+- 🎨 **UI/UX enhancements** and responsive design
+- 🔒 **Security improvements** and vulnerability fixes
+- 📚 **Documentation** updates and improvements
+- 🌐 **Internationalization** support
+- ♿ **Accessibility** improvements
 
-## Acknowledgements
+## 📄 License
 
-Initially created by **Arthelokyo** and maintained by a community of [contributors](https://github.com/arthelokyo/astrowind/graphs/contributors).
+This project is licensed under the **MIT License** - see the [LICENSE.md](./LICENSE.md) file for details.
 
-## License
+## 🙏 Acknowledgments
 
-**AstroWind** is licensed under the MIT license — see the [LICENSE](./LICENSE.md) file for details.
+- **PyMCU Team** - For the vision of Python on microcontrollers
+- **Astro Team** - For the amazing web framework
+- **Supabase** - For the backend-as-a-service platform
+- **Tailwind CSS** - For the utility-first CSS framework
+
+---
+
+<div align="center">
+
+**Built with ❤️ for the PyMCU community**
+
+[🐍 Join the Alpha Waitlist](https://pymcu.com) • [📧 Contact Us](mailto:hello@pymcu.com) • [🐦 Follow Updates](https://twitter.com/pymcu)
+
+</div>

@@ -2,6 +2,7 @@
 import Layout from '~/layouts/PageLayout.astro';
 import Hero from '~/components/widgets/Hero.astro';
 import Button from '~/components/ui/Button.astro';
+import type { UnsubscribeApiResponse } from '~/types/api';
 
 // This page needs to be server-rendered to handle unsubscribe
 export const prerender = false;
@@ -9,14 +10,14 @@ export const prerender = false;
 const { searchParams } = Astro.url;
 const email = searchParams.get('email');
 
-let unsubscribeResult = null;
-let error = null;
+let unsubscribeResult: UnsubscribeApiResponse | null = null;
+let error: string | null = null;
 
 if (email) {
   try {
     const response = await fetch(`${Astro.url.origin}/api/unsubscribe?email=${encodeURIComponent(email)}`);
     unsubscribeResult = await response.json();
-  } catch (e) {
+  } catch {
     error = 'Failed to process unsubscribe request';
   }
 }
@@ -127,7 +128,7 @@ const metadata = {
 <script>
   // Handle unsubscribe form submission
   document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('unsubscribe-form');
+    const form = document.getElementById('unsubscribe-form') as HTMLFormElement;
     
     if (form) {
       form.addEventListener('submit', async function(e) {
