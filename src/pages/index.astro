@@ -297,7 +297,7 @@ const metadata = {
       {
         title: 'How is PyMCU being built?',
         description:
-          'The compiler is written in C++, using a Parsing Expression Grammar (PEG) to have fine-grained control over the Python subset. This allows PyMCU to stay minimal, predictable, and tailored for embedded systems.',
+          'PyMCU’s first compiler is being built in Python: we’ll be using ast to parse standard Python, lowering to a compact IR; target backends will be emitting C or assembly via existing toolchains—keeping the frontend minimal and predictable.',
       },
       {
         title: 'What license will PyMCU use?',
