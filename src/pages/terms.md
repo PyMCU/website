@@ -1,6 +1,7 @@
 ---
 title: 'Terms and Conditions'
 layout: '~/layouts/MarkdownLayout.astro'
+prerender: false
 ---
 
 _Last updated_: August 27, 2025
