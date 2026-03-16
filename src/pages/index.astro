@@ -12,6 +12,8 @@ import Content from '~/components/widgets/Content.astro';
 import FAQs from '~/components/widgets/FAQs.astro';
 import Waitlist from '../components/widgets/Waitlist.astro';
 
+import pymcuLogo from '~/assets/images/pymcu-logo.png';
+
 const metadata = {
   title: 'PyMCU — Python to MCUs. Free. Deterministic. AOT.',
   ignoreTitleTemplate: true,
@@ -30,7 +32,7 @@ const metadata = {
         href: '#waitlist',
       },
     ]}
-    image={{ src: '~/assets/images/pymcu-logo.png', alt: 'PyMCU Logo' }}
+    image={{ src: pymcuLogo, alt: 'PyMCU Logo' }}
   >
     <Fragment slot="title">
       <span class="text dark:text-accent">Py</span><span class="text-accent dark:text-white">MCU</span>
