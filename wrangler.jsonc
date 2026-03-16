@@ -8,5 +8,11 @@
   "assets": {
     "binding": "ASSETS",
     "directory": "dist"
+  },
+  "observability": {
+    "logs": {
+      "enabled": false,
+      "invocation_logs": true
+    }
   }
 }

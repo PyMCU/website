@@ -33,6 +33,10 @@ export default defineConfig({
     service: passthroughImageService(),
   },
 
+  redirects: {
+    '/sucess': '/success',
+  },
+
   integrations: [
     tailwind({
       applyBaseStyles: false,

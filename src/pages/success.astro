@@ -1,0 +1,77 @@
+---
+import Layout from '~/layouts/PageLayout.astro';
+import Hero from '~/components/widgets/Hero.astro';
+
+export const prerender = false;
+
+const { searchParams } = Astro.url;
+const email = searchParams.get('email');
+const sig = searchParams.get('sig');
+
+// Validate signature
+let isValid = false;
+if (email && sig) {
+  const secret = import.meta.env.SUCCESS_SECRET || process.env.SUCCESS_SECRET;
+  if (secret) {
+    const msgUint8 = new TextEncoder().encode(email);
+    const keyUint8 = new TextEncoder().encode(secret);
+    const cryptoKey = await crypto.subtle.importKey('raw', keyUint8, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+    const signature = await crypto.subtle.sign('HMAC', cryptoKey, msgUint8);
+    const expectedSig = Array.from(new Uint8Array(signature))
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('');
+    isValid = sig === expectedSig;
+  }
+}
+
+if (!isValid) {
+  return Astro.redirect('/');
+}
+
+const metadata = {
+  title: 'Success - PyMCU',
+  description: 'Your email has been successfully confirmed for the PyMCU Alpha waitlist',
+  ignoreTitleTemplate: true,
+};
+---
+
+<Layout metadata={metadata}>
+  <Hero
+    tagline="Waitlist Confirmed"
+    title="You're in! 🎉"
+    subtitle="Your email has been successfully confirmed for the PyMCU Alpha waitlist. We're excited to have you with us!"
+    actions={[
+      {
+        variant: 'primary',
+        text: 'Back to Home',
+        href: '/',
+      },
+    ]}
+  />
+
+  <section class="py-16 md:py-20">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6">
+      <div class="mx-auto max-w-3xl text-center">
+        <div class="rounded-lg bg-green-50 dark:bg-green-900/20 p-6 border border-green-200 dark:border-green-800">
+          <div class="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-green-100 dark:bg-green-800 rounded-full">
+            <svg
+              class="w-6 h-6 text-green-600 dark:text-green-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-green-800 dark:text-green-200 mb-2">Registration Complete</h3>
+          <p class="text-green-700 dark:text-green-300 mb-4">
+            Thank you for confirming your interest in <strong>PyMCU Alpha</strong>.
+          </p>
+          <p class="text-sm text-green-600 dark:text-green-400">
+            You'll be among the first to receive updates and early access invitations as we progress towards our Alpha launch. Stay tuned!
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>
