@@ -1,7 +1,7 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-import { defineConfig } from 'astro/config';
+import { defineConfig, passthroughImageService } from 'astro/config';
 
 import sitemap from '@astrojs/sitemap';
 import tailwind from '@astrojs/tailwind';
@@ -28,8 +28,10 @@ export default defineConfig({
     platformProxy: {
       enabled: true,
     },
-    imageService: 'passthrough',
   }),
+  image: {
+    service: passthroughImageService(),
+  },
 
   integrations: [
     tailwind({
@@ -77,10 +79,6 @@ export default defineConfig({
       config: './src/config.yaml',
     }),
   ],
-
-  image: {
-    domains: ['cdn.pixabay.com'],
-  },
 
   markdown: {
     remarkPlugins: [readingTimeRemarkPlugin],
