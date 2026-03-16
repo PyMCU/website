@@ -6,12 +6,11 @@ site:
 
   googleSiteVerificationId: orcPxI47GSa-cRvY11tUe6iGg2IO_RPvnA1q95iEM3M
 
-# Default SEO metadata
 metadata:
   title:
     default: PyMCU
-    template: '%s — AstroWind'
-  description: "\U0001F680 Suitable for Startups, Small Business, Sass Websites, Professional Portfolios, Marketing Websites, Landing Pages & Blogs."
+    template: '%s — PyMCU'
+  description: "PyMCU — A free, deterministic AOT compiler for microcontrollers. Write firmware in a statically-typed subset of Python for bare-metal performance with zero runtime overhead."
   robots:
     index: true
     follow: true
