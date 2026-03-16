@@ -10,7 +10,7 @@ metadata:
   title:
     default: PyMCU
     template: '%s — PyMCU'
-  description: "PyMCU — A free, deterministic AOT compiler for microcontrollers. Write firmware in a statically-typed subset of Python for bare-metal performance with zero runtime overhead."
+  description: 'PyMCU — A free, deterministic AOT compiler for microcontrollers. Write firmware in a statically-typed subset of Python for bare-metal performance with zero runtime overhead.'
   robots:
     index: true
     follow: true

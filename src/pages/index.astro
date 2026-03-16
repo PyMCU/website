@@ -10,7 +10,6 @@ import Features from '~/components/widgets/Features.astro';
 import Steps from '~/components/widgets/Steps.astro';
 import Content from '~/components/widgets/Content.astro';
 import FAQs from '~/components/widgets/FAQs.astro';
-import RoadmapArchitectures from '../components/widgets/RoadmapArchitectures.astro';
 import Waitlist from '../components/widgets/Waitlist.astro';
 
 const metadata = {
@@ -41,9 +40,9 @@ const metadata = {
       <span class="hidden sm:inline">
         <span class="font-semibold">PyMCU</span> is a free, deterministic compiler that brings
         <span class="font-semibold">Python</span> to microcontrollers. It compiles a statically-typed subset of Python into
-        <span class="font-semibold">bare-metal machine code</span> with zero runtime overhead—no heap, no interpreter, and no garbage collection. Currently focusing on <span
-          class="font-semibold">AVR (Arduino)</span
-        >, with other architectures to follow.
+        <span class="font-semibold">bare-metal machine code</span> with zero runtime overhead—no heap, no interpreter, and
+        no garbage collection. Currently focusing on <span class="font-semibold">AVR (Arduino)</span>, with other
+        architectures to follow.
       </span>
     </Fragment>
   </Hero>
@@ -80,20 +79,17 @@ const metadata = {
       },
       {
         title: 'Deterministic Execution',
-        description:
-          'Predictable timing for your embedded projects, ensuring your code runs exactly when it should.',
+        description: 'Predictable timing for your embedded projects, ensuring your code runs exactly when it should.',
         icon: 'tabler:shield-check',
       },
       {
         title: 'Ready-to-use HALs',
-        description:
-          'Hardware Abstraction Layers that make GPIO, timers, and peripherals easy to use from day one.',
+        description: 'Hardware Abstraction Layers that make GPIO, timers, and peripherals easy to use from day one.',
         icon: 'tabler:plug-connected',
       },
       {
         title: 'Open Source',
-        description:
-          'PyMCU is community-driven and licensed under MIT, open for feedback and contributions.',
+        description: 'PyMCU is community-driven and licensed under MIT, open for feedback and contributions.',
         icon: 'tabler:bulb',
       },
     ]}
