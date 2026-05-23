@@ -8,114 +8,115 @@ const { id } = Astro.props;
 <section {id} class="py-12 sm:py-16 lg:py-20 mx-auto max-w-5xl px-6">
   <div class="mb-10 text-center">
     <p class="text-base font-semibold uppercase tracking-widest text-accent mb-2">By the numbers</p>
-    <h2 class="text-3xl font-bold text-gray-900 dark:text-white">PyMCU vs MicroPython</h2>
-    <p class="mt-3 text-gray-500 dark:text-gray-400 max-w-xl mx-auto text-sm">
-      A blink program — the embedded "Hello, World" — compiled with each tool.
-      Numbers sourced from the PyMCU compiler output and MicroPython v1.23 for ATmega.
+    <h2 class="text-3xl font-bold text-gray-900 dark:text-white">PyMCU on ATmega328P</h2>
+    <p class="mt-3 text-gray-500 dark:text-gray-400 max-w-2xl mx-auto text-sm">
+      MicroPython and CircuitPython require a 32-bit chip with hundreds of KB of flash — they simply
+      do not run on AVR. That gap is exactly why PyMCU exists: to bring Python syntax to the
+      smallest hardware, compiling directly to native AVR machine code.
     </p>
   </div>
 
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+  <!-- Flash comparison: PyMCU vs Arduino C++ -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-10 mb-10">
 
-    <!-- Flash Usage -->
+    <!-- Blink -->
     <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm">
-      <h3 class="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-5">
-        Flash usage (blink firmware)
+      <h3 class="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1">
+        Blink — flash usage
       </h3>
+      <p class="text-xs text-gray-400 dark:text-gray-500 mb-5">ATmega328P · 32 KB total flash</p>
 
-      <!-- PyMCU -->
       <div class="mb-5">
         <div class="flex justify-between items-baseline mb-1">
           <span class="text-sm font-medium text-gray-700 dark:text-gray-300">PyMCU</span>
           <span class="text-sm font-bold text-accent">124 B</span>
         </div>
         <div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
-          <div
-            class="h-3 rounded-full bg-accent transition-all duration-700"
-            style="width: 0.05%"
-            aria-label="124 bytes out of 262144"
-          ></div>
+          <div class="h-3 rounded-full bg-accent" style="width: 0.4%"></div>
         </div>
       </div>
 
-      <!-- MicroPython -->
       <div>
         <div class="flex justify-between items-baseline mb-1">
-          <span class="text-sm font-medium text-gray-700 dark:text-gray-300">MicroPython</span>
-          <span class="text-sm font-bold text-gray-400">~256 KB</span>
+          <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Arduino C++</span>
+          <span class="text-sm font-bold text-gray-400">~924 B</span>
         </div>
         <div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
-          <div
-            class="h-3 rounded-full bg-gray-400 dark:bg-gray-500 transition-all duration-700"
-            style="width: 100%"
-            aria-label="~262144 bytes"
-          ></div>
+          <div class="h-3 rounded-full bg-gray-400 dark:bg-gray-500" style="width: 2.8%"></div>
         </div>
       </div>
 
       <p class="mt-4 text-xs text-gray-400 dark:text-gray-500">
-        MicroPython embeds a full interpreter (~256 KB) before a single line of your code runs.
-        PyMCU compiles only your program — no runtime included.
+        Arduino's core framework adds vector table, init routines, and libc overhead even for the
+        simplest sketch. PyMCU emits only what your program needs.
       </p>
     </div>
 
-    <!-- SRAM Usage -->
+    <!-- DHT11 -->
     <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm">
-      <h3 class="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-5">
-        SRAM usage (blink firmware)
+      <h3 class="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1">
+        DHT11 sensor — flash usage
       </h3>
+      <p class="text-xs text-gray-400 dark:text-gray-500 mb-5">ATmega328P · driver + UART output</p>
 
-      <!-- PyMCU -->
       <div class="mb-5">
         <div class="flex justify-between items-baseline mb-1">
           <span class="text-sm font-medium text-gray-700 dark:text-gray-300">PyMCU</span>
-          <span class="text-sm font-bold text-accent">0 B</span>
+          <span class="text-sm font-bold text-accent">~3 KB</span>
         </div>
         <div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
-          <div
-            class="h-3 rounded-full bg-accent"
-            style="width: 0%"
-            aria-label="0 bytes"
-          ></div>
+          <div class="h-3 rounded-full bg-accent" style="width: 9.4%"></div>
         </div>
       </div>
 
-      <!-- MicroPython -->
       <div>
         <div class="flex justify-between items-baseline mb-1">
-          <span class="text-sm font-medium text-gray-700 dark:text-gray-300">MicroPython</span>
-          <span class="text-sm font-bold text-gray-400">~16 KB</span>
+          <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Arduino + DHT.h</span>
+          <span class="text-sm font-bold text-gray-400">~5.5 KB</span>
         </div>
         <div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
-          <div
-            class="h-3 rounded-full bg-gray-400 dark:bg-gray-500"
-            style="width: 100%"
-            aria-label="~16384 bytes"
-          ></div>
+          <div class="h-3 rounded-full bg-gray-400 dark:bg-gray-500" style="width: 17.2%"></div>
         </div>
       </div>
 
       <p class="mt-4 text-xs text-gray-400 dark:text-gray-500">
-        PyMCU's blink program allocates no global SRAM — every value lives in registers or the stack.
-        MicroPython's runtime heap occupies a significant portion of the ATmega's 2 KB.
+        The PyMCU DHT11 driver is a Zero-Cost Abstraction written in Python — you can read the
+        entire protocol implementation. No hidden C++ firmware.
       </p>
     </div>
-
   </div>
 
-  <!-- Summary row -->
-  <div class="mt-8 grid grid-cols-3 gap-4 text-center">
-    <div class="rounded-xl bg-accent/10 dark:bg-accent/20 p-4">
-      <p class="text-2xl font-extrabold text-accent">2000×</p>
-      <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">smaller flash footprint</p>
-    </div>
-    <div class="rounded-xl bg-accent/10 dark:bg-accent/20 p-4">
-      <p class="text-2xl font-extrabold text-accent">0</p>
-      <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">bytes of runtime overhead</p>
-    </div>
-    <div class="rounded-xl bg-accent/10 dark:bg-accent/20 p-4">
-      <p class="text-2xl font-extrabold text-accent">Native</p>
-      <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">16 MHz AVR execution</p>
+  <!-- DHT transparency callout -->
+  <div class="rounded-2xl border border-accent/30 bg-accent/5 dark:bg-accent/10 p-6">
+    <h3 class="font-semibold text-gray-900 dark:text-white mb-3">Transparency matters: reading a DHT11</h3>
+    <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
+      In Arduino, <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded text-xs">DHT.read()</code> hides
+      a timing-critical bit-bang protocol inside a compiled C++ library. It works — but the implementation
+      is opaque, and the timing depends on the Arduino runtime being in a known state.
+      In PyMCU, the driver is a <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded text-xs">@inline</code> class
+      written in Python that compiles to cycle-accurate AVR instructions. Same result, fully readable,
+      deterministic by construction.
+    </p>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 font-mono text-xs">
+      <div>
+        <p class="text-gray-400 mb-2">Arduino C++</p>
+        <pre class="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 overflow-x-auto text-gray-700 dark:text-gray-300"><code>#include &lt;DHT.h&gt;
+DHT dht(2, DHT11);
+dht.begin();
+// protocol hidden in library
+float h = dht.readHumidity();
+float t = dht.readTemperature();</code></pre>
+      </div>
+      <div>
+        <p class="text-accent mb-2">PyMCU</p>
+        <pre class="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 overflow-x-auto text-gray-700 dark:text-gray-300"><code>from pymcu.boards.arduino_uno import D2
+from dht11 import DHT11
+
+sensor = DHT11(Pin(D2, Pin.IN))
+sensor.measure()
+# driver is pure Python you can read
+print(sensor.humidity, sensor.temperature)</code></pre>
+      </div>
     </div>
   </div>
 </section>
