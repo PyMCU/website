@@ -4,23 +4,23 @@ export const headerData = {
   links: [
     {
       text: 'Features',
-      href: '#features',
+      href: '/#features',
     },
     {
       text: 'Inside PyMCU',
-      href: '#inside-pymcu',
+      href: '/#inside-pymcu',
     },
     {
       text: 'How it Works',
-      href: '#steps',
-    },
-    {
-      text: 'Roadmap',
-      href: '#roadmap',
+      href: '/#steps',
     },
     {
       text: 'FAQ',
-      href: '#faqs',
+      href: '/#faqs',
+    },
+    {
+      text: 'Blog',
+      href: getPermalink('/blog'),
     },
   ],
   actions: [{ text: 'Join the Waitlist', href: getPermalink('/#waitlist') }],
@@ -64,7 +64,7 @@ export const footerData = {
       title: 'Company',
       links: [
         { text: 'About', href: '#' },
-        { text: 'Blog', href: '#' },
+        { text: 'Blog', href: getPermalink('/blog') },
         { text: 'Careers', href: '#' },
         { text: 'Press', href: '#' },
         { text: 'Inclusion', href: '#' },
