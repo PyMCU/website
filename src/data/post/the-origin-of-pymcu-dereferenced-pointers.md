@@ -1,5 +1,5 @@
 ---
-publishDate: 2026-05-23T00:00:00Z
+publishDate: 2026-05-02T00:00:00Z
 author: PyMCU Team
 title: "The Origin of PyMCU: An Epiphany About Dereferenced Pointers"
 excerpt: A mechatronics engineer's journey from a C concept that felt like magic — the dereferenced pointer — to building a Python compiler for microcontrollers accessible to everyone.
