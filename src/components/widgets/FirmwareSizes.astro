@@ -1,0 +1,74 @@
+---
+interface Props {
+  id?: string;
+}
+const { id } = Astro.props;
+
+// The same blink, built three ways for an Arduino Uno. TOTAL flash (interrupt
+// vector table + startup stub included), so the comparison is apples-to-apples.
+// Figures come from the PyMCU README benchmark table. Smaller is better, so the
+// winner (PyMCU) is the shortest bar — astral.sh-style.
+const max = 1024;
+const bars = [
+  { name: 'PyMCU', sub: 'native HAL / MicroPython', bytes: 162, label: '162 B', win: true },
+  { name: 'C', sub: 'avr-gcc -Os', bytes: 176, label: '176 B', win: false },
+  { name: 'Arduino', sub: 'IDE defaults', bytes: 1024, label: '~1,024 B', win: false },
+];
+---
+
+<section {id} class="py-12 sm:py-16 lg:py-20 mx-auto max-w-5xl px-6">
+  <div class="mb-8 text-center">
+    <p class="text-base font-semibold uppercase tracking-widest text-accent mb-2">Native firmware</p>
+    <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">As lean as C. A fraction of Arduino.</h2>
+    <p class="mt-3 text-gray-500 dark:text-gray-400 max-w-2xl mx-auto text-sm">
+      The same blink, built three ways — total flash, vector table and startup included. PyMCU emits the
+      same native instructions a C compiler does, so it lands right next to hand-written C.
+    </p>
+  </div>
+
+  <!-- astral.sh-style benchmark card -->
+  <div class="rounded-2xl bg-gray-900 dark:bg-gray-950 ring-1 ring-white/10 shadow-xl p-6 sm:p-10">
+    <p class="mb-8 text-xs sm:text-sm text-gray-400 tracking-wide">
+      Blink firmware for an Arduino Uno — smaller is better.
+    </p>
+
+    <ul class="space-y-7">
+      {
+        bars.map((b) => (
+          <li>
+            <div class="relative h-2.5 w-full rounded-full bg-white/10 overflow-hidden">
+              <div
+                class:list={['absolute inset-y-0 left-0 rounded-full', b.win ? 'bg-accent' : 'bg-gray-500']}
+                style={`width:${Math.max((b.bytes / max) * 100, 4)}%`}
+              />
+            </div>
+            <div class="mt-2.5 flex items-baseline justify-between text-xs tracking-widest">
+              <span class="flex items-baseline gap-2">
+                <span class:list={['font-semibold uppercase', b.win ? 'text-accent' : 'text-gray-200']}>{b.name}</span>
+                <span class="normal-case tracking-normal text-[11px] text-gray-500">{b.sub}</span>
+              </span>
+              <span class:list={['font-mono tabular-nums', b.win ? 'text-accent' : 'text-gray-400']}>{b.label}</span>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+
+    <p class="mt-9 border-t border-white/10 pt-6 text-xs text-gray-500">
+      Why 162 bytes? Most of it is the interrupt-vector table and startup stub that <em>every</em> AVR program
+      carries — C included — so on that front PyMCU and hand-written C are essentially the same. The blink
+      logic itself is only a handful of instructions. Arduino's extra bytes aren't waste either; they're the
+      core's conveniences (<code>millis()</code>, preconfigured timers, one sketch for every board). PyMCU just
+      includes only what your program uses, which is why the same blink ends up roughly
+      <span class="font-semibold text-gray-300">6× lighter</span>.
+    </p>
+  </div>
+
+  <!-- Friendly framing: Python on MCUs is mainstream, Arduino included -->
+  <div class="mt-6 rounded-2xl border border-accent/30 bg-accent/5 dark:bg-accent/10 p-5 text-sm text-gray-600 dark:text-gray-300">
+    Python on microcontrollers is going mainstream — Arduino itself now offers official
+    <span class="font-semibold">MicroPython</span> support. We think that direction is exactly right.
+    PyMCU shares the goal of Python-friendly embedded and takes it all the way to the bare metal:
+    the same familiar syntax, compiled to native machine code with no interpreter on the chip.
+  </div>
+</section>

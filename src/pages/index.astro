@@ -10,8 +10,8 @@ import Features from '~/components/widgets/Features.astro';
 import Steps from '~/components/widgets/Steps.astro';
 import Content from '~/components/widgets/Content.astro';
 import FAQs from '~/components/widgets/FAQs.astro';
-import Waitlist from '../components/widgets/Waitlist.astro';
 import ComparisonCharts from '~/components/widgets/ComparisonCharts.astro';
+import FirmwareSizes from '~/components/widgets/FirmwareSizes.astro';
 
 const metadata = {
   title: 'PyMCU — Python to MCUs. Free. Deterministic. AOT.',
@@ -23,12 +23,20 @@ const metadata = {
   <!-- Hero Widget ******************* -->
 
   <Hero
-    tagline="Public Alpha Coming Soon"
+    tagline="Public Alpha — launching soon"
     actions={[
       {
         variant: 'primary',
-        text: 'Join the Waitlist',
-        href: '#waitlist',
+        text: 'Get Started',
+        href: 'https://github.com/PyMCU/PyMCU',
+        target: '_blank',
+        icon: 'tabler:brand-github',
+      },
+      {
+        variant: 'secondary',
+        text: 'Browse Docs',
+        href: 'https://docs.pymcu.org',
+        target: '_blank',
       },
     ]}
   >
@@ -37,13 +45,9 @@ const metadata = {
     </Fragment>
 
     <Fragment slot="subtitle">
-      <span class="hidden sm:inline">
-        <span class="font-semibold">PyMCU</span> is a free, deterministic compiler that brings
-        <span class="font-semibold">Python</span> to microcontrollers. It compiles a statically-typed subset of Python into
-        <span class="font-semibold">bare-metal machine code</span> with zero runtime overhead—no heap, no interpreter, and
-        no garbage collection. Currently focusing on <span class="font-semibold">AVR (Arduino)</span>, with other
-        architectures to follow.
-      </span>
+      <span class="font-semibold">Python</span>, compiled to <span class="font-semibold">bare-metal machine code</span>.
+      No interpreter, no heap, no garbage collection — deterministic by design, and small enough for a
+      $2 Arduino. <span class="font-semibold">AVR</span> today, more architectures soon.
     </Fragment>
 
     <Fragment slot="image">
@@ -59,6 +63,10 @@ const metadata = {
       </div>
     </Fragment>
   </Hero>
+
+  <!-- Firmware size comparison (C / PyMCU / Arduino) — first thing under the hero -->
+
+  <FirmwareSizes />
 
   <!-- Note Widget ******************* -->
 
@@ -154,9 +162,9 @@ const metadata = {
     title="Get your first firmware running soon with PyMCU."
     items={[
       {
-        title: 'Step 1: <span class="font-medium">Stay updated</span>',
+        title: 'Step 1: <span class="font-medium">Install the compiler</span>',
         description:
-          'Join the waitlist to be notified as soon as the PyMCU compiler is released. Once available, you can install it via pipx: <code class="bg-gray-100 dark:bg-gray-800 px-1 rounded">pipx install pymcu-compiler</code>.',
+          'The public alpha launches this week. Install it with a single command: <code class="bg-gray-100 dark:bg-gray-800 px-1 rounded">pipx install pymcu-compiler</code>.',
         icon: 'tabler:package',
       },
       {
@@ -261,5 +269,4 @@ const metadata = {
       },
     ]}
   />
-  <Waitlist id="waitlist" title="Join the Alpha" subtitle="Be the first to experience PyMCU" tagline="Early Access" />
 </Layout>

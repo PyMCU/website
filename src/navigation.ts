@@ -23,7 +23,7 @@ export const headerData = {
       href: getPermalink('/blog'),
     },
   ],
-  actions: [{ text: 'Join the Waitlist', href: getPermalink('/#waitlist') }],
+  actions: [{ text: 'Get Started', href: 'https://github.com/PyMCU/PyMCU', target: '_blank' }],
 };
 
 export const footerData = {
@@ -53,7 +53,7 @@ export const footerData = {
     {
       title: 'Support',
       links: [
-        { text: 'Docs', href: '#' },
+        { text: 'Docs', href: 'https://docs.pymcu.org' },
         { text: 'Community Forum', href: '#' },
         { text: 'Professional Services', href: '#' },
         { text: 'Skills', href: '#' },
@@ -83,6 +83,7 @@ export const footerData = {
     { ariaLabel: 'Facebook', icon: 'tabler:brand-facebook', href: '#' },
     { ariaLabel: 'RSS', icon: 'tabler:rss', href: getAsset('/rss.xml') },*/
     { ariaLabel: 'Github', icon: 'tabler:brand-github', href: 'https://github.com/PyMCU' },
+    { ariaLabel: 'Sponsor on GitHub', icon: 'tabler:heart', href: 'https://github.com/sponsors/begeistert' },
     { ariaLabel: 'Ko-FI', icon: 'tabler:coffee', href: 'https://ko-fi.com/pymcu' },
   ],
   footNote: ``,
