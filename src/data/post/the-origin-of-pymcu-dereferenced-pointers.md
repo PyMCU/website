@@ -125,11 +125,22 @@ def main():
         delay_ms(500)
 ```
 
-A full blink program compiled this way produces 124 bytes of flash and 0 bytes of SRAM usage. MicroPython needs ~256 KB before your code even starts.
+A full blink program compiled this way is about 142 bytes of flash — vector table and startup stub included — and 0 bytes of SRAM. That sits right next to the 176 bytes `avr-gcc -Os` produces for the same blink: PyMCU emits essentially the C compiler's own output. MicroPython, by contrast, needs hundreds of kilobytes before your code even starts.
 
 **Hardware interrupt handlers.** The `@interrupt` decorator maps a Python function directly onto an AVR interrupt vector. The compiler generates the correct ISR prologue and epilogue — saving and restoring registers, clearing the interrupt flag — all from Python syntax.
 
 **Deterministic, predictable execution.** Because PyMCU compiles to native machine code ahead of time and has no runtime, there is no interpreter loop, no garbage collection pause, no dynamic dispatch. Timing-sensitive code behaves like C timing-sensitive code.
+
+## From One Primitive to a Toolchain
+
+That single idea has since grown into something much larger than a way to poke a register. Everything below exists today, and every piece compiles down to the same kind of lean native code as the `ptr` dereference that started it:
+
+- **A real hardware abstraction layer.** GPIO, UART, SPI, I2C, ADC, PWM, timers, EEPROM, the watchdog, and sleep modes — all `@inline` zero-cost classes — plus device drivers for parts like the DHT11/DHT22, SSD1306 OLED, BMP280, MAX7219, and WS2812B. The `ptr[T]` primitive is still down there; the HAL just gives it a friendly face.
+- **Zero-cost error handling.** `try` / `except` / `raise` work on the chip, implemented through a tiny ABI that rides on the AVR T flag — no heap, no `setjmp`/`longjmp`, no exception objects. A `raise` is three instructions, not a runtime.
+- **C interoperability.** An `@extern` decorator lets PyMCU call C functions compiled by `avr-gcc` and linked into the same firmware, so you can drop down to C or reuse an existing library exactly where you need to — and stay in Python everywhere else.
+- **Familiar front doors.** Compatibility layers let you write in **MicroPython** style (`machine`, `utime`) or **CircuitPython** style (`board`, `digitalio`, `busio`) and compile *that* to native code. The DHT11 deep-dive on this blog is one such example.
+- **Language features that pay for themselves at compile time.** Function overloading, single-class inheritance, `@property`, fixed-size arrays, and `bytes`/`enumerate`/list-comprehension support — all resolved by the compiler, none of them dragging a runtime onto the chip.
+- **Built to retarget.** AVR (the ATmega/ATtiny family) is the proven, reference backend the examples in this post run on. The compiler is structured around a small intermediate representation so additional backends — PIC, RISC-V, and RP2040 PIO — can grow from the same front end.
 
 ## The Compiler, Not the Interpreter
 
@@ -138,7 +149,7 @@ This distinction is worth stating clearly. MicroPython and CircuitPython embed a
 PyMCU takes a different trade-off. The compiler runs on your PC. It reads your Python source, type-checks it, resolves every `ptr`, inlines every `@inline` class, eliminates dead branches, and emits native AVR assembly for the ATmega328P. The MCU receives only the resulting machine code — no Python runtime, no interpreter, no dynamic features. What you gain is deterministic timing and a minimal flash footprint. What you give up is the flexibility of full Python.
 
 ```bash
-pymcu build   # → dist/firmware.hex  (124 bytes flash, 0 bytes SRAM)
+pymcu build   # → dist/firmware.hex  (~142 B total, 0 bytes SRAM)
 pymcu flash   # → avrdude upload to Arduino Uno
 ```
 
@@ -150,4 +161,4 @@ What started as one engineer staring at a line of C and asking *can Python do th
 
 The pointer was always just a number. The address was always just hardware waiting to be written. `ptr[T]` is the answer to that original question, and everything in PyMCU — the type system, the HAL, the zero-cost abstractions — grows outward from that one idea.
 
-If the thought of programming an Arduino in Python, compiling it to native machine code, and flashing 124 bytes of firmware sounds like something you want to try — this is where that journey begins.
+If the thought of programming an Arduino in Python, compiling it to native machine code, and flashing ~142 bytes of firmware sounds like something you want to try — this is where that journey begins.
