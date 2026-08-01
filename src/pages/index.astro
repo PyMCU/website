@@ -22,12 +22,18 @@ const metadata = {
   <!-- Hero Widget ******************* -->
 
   <Hero
-    tagline="Public Alpha Coming Soon"
+    tagline="Public Alpha 3 — Available Now"
     actions={[
       {
         variant: 'primary',
-        text: 'Join the Waitlist',
-        href: '#waitlist',
+        text: 'Get Started',
+        href: 'https://github.com/PyMCU/PyMCU',
+        target: '_blank',
+      },
+      {
+        text: 'Release Notes',
+        href: 'https://github.com/PyMCU/PyMCU/releases/tag/v0.1.0a3',
+        target: '_blank',
       },
     ]}
   >
@@ -40,8 +46,8 @@ const metadata = {
         <span class="font-semibold">PyMCU</span> is a free, deterministic compiler that brings
         <span class="font-semibold">Python</span> to microcontrollers. It compiles a statically-typed subset of Python into
         <span class="font-semibold">bare-metal machine code</span> with zero runtime overhead—no heap, no interpreter, and
-        no garbage collection. Currently focusing on <span class="font-semibold">AVR (Arduino)</span>, with other
-        architectures to follow.
+        no garbage collection. The public alpha supports <span class="font-semibold">AVR (Arduino)</span>,
+        <span class="font-semibold">RP2040 / RP2350 (Raspberry Pi Pico)</span> and <span class="font-semibold">PIC16</span>.
       </span>
     </Fragment>
 
@@ -146,29 +152,29 @@ const metadata = {
 
   <Steps
     id="steps"
-    title="Get your first firmware running soon with PyMCU."
+    title="Get your first firmware running in minutes."
     items={[
       {
-        title: 'Step 1: <span class="font-medium">Stay updated</span>',
+        title: 'Step 1: <span class="font-medium">Install</span>',
         description:
-          'Join the waitlist to be notified as soon as the PyMCU compiler is released. Once available, you can install it via pipx: <code class="bg-gray-100 dark:bg-gray-800 px-1 rounded">pipx install pymcu-compiler</code>.',
+          'Install the alpha with pipx: <code class="bg-gray-100 dark:bg-gray-800 px-1 rounded">pipx install --pip-args=--pre "pymcu-compiler[all]"</code>. Each backend extra (<code class="bg-gray-100 dark:bg-gray-800 px-1 rounded">[avr]</code>, <code class="bg-gray-100 dark:bg-gray-800 px-1 rounded">[arm]</code>, <code class="bg-gray-100 dark:bg-gray-800 px-1 rounded">[pic]</code>) bundles its full toolchain.',
         icon: 'tabler:package',
       },
       {
-        title: 'Step 2: <span class="font-medium">Prepare your code</span>',
+        title: 'Step 2: <span class="font-medium">Write your code</span>',
         description:
-          'Get ready to write firmware in a statically-typed subset of Python. Familiar, clean, and built to compile directly to bare-metal machine code.',
+          'Write firmware in a statically-typed subset of Python — or reuse MicroPython / CircuitPython code via the compat packages. Familiar, clean, and compiled directly to bare-metal machine code.',
         icon: 'tabler:brand-python',
       },
       {
         title: 'Step 3: <span class="font-medium">Flash & test</span>',
         description:
-          'When released, you will be able to flash generated binaries to your Arduino Uno and enjoy zero runtime overhead and deterministic timing.',
+          'Flash the generated binary to your Arduino Uno, Raspberry Pi Pico / Pico 2 or PIC16 board with <code class="bg-gray-100 dark:bg-gray-800 px-1 rounded">pymcu flash</code> — zero runtime overhead and deterministic timing.',
         icon: 'tabler:usb',
       },
       {
-        title: 'Coming Soon!',
-        icon: 'tabler:clock',
+        title: 'Ship it!',
+        icon: 'tabler:rocket',
       },
     ]}
     image={{
@@ -222,7 +228,7 @@ const metadata = {
       {
         title: 'Is PyMCU production-ready?',
         description:
-          'PyMCU is currently in Alpha and is being prepared for its first release. Active development is focused on the AVR architecture (Arduino Uno). We will soon be opening access for makers and developers to try it out and provide feedback.',
+          'PyMCU is in public alpha — the third alpha (v0.1.0a3) is available on PyPI today, with AVR, RP2040/RP2350 and PIC16 backends and full test coverage. It is ready for makers and early adopters; expect some rough edges in error messages and tooling, and please report what you find on GitHub.',
       },
       {
         title: 'How is PyMCU being built?',
@@ -242,7 +248,7 @@ const metadata = {
       {
         title: 'Which architectures are supported?',
         description:
-          'The primary focus of current development is AVR (ATmega328P/Arduino Uno). Support for other architectures like PIC, ARM Cortex-M, and ESP32 is planned for future releases.',
+          'The alpha ships three backends: AVR (ATmega and ATtiny, including the Arduino Uno), ARM Cortex-M (RP2040 and RP2350 — Raspberry Pi Pico / Pico 2, including PIO and WiFi) and PIC16 (16F84A, 16F877A). Support for more PIC families, RISC-V and ESP32 is planned.',
       },
       {
         title: 'How does it differ from MicroPython or CircuitPython?',
@@ -256,5 +262,10 @@ const metadata = {
       },
     ]}
   />
-  <Waitlist id="waitlist" title="Join the Alpha" subtitle="Be the first to experience PyMCU" tagline="Early Access" />
+  <Waitlist
+    id="waitlist"
+    title="The alpha is out — stay in the loop"
+    subtitle="Get notified about new releases, features and supported architectures"
+    tagline="Updates"
+  />
 </Layout>
