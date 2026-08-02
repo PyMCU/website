@@ -5,7 +5,7 @@ description: The pymcu command — new, build, flash, clean, lint, boards, toolc
 
 The `pymcu` command-line tool manages PyMCU projects: creation, building, flashing and
 linting. It comes with `pymcu-compiler` — see
-[Installation](/getting-started/installation/).
+[Installation](/pymcu/getting-started/installation/).
 
 ## Commands
 
@@ -447,8 +447,8 @@ one through the compat packages, so they are reported as `INFO`, not problems. T
 exits non-zero when there is at least one `ERROR`, which makes it usable as a CI gate.
 
 See also the migration guides for
-[MicroPython](/migration/from-micropython/) and
-[CircuitPython](/migration/from-circuitpython/).
+[MicroPython](/pymcu/migration/from-micropython/) and
+[CircuitPython](/pymcu/migration/from-circuitpython/).
 
 ## `pymcu boards`
 
@@ -553,7 +553,7 @@ On AVR, C sources are compiled with `avr-gcc` and C++ sources (`.cpp`, `.cc`, `.
 from PyMCU firmware possible. Declare the symbols on the Python side with `@extern`.
 
 The `extern-call`, `ffi-abi`, `ffi-arduino`, `ffi-crc8` and `ffi-dsp`
-[examples](/examples/#c--c-interop-ffi) are complete working projects using this table.
+[examples](/pymcu/examples/#c--c-interop-ffi) are complete working projects using this table.
 
 ## Troubleshooting
 

@@ -4,7 +4,8 @@ import starlight from '@astrojs/starlight';
 import tailwind from '@astrojs/tailwind';
 
 export default defineConfig({
-  site: 'https://docs.pymcu.dev',
+  site: 'https://docs.pymcu.org',
+  base: '/pymcu',
   output: 'static',
 
   integrations: [

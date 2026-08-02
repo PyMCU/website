@@ -290,12 +290,12 @@ SPI backend behind an `__CHIP__.arch == "avr"` guard. On the RP2040 / RP2350, us
 `pymcu.hal.spi.SPI` directly.
 
 The native HAL API may still change between alpha releases, so prefer
-[`machine.SPI`](/compat/micropython/) or [`busio.SPI`](/compat/circuitpython/) wherever they
+[`machine.SPI`](/pymcu/compat/micropython/) or [`busio.SPI`](/pymcu/compat/circuitpython/) wherever they
 cover your use case.
 :::
 
 ## See also
 
-- [I2C](/stdlib/i2c/) — the other synchronous bus, two wires instead of four
-- [GPIO](/stdlib/gpio/) — the `Pin` objects `SoftSPI` takes, and manual chip select
-- [UART](/stdlib/uart/) — asynchronous serial when there is no clock line
+- [I2C](/pymcu/stdlib/i2c/) — the other synchronous bus, two wires instead of four
+- [GPIO](/pymcu/stdlib/gpio/) — the `Pin` objects `SoftSPI` takes, and manual chip select
+- [UART](/pymcu/stdlib/uart/) — asynchronous serial when there is no clock line

@@ -4,7 +4,7 @@ description: The chips PyMCU compiles for — AVR (ATmega / ATtiny), ARM (RP2040
 ---
 
 PyMCU targets three architectures. Each one is a separate backend, installed through an
-extra on the compiler package (see [Installation](/getting-started/installation/)).
+extra on the compiler package (see [Installation](/pymcu/getting-started/installation/)).
 
 | Architecture | Chips |
 |---|---|
@@ -44,8 +44,8 @@ assembles it in-process; no external `avr-gcc` is required to build.
 | `pymcu.hal.power` | `sleep_idle` / `sleep_adc_noise` / `sleep_power_down` / `sleep_power_save` / `sleep_standby` / `sleep_extended_standby` |
 
 :::note
-During the alpha, prefer the [MicroPython](/compat/micropython/) or
-[CircuitPython](/compat/circuitpython/) compat API over `pymcu.hal.*` — they compile to the
+During the alpha, prefer the [MicroPython](/pymcu/compat/micropython/) or
+[CircuitPython](/pymcu/compat/circuitpython/) compat API over `pymcu.hal.*` — they compile to the
 same firmware and their surface is stable.
 :::
 
@@ -53,11 +53,11 @@ same firmware and their surface is stable.
 
 Seven drivers ship in the standard library: DHT11, DS18B20, HD44780 LCD
 (`pymcu.drivers.lcd`), SSD1306 OLED, MAX7219 8x8 LED matrix, BMP280 and WS2812 NeoPixel — see
-the full table under [Device drivers](/stdlib/#device-drivers). The
-[DHT11 driver](/stdlib/drivers/dht11/) page walks through one end to end.
+the full table under [Device drivers](/pymcu/stdlib/#device-drivers). The
+[DHT11 driver](/pymcu/stdlib/drivers/dht11/) page walks through one end to end.
 
 There is no LM35 driver module: the LM35 is a plain analog sensor, so read it with
-[`AnalogPin`](/stdlib/adc/).
+[`AnalogPin`](/pymcu/stdlib/adc/).
 
 ### Board modules
 
@@ -71,7 +71,7 @@ Pin-name constants for the common Arduino boards:
 
 `@extern` declares a symbol implemented in C or C++, and `[tool.pymcu.ffi]` in
 `pyproject.toml` lists the sources to compile and link alongside your firmware — which means
-Arduino libraries can be called from PyMCU code. See the [CLI Driver](/driver/) reference.
+Arduino libraries can be called from PyMCU code. See the [CLI Driver](/pymcu/driver/) reference.
 
 ### Flashing
 
@@ -164,5 +164,5 @@ of exception propagation.
 
 ## See also
 
-- [Limitations](/limitations/) — the exact shape of the accepted Python subset
-- [Roadmap](/roadmap/) — what each backend is getting next
+- [Limitations](/pymcu/limitations/) — the exact shape of the accepted Python subset
+- [Roadmap](/pymcu/roadmap/) — what each backend is getting next

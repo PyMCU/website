@@ -7,7 +7,7 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 This guide takes you from an empty directory to a blinking LED on an Arduino Uno
 (ATmega328P @ 16 MHz). If you have not installed PyMCU yet, start with
-[Installation](/getting-started/installation/).
+[Installation](/pymcu/getting-started/installation/).
 
 Pick an API in the first tab set below and the rest of the page follows you — the
 `pyproject.toml` and the program always stay in step.
@@ -122,7 +122,7 @@ programmer = "avrdude"
 `board` selects the chip and its default toolchain and programmer; `frequency` is the CPU
 clock in Hz and is what `delay_ms` / `sleep_ms` calibrate against. `stdlib` selects which
 compat flavour is put on the import path — drop the key and only `pymcu.*` is importable.
-The full key list is in the [CLI Driver](/driver/) reference.
+The full key list is in the [CLI Driver](/pymcu/driver/) reference.
 
 Most of that is the scaffolder being explicit. The **minimum** PyMCU needs is one line:
 
@@ -287,7 +287,7 @@ The LED on pin 13 blinks at 1 Hz. If it does not:
 - **`programmer is not responding`.** The port is wrong, or something else is holding it.
   Close any serial terminal you have open on that port and try again; on macOS make sure the
   path starts `/dev/cu.`, not `/dev/tty.`. There is a fuller checklist in
-  [Troubleshooting](/driver/#troubleshooting).
+  [Troubleshooting](/pymcu/driver/#troubleshooting).
 - **It flashed but behaves oddly — delays are wrong, UART is garbled.** `frequency` in
   `pyproject.toml` does not match the actual crystal. Every delay and baud divisor is
   computed from that number at compile time, so a wrong value skews all of them by the same
@@ -352,7 +352,7 @@ If your program constructs its own `UART(9600)`, that takes ownership of the har
 On AVR and on the RP2040 / RP2350 everything prints — strings, integers and floats. On
 PIC14 strings print but numbers do not. On **pic12, pic18 and riscv `print()` compiles to
 nothing at all**, with no error and no warning. See
-[Serial output](/driver/#serial-output-and-print).
+[Serial output](/pymcu/driver/#serial-output-and-print).
 :::
 
 ## What just happened?
@@ -364,9 +364,9 @@ the firmware is measured in *bytes* rather than *hundreds of kilobytes*.
 
 ## Next steps
 
-- [CLI Driver](/driver/) — every command, flag and `pyproject.toml` key
-- [Supported Targets](/targets/) — AVR, ARM (RP2040 / RP2350) and PIC
-- [Language Reference](/language-reference/) — the compiled model and type system
-- [Examples](/examples/) — annotated firmware, from [blink](/examples/blink/) to a
-  [sensor dashboard](/examples/sensor-dashboard/)
-- [Limitations](/limitations/) — what the subset does not accept
+- [CLI Driver](/pymcu/driver/) — every command, flag and `pyproject.toml` key
+- [Supported Targets](/pymcu/targets/) — AVR, ARM (RP2040 / RP2350) and PIC
+- [Language Reference](/pymcu/language-reference/) — the compiled model and type system
+- [Examples](/pymcu/examples/) — annotated firmware, from [blink](/pymcu/examples/blink/) to a
+  [sensor dashboard](/pymcu/examples/sensor-dashboard/)
+- [Limitations](/pymcu/limitations/) — what the subset does not accept

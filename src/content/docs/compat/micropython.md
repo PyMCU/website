@@ -6,7 +6,7 @@ description: Write machine / utime / network code and compile it to bare-metal f
 The `pymcu-micropython` package provides MicroPython-compatible module names on top of the
 native PyMCU HAL. Most MicroPython firmware compiles with minimal changes. If you are moving an
 existing project across, start with the step-by-step
-[migration guide](/migration/from-micropython/).
+[migration guide](/pymcu/migration/from-micropython/).
 
 :::note[Compiled, not interpreted]
 There is no MicroPython interpreter on the device. Every `machine.*` call is a compile-time
@@ -19,7 +19,7 @@ typically a few hundred bytes of flash and 0 bytes of SRAM overhead.
 (`target = "rp2040"` / `"rp2350"`, with plain GP pin numbers). The rest of `machine` —
 `ADC`, `PWM`, `SPI`, `I2C`, `Timer`, `WDT` — is **AVR-only**; see
 [Supported modules](#supported-modules) below. WiFi through `network.WLAN` and `umqtt.simple`
-is **Pico 2 W (RP2350) only**. See the [Pico examples](/examples/rp2040/).
+is **Pico 2 W (RP2350) only**. See the [Pico examples](/pymcu/examples/rp2040/).
 
 ## Installation
 
@@ -225,7 +225,7 @@ def main():
 
 Only the portable half of `machine` is available here. `ADC`, `PWM`, `SPI`, `I2C`, `Timer` and
 `WDT` are not importable on an RP target — reach for `pymcu.hal.*` instead, and see
-[the stdlib reference](/stdlib/).
+[the stdlib reference](/pymcu/stdlib/).
 
 WiFi uses the standard MicroPython shape, but only on the **Pico 2 W (RP2350)**:
 
@@ -253,14 +253,14 @@ joined today. The `key` parameter exists purely for MicroPython signature compat
 :::
 
 The PIO DSL is also part of this flavour — see
-[PIO on the Pico examples page](/examples/rp2040/).
+[PIO on the Pico examples page](/pymcu/examples/rp2040/).
 
 ## Vetting a port with `pymcu lint`
 
 `pymcu lint` is the natural first step when moving an existing MicroPython project across.
 It parses your sources with CPython's own `ast` and reports every construct PyMCU cannot
 compile, each with a severity and a concrete suggested rewrite. See
-[the CLI reference](/driver/#pymcu-lint-path) for the full flag list.
+[the CLI reference](/pymcu/driver/#pymcu-lint-path) for the full flag list.
 
 ```bash
 pymcu lint src/

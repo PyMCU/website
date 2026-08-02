@@ -6,7 +6,7 @@ description: Write board / digitalio / busio code and compile it to bare-metal f
 The `pymcu-circuitpython` package provides CircuitPython-compatible module names on top of the
 native PyMCU HAL. Most CircuitPython firmware compiles unchanged after adding one line to
 `pyproject.toml`. If you are moving an existing project across, start with the step-by-step
-[migration guide](/migration/from-circuitpython/).
+[migration guide](/pymcu/migration/from-circuitpython/).
 
 :::note[Compiled, not interpreted]
 There is no CircuitPython interpreter on the device. Every `digitalio.*`, `busio.*` or
@@ -62,7 +62,7 @@ the shipped RP2350 CircuitPython example does.
 :::
 
 WiFi through `wifi`, `socketpool` and `adafruit_minimqtt` is **Pico 2 W (RP2350) only** — see
-the [Pico examples](/examples/rp2040/).
+the [Pico examples](/pymcu/examples/rp2040/).
 
 ## Supported modules
 
@@ -258,13 +258,13 @@ def main():
 
 That is the whole portable surface: `board`, `digitalio` and `busio.UART`. `analogio`,
 `pwmio`, `busio.SPI`, `busio.I2C`, `neopixel` and `microcontroller` are not importable on an
-RP target — use [the native HAL](/stdlib/) for those peripherals.
+RP target — use [the native HAL](/pymcu/stdlib/) for those peripherals.
 
 On a **Pico 2** there is no board file, so set `target = "rp2350"` with
 `frequency = 150000000` and drop `import board`, passing GP numbers directly.
 
 WiFi on a **Pico 2 W** follows the usual CircuitPython shape (`socketpool` +
-`adafruit_minimqtt`); the full program is on the [Pico examples page](/examples/rp2040/).
+`adafruit_minimqtt`); the full program is on the [Pico examples page](/pymcu/examples/rp2040/).
 
 :::caution[Pico 2 W only, open networks only]
 The CYW43439 driver is wired for the RP2350 alone — `pymcu.hal.wifi` raises a `CompileError`
@@ -276,7 +276,7 @@ today.
 ## Vetting a port with `pymcu lint`
 
 Before porting an existing CircuitPython project, run the porting assistant. See
-[the CLI reference](/driver/#pymcu-lint-path) for the full flag list.
+[the CLI reference](/pymcu/driver/#pymcu-lint-path) for the full flag list.
 
 ```bash
 pymcu lint code.py
@@ -296,7 +296,7 @@ any hard error was found.
 ## Differences from real CircuitPython
 
 These are the actual gaps — anything not listed behaves like standard CircuitPython. If you
-are porting a project, the [migration guide](/migration/from-circuitpython/) walks these
+are porting a project, the [migration guide](/pymcu/migration/from-circuitpython/) walks these
 changes in order.
 
 | Feature | CircuitPython | PyMCU + pymcu-circuitpython |

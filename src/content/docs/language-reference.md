@@ -17,7 +17,7 @@ list is stated inline.
 This page is about the **language** — the syntax and the type system, which are the same
 whichever peripheral API you import. For the peripheral APIs themselves, write MicroPython
 (`machine`, `utime`) or CircuitPython (`board`, `digitalio`, `busio`, …): those are the
-recommended, stable surfaces, and the [Standard Library](/stdlib/) pages show every example
+recommended, stable surfaces, and the [Standard Library](/pymcu/stdlib/) pages show every example
 in all three dialects. Sections 9 and 10 below use `pymcu.hal.*` because it is the layer the
 compat packages are built on, and because register access, `@interrupt` handlers, `asm()`
 and `@extern` have no compat equivalent by design.
@@ -897,7 +897,7 @@ with `asyncio.gather`. `await` as an expression is not supported.
 
 Classes decorated (or called) with `@inline` are statically flattened. No SRAM is used for the
 instance — all methods expand inline and member accesses resolve to registers or named globals.
-The [inheritance / ZCA example](/examples/inheritance-zca/) walks through a worked one.
+The [inheritance / ZCA example](/pymcu/examples/inheritance-zca/) walks through a worked one.
 
 ```python
 class LED:
@@ -1071,7 +1071,7 @@ match __CHIP__.arch:
 :::caution[Prefer the compat APIs during the alpha]
 `pymcu.hal.*` is the lowest-overhead API, but it may change between alpha releases. For
 application code, prefer the MicroPython (`machine`, `utime`) or CircuitPython (`board`,
-`digitalio`, `busio`, …) compat packages — see [/compat/micropython/](/compat/micropython/).
+`digitalio`, `busio`, …) compat packages — see [/compat/micropython/](/pymcu/compat/micropython/).
 They compile to byte-for-byte equivalent firmware.
 :::
 
@@ -1240,7 +1240,7 @@ led = Pin(LED_BUILTIN, Pin.OUT)    # PB5
 
 Further modules — EEPROM, watchdog, power management, WiFi (Pico 2 W / RP2350 only) and the
 device drivers (DS18B20, HD44780 LCD via `pymcu.drivers.lcd`, SSD1306 OLED, MAX7219 8x8 LED
-matrix, BMP280, WS2812) — are documented under [/stdlib/](/stdlib/). There is no LM35 driver:
+matrix, BMP280, WS2812) — are documented under [/stdlib/](/pymcu/stdlib/). There is no LM35 driver:
 read an LM35 with `AnalogPin`.
 
 ---
@@ -1317,7 +1317,7 @@ CircuitPython's `time` module has only `sleep(seconds: float)`, `monotonic()` an
 - `try / except` works on AVR and ARM but not on PIC — port those paths to return codes.
 - Closures capturing mutable variables: pass the captured values as explicit parameters.
 
-Run [`pymcu lint`](/driver/#pymcu-lint-path) on the port first — it flags the constructs PyMCU
+Run [`pymcu lint`](/pymcu/driver/#pymcu-lint-path) on the port first — it flags the constructs PyMCU
 cannot compile, with a severity and a suggested rewrite for each finding.
 
 ### MicroPython → PyMCU
@@ -1383,8 +1383,8 @@ The biggest changes when porting generic Python:
 
 ## Getting Help
 
-- [Limitations](/limitations/) — the full list of unsupported features and the idiomatic
+- [Limitations](/pymcu/limitations/) — the full list of unsupported features and the idiomatic
   alternative for each.
-- [Roadmap](/roadmap/) — what has shipped and what is planned.
+- [Roadmap](/pymcu/roadmap/) — what has shipped and what is planned.
 - [Open an issue](https://github.com/PyMCU/PyMCU/issues) with your source snippet and the
   compiler error. Alpha error messages still have rough edges; a bug report genuinely helps.

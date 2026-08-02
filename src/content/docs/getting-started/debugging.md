@@ -24,7 +24,7 @@ without touching hardware.
 |---|---|
 | VS Code | [code.visualstudio.com](https://code.visualstudio.com) |
 | PyMCU VS Code extension | Search **PyMCU** in the Marketplace |
-| PyMCU compiler | See [Installation](/getting-started/installation/) — the `[avr]` extra |
+| PyMCU compiler | See [Installation](/pymcu/getting-started/installation/) — the `[avr]` extra |
 
 ## Quick start
 
@@ -133,5 +133,5 @@ The profiler understands RTOS firmware with several tasks — each task gets its
 tab. For a terminal table of per-function cycle counts instead of a flamegraph, use
 `pymcu bench`.
 
-See the [CLI Driver](/driver/) reference for every flag, including
+See the [CLI Driver](/pymcu/driver/) reference for every flag, including
 `--assert-cycles-lt` for enforcing a cycle budget in CI.

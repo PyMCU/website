@@ -20,8 +20,8 @@ Instead, PyMCU adopts the philosophy and API design of **MicroPython and Circuit
 (specifically the `machine` and `board` modules) as its official user-facing standard
 library. This ensures that code written for PyMCU looks familiar to developers coming from
 the broader Python-on-hardware ecosystem, even though it executes entirely differently.
-See [MicroPython compat](/compat/micropython/) and
-[CircuitPython compat](/compat/circuitpython/).
+See [MicroPython compat](/pymcu/compat/micropython/) and
+[CircuitPython compat](/pymcu/compat/circuitpython/).
 :::
 
 This page lists every known unsupported feature, explains *why* it cannot be compiled, and
@@ -34,7 +34,7 @@ suggests the idiomatic PyMCU alternative where one exists.
 | Feature | Why it fails | Alternative |
 |---|---|---|
 | `list.append(x)` on a **fixed-size** array | Fixed arrays have no `append` | `list[uint8]` heap-bounded list, or `uint8[N]` fixed-size array |
-| **Growing** `dict` (unbounded) | Hash table requires heap | [`pymcu.collections.FixedDict(capacity)`](/stdlib/#module-index) (mutable, fixed footprint), a closed dict literal (below), or `match / case` key dispatch |
+| **Growing** `dict` (unbounded) | Hash table requires heap | [`pymcu.collections.FixedDict(capacity)`](/pymcu/stdlib/#module-index) (mutable, fixed footprint), a closed dict literal (below), or `match / case` key dispatch |
 | **Mutable** `set` (`.add()`) | Hash set requires heap | Closed set literal (below), or a `uint8` bitmask |
 | Dict / set **comprehensions** | Would build a container at runtime | Build a closed literal, or fill a `FixedDict` in a loop |
 
@@ -575,4 +575,4 @@ If you hit a compile error on a Python construct not covered here, please
 compiler error message — the compiler reports `file:line` for user-facing errors, so paste
 the whole diagnostic.
 
-For what is coming next, see the [roadmap](/roadmap/).
+For what is coming next, see the [roadmap](/pymcu/roadmap/).

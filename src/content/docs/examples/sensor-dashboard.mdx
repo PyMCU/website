@@ -11,7 +11,7 @@ a running average filter, and conditional verbose/compact UART output.
 :::note[AVR example]
 This page targets the **ATmega328P**: the raw register addresses, the `@interrupt` vector
 numbers and GPIOR0 are all AVR-specific. See the
-[RP2040 / RP2350 page](/examples/rp2040/) for the Pico peripheral set.
+[RP2040 / RP2350 page](/pymcu/examples/rp2040/) for the Pico peripheral set.
 :::
 
 ## What it demonstrates
@@ -201,8 +201,8 @@ of it has a MicroPython one:
   compat surface at all.
 
 The native HAL API may change between alpha releases, so keep as much of your program as
-possible on [`machine`](/compat/micropython/) or
-[`digitalio`](/compat/circuitpython/) and drop to the HAL only for the ISR layer, as above.
+possible on [`machine`](/pymcu/compat/micropython/) or
+[`digitalio`](/pymcu/compat/circuitpython/) and drop to the HAL only for the ISR layer, as above.
 :::
 
 ## The averaging filter
@@ -233,7 +233,7 @@ couple of instructions instead of a call.
 - The ISR bodies stay minimal: set a flag and return. All the work, including the UART
   writes, happens in the main loop.
 - `AnalogPin("PC0")` is the port-pin name, not `"A0"` — see
-  [ADC](/stdlib/adc/) for the valid channel names.
+  [ADC](/pymcu/stdlib/adc/) for the valid channel names.
 - `uart.write_hex()` and `uart.println()` walk their output straight out of flash, so the
   two display formats cost no SRAM.
 
@@ -245,5 +245,5 @@ pymcu build
 pymcu flash --port /dev/cu.usbmodem*
 ```
 
-See [`pymcu build`](/driver/#pymcu-build) for the full command reference. Then open a
+See [`pymcu build`](/pymcu/driver/#pymcu-build) for the full command reference. Then open a
 serial terminal on the board's port at **9600 baud** to watch the readings.

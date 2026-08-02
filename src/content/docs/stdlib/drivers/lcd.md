@@ -143,7 +143,7 @@ OK
 
 ## See also
 
-- [SSD1306](/stdlib/drivers/ssd1306/) — a graphical alternative over I2C
-- [GPIO](/stdlib/gpio/) — the `Pin` class and the port registers underneath
-- [Time](/stdlib/time/) — `delay_ms()` / `delay_us()`
-- [UART](/stdlib/uart/) — the status output used in the example
+- [SSD1306](/pymcu/stdlib/drivers/ssd1306/) — a graphical alternative over I2C
+- [GPIO](/pymcu/stdlib/gpio/) — the `Pin` class and the port registers underneath
+- [Time](/pymcu/stdlib/time/) — `delay_ms()` / `delay_us()`
+- [UART](/pymcu/stdlib/uart/) — the status output used in the example

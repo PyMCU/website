@@ -61,6 +61,6 @@ def main():
 
 ## See also
 
-- [Language Reference — tuple returns](/language-reference/#tuple-returns) — the full rules
+- [Language Reference — tuple returns](/pymcu/language-reference/#tuple-returns) — the full rules
   for `-> (T1, T2)`, unpacking and where `@inline` is required
-- [Examples](/examples/) — the rest of the gallery
+- [Examples](/pymcu/examples/) — the rest of the gallery

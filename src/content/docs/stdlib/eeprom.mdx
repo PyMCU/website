@@ -159,13 +159,13 @@ EEPROM-ready interrupt, a custom programming mode, or split erase/write — has 
 equivalent in either ecosystem.
 
 For ordinary byte storage the compat APIs cover everything this page shows, so prefer
-[`microcontroller.nvm`](/compat/circuitpython/) or
-[`avr.EEPROM`](/compat/micropython/): the native HAL API may still change between alpha releases.
+[`microcontroller.nvm`](/pymcu/compat/circuitpython/) or
+[`avr.EEPROM`](/pymcu/compat/micropython/): the native HAL API may still change between alpha releases.
 Bear in mind that `avr.EEPROM` is a PyMCU extension rather than an upstream MicroPython class, so
 it carries the same "no stability promise" caveat as the HAL itself.
 :::
 
 ## See also
 
-- [Watchdog](/stdlib/watchdog/) — recover from hangs without losing stored state
-- [Power management](/stdlib/power/) — avoid EEPROM writes with a marginal supply voltage
+- [Watchdog](/pymcu/stdlib/watchdog/) — recover from hangs without losing stored state
+- [Power management](/pymcu/stdlib/power/) — avoid EEPROM writes with a marginal supply voltage

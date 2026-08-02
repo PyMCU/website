@@ -57,7 +57,7 @@ expands to a single bit-set on `PORTB`. The result is:
 - **no allocation** — nothing is constructed at runtime, so nothing can fail to construct
 
 This is the `inheritance-zca` example, which the AVR suite compiles and runs; see
-[the worked walkthrough](/examples/inheritance-zca/).
+[the worked walkthrough](/pymcu/examples/inheritance-zca/).
 
 ## What it costs
 
@@ -341,8 +341,8 @@ class Vec:
 | An outlined method whose sibling call is overridden in a subclass | The shared body is compiled once with `self` bound to the defining class, so the sibling call binds statically | Mark the method `@inline` so it expands per call site |
 | A method holding a class-typed field, shared across instances | A nested ZCA has no runtime value to pass as a parameter | It stays inlined; that is expected |
 
-See [Limitations](/limitations/) for the full picture and
-[Language reference](/language-reference/) for the exact accepted syntax.
+See [Limitations](/pymcu/limitations/) for the full picture and
+[Language reference](/pymcu/language-reference/) for the exact accepted syntax.
 
 ## Where this is tested
 
@@ -357,7 +357,7 @@ lives in `docs/rfcs/0001-zca-runtime-state.md` in the compiler repository.
 
 ## See also
 
-- [Language reference](/language-reference/) — classes, inheritance and decorators in full
-- [Limitations](/limitations/) — what the Python subset does not accept
-- [Inline assembly](/guides/inline-asm/) — the other escape hatch from generated code
-- [GPIO](/stdlib/gpio/) — the `Pin` class every example above wraps
+- [Language reference](/pymcu/language-reference/) — classes, inheritance and decorators in full
+- [Limitations](/pymcu/limitations/) — what the Python subset does not accept
+- [Inline assembly](/pymcu/guides/inline-asm/) — the other escape hatch from generated code
+- [GPIO](/pymcu/stdlib/gpio/) — the `Pin` class every example above wraps

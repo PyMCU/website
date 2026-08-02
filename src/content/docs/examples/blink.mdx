@@ -10,7 +10,7 @@ Toggles the built-in LED on Arduino Uno (pin 13 / PB5) at 1 Hz.
 :::note[AVR example]
 This page targets the **ATmega328P** — the port-string pin name and the byte figures below
 are AVR-specific. The same program for a Raspberry Pi Pico is on the
-[RP2040 / RP2350 page](/examples/rp2040/).
+[RP2040 / RP2350 page](/pymcu/examples/rp2040/).
 :::
 
 **Flash:** 162 bytes  **SRAM:** 0 bytes
@@ -102,7 +102,7 @@ pymcu build
 pymcu flash --port /dev/cu.usbmodem*
 ```
 
-See [`pymcu build`](/driver/#pymcu-build) for the full command reference.
+See [`pymcu build`](/pymcu/driver/#pymcu-build) for the full command reference.
 
 Set `stdlib = ["micropython"]` or `stdlib = ["circuitpython"]` in `[tool.pymcu]` to make the
-matching compat flavour importable — see the [Quick Start](/getting-started/quickstart/).
+matching compat flavour importable — see the [Quick Start](/pymcu/getting-started/quickstart/).

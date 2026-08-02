@@ -319,12 +319,12 @@ I2C backend behind an `__CHIP__.arch == "avr"` guard. On the RP2040 / RP2350, us
 compatibility only: the ATmega328P TWI pins are fixed at `PC5` / `PC4`.
 
 The native HAL API may still change between alpha releases, so prefer
-[`machine.I2C`](/compat/micropython/) or [`busio.I2C`](/compat/circuitpython/) wherever they
+[`machine.I2C`](/pymcu/compat/micropython/) or [`busio.I2C`](/pymcu/compat/circuitpython/) wherever they
 cover your use case.
 :::
 
 ## See also
 
-- [SPI](/stdlib/spi/) — the other synchronous bus, with the same `with` chip-select pattern
-- [GPIO](/stdlib/gpio/) — the `Pin` objects `SoftI2C` takes
-- [Sensor dashboard example](/examples/sensor-dashboard/) — a bus-attached sensor in a full program
+- [SPI](/pymcu/stdlib/spi/) — the other synchronous bus, with the same `with` chip-select pattern
+- [GPIO](/pymcu/stdlib/gpio/) — the `Pin` objects `SoftI2C` takes
+- [Sensor dashboard example](/pymcu/examples/sensor-dashboard/) — a bus-attached sensor in a full program
