@@ -1,13 +1,262 @@
-@import '@fontsource-variable/inter';
+/* PyMCU brand theme for Starlight.
+   The palette is the one docs.pymcu.org (the hub) ships, so navigating from the hub
+   into these docs is a continuation rather than a jump. Keep the raw values in sync
+   with the hub's <style> block; everything below only maps them onto Starlight's
+   --sl-* design tokens.
 
-:root {
-	--sl-color-accent-low: #1e3a8a;
-	--sl-color-accent: #2a7cb5;
-	--sl-color-accent-high: #60a5fa;
-	--sl-font: 'Inter Variable', -apple-system, BlinkMacSystemFont, sans-serif;
-	--sl-font-system: 'Inter Variable', -apple-system, BlinkMacSystemFont, sans-serif;
+   Same Google Fonts stylesheet the hub requests, so the browser reuses the cache. */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700;800&display=swap');
+
+/* ── Dark (default) ─────────────────────────────────────────────────────── */
+:root,
+:root[data-theme='dark'],
+::backdrop {
+	/* Hub palette, verbatim. */
+	--pymcu-bg: #030620;
+	--pymcu-bg-grid: rgba(120, 150, 220, 0.05);
+	--pymcu-panel: #0a0e2e;
+	--pymcu-surface: #0c1135;
+	--pymcu-surface-hi: #111640;
+	--pymcu-border: #1c2250;
+	--pymcu-border-hi: #2c3470;
+	--pymcu-text: #e5ecf6;
+	--pymcu-text-dim: #98a0b8; /* = rgba(229,236,246,.66) flattened onto --pymcu-bg */
+	--pymcu-text-faint: #6d78a0;
+	--pymcu-accent: #2f7bff;
+	--pymcu-accent-deep: #0161ef;
+	--pymcu-accent-soft: rgba(47, 123, 255, 0.14);
+	--pymcu-accent-line: rgba(47, 123, 255, 0.38);
+	--pymcu-cool: #5aa9e6;
+	--pymcu-glow: radial-gradient(60% 70% at 50% 0%, rgba(1, 97, 239, 0.18), transparent 70%);
+	--pymcu-logo-py: #4a9fd4;
+	--pymcu-logo-mcu: #ffffff;
+	/* Code frames are a shade off the page so a block still reads as a panel. */
+	--pymcu-code-bg: var(--pymcu-surface);
+	--pymcu-code-chrome: var(--pymcu-panel);
+
+	/* Greyscale ramp: white = brightest (headings), black = page background. */
+	--sl-color-white: #f5f9ff;
+	--sl-color-gray-1: #eaf0fa;
+	--sl-color-gray-2: var(--pymcu-text);
+	--sl-color-gray-3: var(--pymcu-text-dim);
+	--sl-color-gray-4: var(--pymcu-text-faint);
+	--sl-color-gray-5: var(--pymcu-border-hi);
+	--sl-color-gray-6: var(--pymcu-surface-hi);
+	--sl-color-gray-7: var(--pymcu-surface);
+	--sl-color-black: var(--pymcu-bg);
+
+	--sl-color-accent-low: #0f2454;
+	--sl-color-accent: var(--pymcu-accent);
+	--sl-color-accent-high: #7ea9ff;
+
+	--sl-color-text: var(--pymcu-text);
+	--sl-color-text-accent: var(--sl-color-accent-high);
+	--sl-color-text-invert: var(--sl-color-accent-low);
+	--sl-color-bg: var(--pymcu-bg);
+	--sl-color-bg-nav: var(--pymcu-panel);
+	--sl-color-bg-sidebar: var(--pymcu-panel);
+	--sl-color-bg-inline-code: var(--pymcu-surface-hi);
+	--sl-color-bg-accent: var(--sl-color-accent-high);
+	--sl-color-hairline: var(--pymcu-border);
+	--sl-color-hairline-light: var(--pymcu-border-hi);
+	--sl-color-hairline-shade: var(--pymcu-bg);
+	--sl-color-backdrop-overlay: rgba(3, 6, 32, 0.72);
+
+	/* Aside / badge hues, re-tuned so the -low backgrounds sit on a navy page
+	   instead of Starlight's neutral charcoal. */
+	--sl-color-blue-low: #0c1a4a;
+	--sl-color-blue: var(--pymcu-accent);
+	--sl-color-blue-high: #b9cfff;
+	--sl-color-purple-low: #1e1240;
+	--sl-color-purple: #a878f7;
+	--sl-color-purple-high: #ddc9ff;
+	--sl-color-green-low: #08281c;
+	--sl-color-green: #34d17d;
+	--sl-color-green-high: #b6f2d0;
+	--sl-color-orange-low: #31220b;
+	--sl-color-orange: #f0a83a;
+	--sl-color-orange-high: #ffdfa8;
+	--sl-color-red-low: #380f22;
+	--sl-color-red: #ff5c8a;
+	--sl-color-red-high: #ffc7d6;
+
+	--sl-shadow-md: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 12px 28px -18px rgba(0, 0, 0, 0.85);
+	--sl-shadow-lg: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 18px 44px -22px rgba(0, 0, 0, 0.85);
 }
 
+/* ── Light ──────────────────────────────────────────────────────────────── */
+:root[data-theme='light'],
+[data-theme='light'] ::backdrop {
+	--pymcu-bg: #ffffff;
+	--pymcu-bg-grid: rgba(1, 97, 239, 0.06);
+	--pymcu-panel: #f4f7fd;
+	--pymcu-surface: #ffffff;
+	--pymcu-surface-hi: #f7faff;
+	--pymcu-border: #e3e9f5;
+	--pymcu-border-hi: #c6d6f0;
+	--pymcu-text: #101010;
+	--pymcu-text-dim: #5b6270;
+	--pymcu-text-faint: #8a92a3;
+	--pymcu-accent: #0161ef;
+	--pymcu-accent-deep: #0154cf;
+	--pymcu-accent-soft: rgba(1, 97, 239, 0.09);
+	--pymcu-accent-line: rgba(1, 97, 239, 0.3);
+	--pymcu-cool: #2a7cb5;
+	--pymcu-glow: radial-gradient(60% 70% at 50% 0%, rgba(1, 97, 239, 0.07), transparent 70%);
+	--pymcu-logo-py: #101010;
+	--pymcu-logo-mcu: #2a7cb5;
+	/* --pymcu-surface is white in this theme, which would make code blocks
+	   vanish into the page; use the panel tint instead. */
+	--pymcu-code-bg: var(--pymcu-panel);
+	--pymcu-code-chrome: #e8eefb;
+
+	--sl-color-white: var(--pymcu-text);
+	--sl-color-gray-1: #191c22;
+	--sl-color-gray-2: #24282f;
+	--sl-color-gray-3: var(--pymcu-text-dim);
+	--sl-color-gray-4: var(--pymcu-text-faint);
+	--sl-color-gray-5: var(--pymcu-border-hi);
+	--sl-color-gray-6: var(--pymcu-border);
+	--sl-color-gray-7: var(--pymcu-panel);
+	--sl-color-black: #ffffff;
+
+	--sl-color-accent-low: #d9e6ff;
+	--sl-color-accent: var(--pymcu-accent);
+	--sl-color-accent-high: #0143a8;
+
+	--sl-color-text: var(--sl-color-gray-2);
+	--sl-color-text-accent: var(--sl-color-accent);
+	--sl-color-text-invert: #ffffff;
+	--sl-color-bg-nav: var(--pymcu-panel);
+	--sl-color-bg-sidebar: var(--pymcu-panel);
+	--sl-color-bg-inline-code: #eef2fb;
+	--sl-color-bg-accent: var(--sl-color-accent);
+	--sl-color-hairline: var(--pymcu-border);
+	--sl-color-hairline-light: var(--pymcu-border);
+	--sl-color-hairline-shade: var(--pymcu-border);
+	--sl-color-backdrop-overlay: rgba(16, 16, 16, 0.5);
+
+	--sl-color-blue-low: #e0eaff;
+	--sl-color-blue: var(--pymcu-accent);
+	--sl-color-blue-high: #0b3a91;
+	--sl-color-purple-low: #f0e7fe;
+	--sl-color-purple: #8b5cf6;
+	--sl-color-purple-high: #4c2596;
+	--sl-color-green-low: #dcf3e6;
+	--sl-color-green: #16a34a;
+	--sl-color-green-high: #10502c;
+	--sl-color-orange-low: #fbeed6;
+	--sl-color-orange: #d97706;
+	--sl-color-orange-high: #7a4703;
+	--sl-color-red-low: #fce3ea;
+	--sl-color-red: #e11d48;
+	--sl-color-red-high: #8d0f2e;
+
+	--sl-shadow-md: 0 1px 0 rgba(255, 255, 255, 0.7) inset, 0 10px 24px -18px rgba(1, 97, 239, 0.22);
+	--sl-shadow-lg: 0 1px 0 rgba(255, 255, 255, 0.7) inset, 0 16px 36px -22px rgba(1, 97, 239, 0.18);
+}
+
+/* ── Typography ─────────────────────────────────────────────────────────── */
+:root {
+	--sl-font: 'Inter', var(--sl-font-system);
+	--sl-font-mono: 'IBM Plex Mono', var(--sl-font-system-mono);
+}
+
+/* ── Page backdrop: the hub's grid + top glow ───────────────────────────── */
+/* Both layers are fixed and sit behind every opaque surface (nav, sidebar,
+   code frames), so only the reading column shows them. The radial mask fades
+   the grid out before it reaches body text further down the page. */
+body::before,
+body::after {
+	content: '';
+	position: fixed;
+	inset: 0;
+	pointer-events: none;
+}
+
+body::before {
+	z-index: -2;
+	background-image:
+		linear-gradient(var(--pymcu-bg-grid) 1px, transparent 1px),
+		linear-gradient(90deg, var(--pymcu-bg-grid) 1px, transparent 1px);
+	background-size: 46px 46px;
+	-webkit-mask-image: radial-gradient(120% 90% at 50% 0%, #000 30%, transparent 85%);
+	mask-image: radial-gradient(120% 90% at 50% 0%, #000 30%, transparent 85%);
+}
+
+body::after {
+	z-index: -1;
+	background: var(--pymcu-glow);
+}
+
+/* The hub header is translucent over that backdrop; match it. */
+.header {
+	background-color: color-mix(in srgb, var(--sl-color-bg-nav) 82%, transparent);
+	backdrop-filter: blur(10px);
+}
+
+::selection {
+	background: var(--pymcu-accent-soft);
+	color: var(--sl-color-text-accent);
+}
+
+/* ── States ─────────────────────────────────────────────────────────────── */
+/* Current page: the hub marks active nav items with accent text on a soft
+   accent wash rather than Starlight's solid pill, which fights the navy. */
+.sidebar-content a[aria-current='page'],
+.sidebar-content a[aria-current='page']:hover,
+.sidebar-content a[aria-current='page']:focus {
+	color: var(--sl-color-text-accent);
+	background-color: var(--pymcu-accent-soft);
+	box-shadow: inset 2px 0 0 var(--sl-color-accent);
+}
+
+.sidebar-content a:hover,
+.sidebar-content a:focus {
+	background-color: var(--pymcu-surface-hi);
+}
+
+.sl-markdown-content a:not(:where(.not-content *)):hover {
+	color: var(--sl-color-accent);
+	text-decoration-color: var(--pymcu-accent-line);
+}
+
+:focus-visible {
+	outline-color: var(--sl-color-accent);
+}
+
+/* Tabs and the search dialog need no rules here: Starlight already draws the
+   selected tab from --sl-color-text-accent/--sl-color-accent, the tab list
+   border from --sl-color-hairline, and Pagefind maps its own --pagefind-ui-*
+   onto the --sl-* tokens remapped above. */
+
+/* Badges pick up the accent wash instead of a grey chip. */
+.sl-badge.default {
+	background-color: var(--pymcu-accent-soft);
+	border-color: var(--pymcu-accent-line);
+	color: var(--sl-color-text-accent);
+}
+
+/* Code frames: keep the syntax theme, restate only the chrome so blocks read
+   as panels of the hub palette. */
+.expressive-code {
+	--ec-brdCol: var(--pymcu-border);
+	--ec-codeBg: var(--pymcu-code-bg);
+	--ec-frm-edBg: var(--pymcu-code-bg);
+	--ec-frm-trmBg: var(--pymcu-code-bg);
+	--ec-frm-edTabBarBg: var(--pymcu-code-chrome);
+	--ec-frm-edActTabBg: var(--pymcu-code-bg);
+	--ec-frm-trmTtbBg: var(--pymcu-code-chrome);
+	--ec-frm-edActTabIndTopCol: var(--sl-color-accent);
+	--ec-frm-edTabBarBrdBtmCol: var(--pymcu-border);
+	--ec-frm-edActTabBrdCol: var(--pymcu-border);
+	--ec-frm-trmTtbBrdBtmCol: var(--pymcu-border);
+	--ec-gtrBrdCol: var(--pymcu-border);
+	--ec-focusBrd: var(--sl-color-accent);
+	--ec-codeSelBg: var(--pymcu-accent-soft);
+}
+
+/* ── Layout fixes ───────────────────────────────────────────────────────── */
 /* Starlight renders wide content (the roadmap and comparison tables) inside .content;
    keep long tables scrollable instead of pushing the page sideways. */
 .sl-markdown-content table {
