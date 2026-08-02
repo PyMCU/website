@@ -3,6 +3,36 @@ title: Changelog
 description: "Release notes for every PyMCU alpha: what landed in v0.1.0a3 and v0.1.0a2, plus the pre-release series, listed by language feature, backend and driver."
 ---
 
+## v0.1.0a4 — Alpha 4 (2026-08-02)
+
+Full notes: [GitHub release](https://github.com/PyMCU/PyMCU/releases/tag/v0.1.0a4)
+
+A quality-and-finish release over alpha 3.
+
+### Fixed
+- **`pymcu flash` works end to end on the Raspberry Pi Pico / Pico 2**: builds pack a
+  `firmware.uf2` and the driver dispatches the right artifact per target
+- **async/await on AVR really waits** (Timer0 microsecond timebase); on PIC / RISC-V /
+  ATtiny it is a clear compile error instead of an infinite hang
+- Bare `REG = x` register writes that silently compiled to nothing are now a located
+  error, and the three stdlib features it had broken (`Timer.set_compare`, `tone`,
+  servo) write their registers again
+- ARM critical sections: `asm()` clobbers memory; `enable/disable_interrupts()` emit
+  real `cpsid`/`cpsie`
+- `pymcu new` scaffolds the config `flash` reads and the real per-board clock;
+  MAX7219 honours the configured chip-select
+
+### Smaller firmware
+- Region and constant-delay outlining: the 60 AVR examples shrink **23%** overall
+  (lcd −51%, FFI examples up to −74%)
+
+### Language and tooling
+- Tuple return annotations (`-> (uint8, uint16)`) with arity and width validation
+- New diagnostics: dict/set comprehensions, reflection, compat modules without their
+  flavor, bare register assignment
+- `pymcu boards --json`, `pymcu stubs`, `pymcu lint --json` for IDE integrations
+- `py.typed` ships in the stdlib; `ptr[T]` documents its compiled semantics in-source
+
 ## v0.1.0a3 — Alpha 3 (2026-07-31)
 
 Full notes: [GitHub release](https://github.com/PyMCU/PyMCU/releases/tag/v0.1.0a3)
