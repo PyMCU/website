@@ -1,0 +1,289 @@
+---
+title: Power Management
+description: Sleep modes — machine.idle/lightsleep/deepsleep, the CircuitPython alarm module, and the full AVR sleep HAL.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Putting the CPU to sleep is how a battery-powered board goes from milliamps to microamps.
+Returning from a sleep call means the MCU has woken.
+
+**MicroPython** exposes three module-level functions — `machine.idle()`,
+`machine.lightsleep()` and `machine.deepsleep()`. **CircuitPython** models sleep the other way
+round, as *alarms*: you build an `alarm.time.TimeAlarm` or `alarm.pin.PinAlarm` and hand it to
+`alarm.sleep_until_alarms()`. The native `pymcu.hal.power` module underneath both exposes the
+full set of AVR sleep modes, including the three the compat APIs do not name.
+
+:::note[AVR only]
+Sleep is implemented for the AVR backend only, in all three APIs; on any other target calling a
+`sleep_*` function raises a `CompileError`. The RP2040 and RP2350 have a completely different
+low-power architecture (`DORMANT` / `SLEEP` via the clocks and ROSC blocks) and are not wrapped
+yet.
+
+Within AVR the scope is narrower than the rest of the HAL: `pymcu.hal.avr.power` imports the
+**ATmega328P** implementation unconditionally, so the sleep modes, the register addresses and the
+current figures on this page are ATmega328P numbers. ATtiny and other ATmega parts are not
+covered yet.
+:::
+
+:::caution[Interrupts must be enabled]
+Global interrupts (`sei`) must be enabled before the MCU sleeps, or it will sleep forever. The
+compiler emits `sei` automatically when at least one `@interrupt` handler is registered —
+including the ISR that `machine.Pin.irq()` synthesises — otherwise call `asm("sei")` explicitly.
+:::
+
+## Sleep until a button wakes the MCU
+
+The board sits in its lowest-power state and does nothing until D2 is pulled low.
+
+<Tabs syncKey="api">
+<TabItem label="MicroPython">
+
+```python
+import machine
+from machine import Pin
+
+led = Pin(13, Pin.OUT)
+btn = Pin(2, Pin.IN, Pin.PULL_UP)
+
+def on_press(pin):
+    led.toggle()
+
+btn.irq(on_press, Pin.IRQ_FALLING)      # INT0; also enables global interrupts
+
+while True:
+    machine.deepsleep()                 # power-down, ~0.1 µA, wakes on INT0
+```
+
+</TabItem>
+<TabItem label="CircuitPython">
+
+```python
+import alarm
+import board
+import digitalio
+
+led = digitalio.DigitalInOut(board.LED)
+led.direction = digitalio.Direction.OUTPUT
+
+while True:
+    pa = alarm.pin.PinAlarm(board.D2, value=False)   # wake when D2 goes low
+    alarm.sleep_until_alarms(pa)
+    led.value = not led.value
+```
+
+</TabItem>
+<TabItem label="Native HAL">
+
+```python
+from pymcu.hal.gpio import Pin
+from pymcu.hal.power import sleep_power_down
+from pymcu.types import uint8, ptr
+
+EICRA: ptr[uint8] = ptr(0x69)
+EIMSK: ptr[uint8] = ptr(0x3D)
+
+led = Pin("PB5", Pin.OUT)
+
+@interrupt(0x0002)    # INT0 vector (ATmega328P)
+def on_int0():
+    led.toggle()
+
+def main():
+    EICRA[0] = 0      # INT0 triggered on low level
+    EIMSK[0] = 1      # enable INT0
+    asm("sei")
+    while True:
+        sleep_power_down()   # wake on INT0, toggle the LED, sleep again
+```
+
+</TabItem>
+</Tabs>
+
+:::caution[`PinAlarm` polls; it does not sleep]
+The MicroPython and native HAL tabs really do put the AVR into power-down at ~0.1 µA.
+CircuitPython's `alarm.pin.PinAlarm` is implemented here as a **polling loop** on the pin — the
+API and the wake behaviour match, but the current draw does not. If low power is the point, use
+`machine.deepsleep()` or the native `sleep_power_down()`.
+:::
+
+## Sleep for a fixed time
+
+<Tabs syncKey="api">
+<TabItem label="CircuitPython">
+
+```python
+import alarm
+import time
+
+while True:
+    # monotonic_time is an ABSOLUTE timestamp, not a duration
+    ta = alarm.time.TimeAlarm(monotonic_time=time.monotonic() + 60)
+    alarm.sleep_until_alarms(ta)
+    do_periodic_task()
+```
+
+</TabItem>
+<TabItem label="Native HAL">
+
+```python
+from pymcu.hal.power import sleep_power_down
+from pymcu.hal.watchdog import Watchdog
+
+wdt = Watchdog(timeout_ms=1000)
+
+@interrupt(0x0018)    # WDT vector (ATmega328P)
+def on_wdt():
+    pass              # just wake, do nothing in the ISR
+
+def main():
+    wdt.enable()
+    asm("sei")
+    while True:
+        sleep_power_down()   # ~1 s at ~0.1 µA, then run the loop body
+        do_periodic_task()
+```
+
+</TabItem>
+</Tabs>
+
+There is **no MicroPython tab** for this one: `machine.lightsleep()` and `machine.deepsleep()`
+take no duration argument in the compat package, so there is no way to say "sleep for a second"
+through `machine`. Use the watchdog pattern from the Native HAL tab, or
+`alarm.time.TimeAlarm`.
+
+`TimeAlarm` matches CircuitPython exactly — `monotonic_time` is an absolute `time.monotonic()`
+value, so you write `time.monotonic() + 60`, not `60`. It sleeps for the remaining interval, uses
+the soft-float runtime to do the seconds arithmetic, and like `PinAlarm` it blocks in a delay
+rather than entering a genuine low-power mode.
+
+## How the compat calls map to the HAL
+
+| Compat call | Native HAL | Typical current (3 V, 25 °C) |
+|---|---|---|
+| `machine.idle()` | `sleep_idle()` | ~6 mA |
+| `machine.lightsleep()` | `sleep_power_save()` | ~0.1 µA |
+| `machine.deepsleep()` | `sleep_power_down()` | ~0.1 µA |
+| `alarm.sleep_until_alarms()` | blocking delay / pin poll | full run current |
+| `alarm.light_sleep_until_alarms()` | identical to the above | full run current |
+| `alarm.exit_and_deep_sleep_until_alarms()` | identical to the above; **does not** restart the program | full run current |
+
+Two honest caveats about the CircuitPython side. `light_sleep_until_alarms()` is an alias for
+`sleep_until_alarms()` on AVR. And `exit_and_deep_sleep_until_alarms()` does **not** power the
+chip down and restart from scratch the way CircuitPython does on a supported board — RAM is
+retained and execution continues at the next statement.
+
+---
+
+## Native HAL reference - pymcu.hal.power
+
+```python
+from pymcu.hal.power import sleep_power_down
+```
+
+Sleep-mode helpers that halt the CPU and cut current consumption. Returning from any `sleep_*`
+function means the MCU has woken from sleep. All of them are `@inline` — each call compiles to
+the handful of register writes plus the `sleep` instruction, with no SRAM cost.
+
+### Sleep modes
+
+| Function | Typical current (3 V, 25 °C) | Wake sources |
+|---|---|---|
+| `sleep_idle()` | ~6 mA | Any interrupt |
+| `sleep_adc_noise()` | ~1 mA | ADC complete, external interrupt, TWI address match, Timer2 |
+| `sleep_power_down()` | ~0.1 µA | External INT0/INT1, TWI address match, watchdog |
+| `sleep_power_save()` | ~0.1 µA | Same as power-down, plus Timer2 in async mode |
+| `sleep_standby()` | ~0.1 µA | Same as power-down (faster oscillator start-up) |
+| `sleep_extended_standby()` | ~0.1 µA | Power-down + async timer + fast oscillator |
+
+Only three of these have a compat name: `sleep_idle`, `sleep_power_save` and `sleep_power_down`,
+via `machine.idle()`, `machine.lightsleep()` and `machine.deepsleep()`. `sleep_adc_noise()`,
+`sleep_standby()` and `sleep_extended_standby()` are native-HAL-only.
+
+### Examples
+
+#### Power-down until a button press
+
+```python
+from pymcu.hal.gpio import Pin
+from pymcu.hal.power import sleep_power_down
+from pymcu.types import uint8, ptr
+
+EICRA: ptr[uint8] = ptr(0x69)
+EIMSK: ptr[uint8] = ptr(0x3D)
+
+led = Pin("PB5", Pin.OUT)
+
+@interrupt(0x0002)    # INT0 vector (ATmega328P)
+def on_int0():
+    led.toggle()
+
+def main():
+    EICRA[0] = 0    # INT0 triggered on low level
+    EIMSK[0] = 1    # enable INT0
+    asm("sei")
+    while True:
+        sleep_power_down()   # wake on INT0, toggle the LED, sleep again
+```
+
+#### ADC noise-reduction sleep
+
+Sleeping during the conversion stops the CPU clock, which removes most of the digital switching
+noise from the analog result.
+
+```python
+from pymcu.hal.adc import AnalogPin
+from pymcu.hal.power import sleep_adc_noise
+from pymcu.types import uint16
+
+sensor = AnalogPin("PC0")   # A0 on an Arduino Uno; "A0" is not a valid channel name
+
+def read_quiet() -> uint16:
+    sensor.start_conversion()   # ADSC + ADIE
+    sleep_adc_noise()           # CPU sleeps; the ADC ISR wakes it
+    return sensor.read_result()
+```
+
+#### Watchdog-based periodic wake
+
+```python
+from pymcu.hal.power import sleep_power_down
+from pymcu.hal.watchdog import Watchdog
+
+wdt = Watchdog(timeout_ms=1000)
+
+@interrupt(0x0018)    # WDT vector (ATmega328P)
+def on_wdt():
+    pass              # just wake, do nothing in the ISR
+
+def main():
+    wdt.enable()
+    asm("sei")
+    while True:
+        sleep_power_down()   # ~1 s at ~0.1 µA, then run the loop body
+        do_periodic_task()
+```
+
+### ATmega328P sleep register map
+
+| Register | Address | Description |
+|---|---|---|
+| `SMCR` | `0x53` | Sleep Mode Control Register (SM2:0, SE) |
+| `MCUCR` | `0x55` | MCU Control Register (BODS, BODSE) |
+
+:::caution[Advanced — native HAL only]
+`sleep_adc_noise()`, `sleep_standby()` and `sleep_extended_standby()` have no MicroPython or
+CircuitPython name — the compat APIs only cover idle, power-save and power-down. So does
+everything around them in these examples: `@interrupt(vector)` handlers, raw `ptr[T]` register
+access to `EICRA` / `EIMSK`, and inline `asm("sei")` are native-HAL-only in every ecosystem.
+
+`machine.Pin.irq()` is the one compat route to an ISR-driven wake — CircuitPython's `digitalio`
+deliberately has no interrupt support at all. Prefer
+[`machine`](/compat/micropython/) or [`alarm`](/compat/circuitpython/) where they cover your
+case; the native HAL API may still change between alpha releases.
+:::
+
+## See also
+
+- [Watchdog](/stdlib/watchdog/) — the timer that wakes the MCU from power-down
+- [Timer](/stdlib/timer/) — Timer2 async mode for `sleep_power_save()`

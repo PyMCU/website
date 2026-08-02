@@ -1,0 +1,330 @@
+---
+title: I2C
+description: I2C / TWI bus — machine.I2C, busio.I2C and the native HAL (AVR TWI, RP2040 / RP2350 I2C0).
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+I2C is available through three APIs. **MicroPython** (`machine.I2C`) and **CircuitPython**
+(`busio.I2C`) are the recommended ones — they are stable, community-specified, and compile to the
+same TWI register writes as the native HAL. The native `pymcu.hal.i2c.I2C` is the layer
+underneath; reach for it for transaction-level control (`start()` / `read_ack()` / `read_nack()`),
+the TWI interrupt, and the RP2040 / RP2350.
+
+## Scan the bus for devices
+
+Neither compat API can return a Python list — there is no heap — so a scan either counts
+devices into a caller-owned buffer or probes one address at a time.
+
+<Tabs syncKey="api">
+<TabItem label="MicroPython">
+
+```python
+from machine import I2C
+from pymcu.types import uint8
+
+def main():
+    i2c = I2C()
+    found: uint8[8] = bytearray(8)
+
+    n: uint8 = i2c.scan(found, 8)       # returns the count, fills `found`
+    i: uint8 = 0
+    while i < n:
+        print("device: ", found[i], sep="")
+        i += 1
+```
+
+</TabItem>
+<TabItem label="CircuitPython">
+
+```python
+import board
+import busio
+from pymcu.types import uint8
+
+def main():
+    i2c = busio.I2C(board.SCL, board.SDA)
+
+    while not i2c.try_lock():
+        pass
+
+    addr: uint8 = 1
+    while addr < 128:
+        if i2c.probe(addr):
+            print("device: ", addr, sep="")
+        addr += 1
+
+    i2c.unlock()
+```
+
+</TabItem>
+<TabItem label="Native HAL">
+
+```python
+from pymcu.hal.i2c import I2C
+from pymcu.types import uint8
+
+def main():
+    i2c = I2C()                         # I2C(sda=4, scl=5) on a Pico
+
+    addr: uint8 = 1
+    while addr < 128:
+        if i2c.ping(addr):
+            print("device: ", addr, sep="")
+        addr += 1
+```
+
+</TabItem>
+</Tabs>
+
+## Write a register, then read it back
+
+<Tabs syncKey="api">
+<TabItem label="MicroPython">
+
+```python
+from machine import I2C
+from pymcu.types import uint8
+
+DEV = 0x48
+
+def main():
+    i2c = I2C()
+    buf: uint8[3] = [0, 0, 0]
+
+    i2c.writeto(DEV, 0x00)              # single byte: select register 0
+    n: uint8 = i2c.readfrom_into(DEV, buf)   # 1 on success, 0 on NACK
+
+    buf[0] = 0xAA
+    buf[1] = 0xBB
+    buf[2] = 0xCC
+    i2c.writeto(DEV, buf)               # block write; len(buf) folds at build time
+```
+
+</TabItem>
+<TabItem label="CircuitPython">
+
+```python
+import board
+import busio
+from pymcu.types import uint8
+
+DEV = 0x48
+
+def main():
+    i2c = busio.I2C(board.SCL, board.SDA, frequency=100000)
+
+    while not i2c.try_lock():
+        pass
+
+    reg: uint8[1] = [0x00]
+    buf: uint8[3] = [0, 0, 0]
+
+    i2c.writeto_then_readfrom(DEV, reg, buf)   # write + repeated START + read
+
+    buf[0] = 0xAA
+    buf[1] = 0xBB
+    buf[2] = 0xCC
+    i2c.writeto(DEV, buf)
+
+    i2c.unlock()
+```
+
+</TabItem>
+<TabItem label="Native HAL">
+
+```python
+from pymcu.hal.i2c import I2C
+from pymcu.types import uint8
+
+DEV = 0x48
+
+def main():
+    i2c = I2C()
+    buf: uint8[3] = [0, 0, 0]
+
+    with i2c:                           # start() before the block, stop() after
+        i2c.write((DEV << 1) | 0)       # SLA+W
+        i2c.write(0x00)                 # register address
+
+    i2c.read_n(DEV, buf, 3)
+
+    buf[0] = 0xAA
+    i2c.write_bytes(DEV, buf, 3)
+```
+
+</TabItem>
+</Tabs>
+
+:::note[CircuitPython requires the lock; MicroPython does not]
+`busio.I2C` treats the bus as a shared resource, so every transfer has to be bracketed by
+`try_lock()` / `unlock()` — code that skips it will not run on real CircuitPython. On bare metal
+there is no competing owner, so PyMCU's `try_lock()` simply returns 1 the first time and
+`unlock()` clears the flag; keeping the calls costs nothing and keeps the file portable.
+`machine.I2C` has no lock protocol at all, which is the single biggest source of friction when
+moving an I2C driver between the two dialects.
+
+Two more deviations: `busio.I2C.scan()` cannot return a list on bare metal, so it is a
+compile-time warning and a no-op — loop over `probe(addr)` instead. `machine.I2C.scan(buf, max)`
+fills a caller-owned buffer and returns the count; the argument-less `scan()` returns the count
+only.
+:::
+
+---
+
+## Native HAL reference - pymcu.hal.i2c
+
+```python
+from pymcu.hal.i2c import I2C
+```
+
+`pymcu.hal.i2c` is available on **AVR** (the TWI peripheral) and **ARM** (RP2040 / RP2350, the
+DW_apb_i2c controller). It is not implemented for PIC — importing it there raises a
+`CompileError`. For a bit-banged bus on any target with GPIO, use
+`pymcu.hal.softi2c.SoftI2C(scl, sda, half_us=5)`, which takes `Pin` objects.
+
+### `I2C(addr=0, general_call=0)` — AVR
+
+Initializes the TWI peripheral at 100 kHz. SDA = `PC4` (A4), SCL = `PC5` (A5) on the
+ATmega328P. `addr` is only relevant when acting as a bus target.
+
+#### Status constants
+
+| Constant | Value | Meaning |
+|---|---|---|
+| `I2C.START` | `0x08` | START condition transmitted |
+| `I2C.SLA_ACK` | `0x18` | SLA+W transmitted, ACK received |
+| `I2C.SLA_NACK` | `0x20` | SLA+W transmitted, NACK received |
+| `I2C.DATA_ACK` | `0x28` | Data transmitted, ACK received |
+| `I2C.SLA_R_ACK` | `0x40` | SLA+R transmitted, ACK received |
+
+`ADDR_WRITE`, `DATA_RECEIVED`, `LAST_RECEIVED`, `STOP_RECEIVED`, `ADDR_READ`, `DATA_SENT` and
+`LAST_SENT` cover the target-mode states.
+
+#### I2C methods - AVR
+
+| Method | Description |
+|---|---|
+| `ping(addr: uint8) -> uint8` | 1 if the device ACKs, 0 on NACK |
+| `start() -> uint8` | Send START, return the status code |
+| `stop()` / `end()` | Send STOP |
+| `write(data: uint8) -> uint8` | Write a byte, return the status code |
+| `read_ack() -> uint8` | Read a byte and send ACK |
+| `read_nack() -> uint8` | Read a byte and send NACK (last byte) |
+| `write_to(addr, data)` / `writebyte(addr, data)` | Single-byte convenience write |
+| `write_bytes(addr, buf, n)` | Block write |
+| `read_from(addr)` / `read_n(addr, buf, n)` | Convenience reads |
+| `writeto_mem(addr, reg, data)` / `readfrom_mem(addr, reg, buf, n)` | Register-oriented access |
+| `status()` / `ready()` | Raw TWSR status / TWINT poll |
+| `irq(handler)` | Register a TWI interrupt handler |
+| `__enter__()` / `__exit__()` | `start()` / `stop()` — used by `with i2c:` |
+
+### `I2C(freq=100000, sda=4, scl=5)` — RP2040 / RP2350
+
+Wraps the I2C0 controller.
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `freq` | `const` | `100000` | **Accepted and ignored.** See the warning below |
+| `sda` | `const` | `4` | GPIO for SDA (pad pull-up enabled by the constructor) |
+| `scl` | `const` | `5` | GPIO for SCL |
+
+:::caution[`freq` does nothing on the RP2040 / RP2350]
+The parameter is in the signature for MicroPython compatibility, but the constructor hard-codes
+standard mode: it writes `SPEED = 1` into `IC_CON` and never touches the SCL high/low count
+registers (`IC_SS_SCL_HCNT` / `IC_SS_SCL_LCNT`) that would actually set the bit rate. Passing
+`freq=400_000` compiles cleanly and still gives you a **100 kHz** bus. Any device that needs fast
+mode will not get it from this argument today.
+:::
+
+#### I2C methods - RP2040 / RP2350
+
+| Method | Description |
+|---|---|
+| `write_to(addr: uint8, data: uint8)` | Address the target and write a single byte |
+| `write_bytes(addr: uint8, data: bytearray, n: uint8)` | Address the target and write `n` bytes |
+
+The RP2040/RP2350 controller exposes a target-address register rather than the AVR's explicit
+START/STOP state machine, so the transaction-level `start()` / `read_ack()` / `read_nack()`
+methods are AVR-only. Reads are not wrapped yet on ARM.
+
+### Context manager (`with` statement)
+
+On AVR, `with i2c:` sends START before the block and STOP after it:
+
+```python
+with i2c:
+    i2c.write(0xD0)    # start() before, stop() after
+    i2c.write(0x3B)
+```
+
+### Example — bus scanner (AVR)
+
+```python
+from pymcu.hal.i2c import I2C
+from pymcu.hal.uart import UART
+from pymcu.types import uint8
+
+def main():
+    i2c = I2C()
+    uart = UART(9600)
+    uart.println("Scanning...")
+
+    addr: uint8 = 1
+    while addr < 128:
+        if i2c.ping(addr):
+            uart.write_str("Found: 0x")
+            uart.write_hex(addr)
+        addr += 1
+```
+
+### Example — read a register via `with` (AVR)
+
+```python
+from pymcu.hal.i2c import I2C
+from pymcu.types import uint8
+
+def read_reg(i2c: I2C, dev_addr: uint8, reg: uint8) -> uint8:
+    with i2c:
+        i2c.write((dev_addr << 1) | 0)   # SLA+W
+        i2c.write(reg)
+
+    result: uint8 = 0
+    with i2c:
+        i2c.write((dev_addr << 1) | 1)   # SLA+R
+        result = i2c.read_nack()
+    return result
+```
+
+### Example — write to a display on a Pico
+
+```python
+from pymcu.hal.i2c import I2C
+
+def main():
+    i2c = I2C(sda=4, scl=5)      # 100 kHz -- freq= is accepted but has no effect
+    i2c.write_to(0x3C, 0xAE)     # SSD1306: display off
+    i2c.write_to(0x3C, 0xAF)     # display on
+```
+
+:::caution[Advanced — native HAL only]
+Transaction-level control (`start()`, `stop()`, `read_ack()`, `read_nack()`, the raw `status()`
+codes), the TWI interrupt (`irq()`), the register-oriented `writeto_mem()` / `readfrom_mem()`
+helpers and the `with i2c:` START/STOP context manager have no MicroPython or CircuitPython
+equivalent.
+
+`machine.I2C` and `busio.I2C` are also **AVR only** today — both compat packages import their
+I2C backend behind an `__CHIP__.arch == "avr"` guard. On the RP2040 / RP2350, use
+`pymcu.hal.i2c.I2C` directly. On both compat APIs the `scl` / `sda` arguments are accepted for
+compatibility only: the ATmega328P TWI pins are fixed at `PC5` / `PC4`.
+
+The native HAL API may still change between alpha releases, so prefer
+[`machine.I2C`](/compat/micropython/) or [`busio.I2C`](/compat/circuitpython/) wherever they
+cover your use case.
+:::
+
+## See also
+
+- [SPI](/stdlib/spi/) — the other synchronous bus, with the same `with` chip-select pattern
+- [GPIO](/stdlib/gpio/) — the `Pin` objects `SoftI2C` takes
+- [Sensor dashboard example](/examples/sensor-dashboard/) — a bus-attached sensor in a full program

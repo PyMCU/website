@@ -1,0 +1,281 @@
+---
+title: GPIO
+description: Digital I/O — machine.Pin, digitalio.DigitalInOut and the native Pin class.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Digital I/O is available through three APIs. **MicroPython** (`machine.Pin`) and
+**CircuitPython** (`digitalio.DigitalInOut`) are the recommended ones — they are stable,
+community-specified, and compile to exactly the same machine code as the native HAL. The
+native `pymcu.hal.gpio.Pin` is the layer underneath; reach for it when you need something
+the compat APIs do not expose.
+
+## Blink the built-in LED
+
+<Tabs syncKey="api">
+<TabItem label="MicroPython">
+
+```python
+from machine import Pin
+from utime import sleep_ms
+
+led = Pin(13, Pin.OUT)      # Arduino pin number; 25 on a Pico
+
+while True:
+    led.toggle()
+    sleep_ms(500)
+```
+
+</TabItem>
+<TabItem label="CircuitPython">
+
+```python
+import board
+import digitalio
+import time
+
+led = digitalio.DigitalInOut(board.LED)
+led.direction = digitalio.Direction.OUTPUT
+
+while True:
+    led.value = not led.value
+    time.sleep(0.5)
+```
+
+</TabItem>
+<TabItem label="Native HAL">
+
+```python
+from pymcu.hal.gpio import Pin
+from pymcu.time import delay_ms
+
+led = Pin("PB5", Pin.OUT)   # port/pin string on AVR and PIC; Pin(25, ...) on ARM
+
+while True:
+    led.toggle()
+    delay_ms(500)
+```
+
+</TabItem>
+</Tabs>
+
+## Read a button with a pull-up
+
+<Tabs syncKey="api">
+<TabItem label="MicroPython">
+
+```python
+from machine import Pin
+from utime import sleep_ms
+
+led = Pin(13, Pin.OUT)
+btn = Pin(2, Pin.IN, Pin.PULL_UP)
+
+while True:
+    if btn.value() == 0:    # active low
+        led.toggle()
+    sleep_ms(100)
+```
+
+</TabItem>
+<TabItem label="CircuitPython">
+
+```python
+import board
+import digitalio
+import time
+
+led = digitalio.DigitalInOut(board.LED)
+led.direction = digitalio.Direction.OUTPUT
+
+btn = digitalio.DigitalInOut(board.D2)
+btn.direction = digitalio.Direction.INPUT
+btn.pull = digitalio.Pull.UP
+
+while True:
+    if not btn.value:       # active low
+        led.value = not led.value
+    time.sleep(0.1)
+```
+
+</TabItem>
+<TabItem label="Native HAL">
+
+```python
+from pymcu.hal.gpio import Pin
+from pymcu.time import delay_ms
+from pymcu.types import uint8
+
+led = Pin("PB5", Pin.OUT)
+btn = Pin("PD2", Pin.IN, pull=Pin.PULL_UP)
+
+while True:
+    v: uint8 = btn.value()
+    if v == 0:              # active low
+        led.toggle()
+    delay_ms(100)
+```
+
+</TabItem>
+</Tabs>
+
+:::note[Pin naming differs per API]
+`machine.Pin` takes an Arduino pin number on AVR (`Pin(13)`) and the GPIO number on ARM
+(`Pin(25)`). `digitalio.DigitalInOut` takes a `board` constant (`board.LED`, `board.D2`).
+The native HAL takes a port/pin string on AVR and PIC (`"PB5"`, `"RB0"`) and a GPIO number
+on ARM. All three forms resolve at compile time.
+:::
+
+---
+
+## Native HAL reference - pymcu.hal.gpio
+
+```python
+from pymcu.hal.gpio import Pin
+```
+
+`pymcu.hal.gpio` is available on **AVR** (ATmega / ATtiny), **ARM** (RP2040 / RP2350) and
+**PIC** (PIC16). The class is the same on all three; what differs is how a pin is named and
+which of the optional features the silicon can back.
+
+| Target | How a pin is identified | Notes |
+|---|---|---|
+| AVR (ATmega328P and friends) | Port/pin string: `"PB5"`, `"PD2"`, `"PC0"` | `irq()` and `init()`; no open-drain, no pull-down, no drive strength |
+| ARM (RP2040 / RP2350) | GPIO number: `Pin(25, Pin.OUT)` | Pin may be a runtime value; pull-down works; `irq()` and `init()` are not wrapped yet |
+| PIC (PIC16F84A / PIC16F877A) | Port/pin string: `"RB0"`, `"RA2"` | Same method names as AVR, but `pulse_in()` and `drive()` are stubs |
+
+### The Pin class
+
+```python
+Pin(name, mode, pull=-1, value=-1, drive=0, alt=-1)
+```
+
+Creates and configures a GPIO pin. Everything after `mode` is optional; `pull` and `value`
+must be compile-time constants.
+
+| Parameter | Type | Description |
+|---|---|---|
+| `name` | `str` on AVR/PIC, `uint8` on ARM | Port/pin name (`"PB5"`) or GPIO number (`25`) |
+| `mode` | `const[uint8]` | `Pin.OUT` or `Pin.IN` |
+| `pull` | `const[uint8]` | `Pin.PULL_UP` (inputs) |
+| `value` | `const` | Initial output level (outputs) |
+| `drive` | `const` | Drive strength. **Not supported on AVR** — any non-zero value raises a `CompileError`; on PIC it is silently ignored |
+| `alt` | `const` | Alternate function select. **Not supported on AVR** — any value other than `-1` raises a `CompileError` |
+
+#### Pin constants
+
+| Constant | Value | Description |
+|---|---|---|
+| `Pin.OUT` | 0 | Output mode |
+| `Pin.IN` | 1 | Input mode |
+| `Pin.OPEN_DRAIN` | 2 | Open-drain output. **AVR raises `CompileError("Open-drain mode not supported on AVR")`.** On RP2040/RP2350 it is accepted for API compatibility and leaves the output floating rather than driving it |
+| `Pin.PULL_UP` | 1 | Enable pull-up resistor |
+| `Pin.PULL_DOWN` | 2 | Enable pull-down resistor. **AVR raises `CompileError("Pull-down resistor not supported on AVR")`** — the silicon has no pull-downs. On PIC the value is silently ignored; only RP2040/RP2350 honours it |
+| `Pin.IRQ_FALLING` | 1 | Interrupt on falling edge (AVR / PIC) |
+| `Pin.IRQ_RISING` | 2 | Interrupt on rising edge (AVR / PIC) |
+| `Pin.IRQ_LOW_LEVEL` | 4 | Interrupt on low level (AVR / PIC) |
+| `Pin.IRQ_HIGH_LEVEL` | 8 | Interrupt on high level (AVR / PIC) |
+
+#### Pin methods
+
+| Method | AVR | ARM | PIC | Description |
+|---|---|---|---|---|
+| `high()` | yes | yes | yes | Drive the pin high |
+| `low()` | yes | yes | yes | Drive the pin low |
+| `on()` | yes | yes | yes | Alias for `high()` |
+| `off()` | yes | yes | yes | Alias for `low()` |
+| `toggle()` | yes | yes | yes | Flip the output level |
+| `value(x=-1)` | yes | yes | yes | Read the pin when `x == -1`, otherwise write `x` |
+| `mode(m)` | yes | yes | yes | Set the direction (AVR/PIC also read it back with `mode(-1)`) |
+| `pull(p)` | yes | yes | yes | Configure the pull resistor. `Pin.PULL_DOWN` raises a `CompileError` on AVR and is ignored on PIC |
+| `pulse_in(state, timeout_us=1000)` | partial | yes | **stub** | Measure a pulse width in microseconds. Real only on the ATmega48/88/168/328 family; every other AVR part and every PIC part returns `0` without measuring anything |
+| `init(mode=-1, pull=-1, value=-1, ...)` | yes | — | yes | Re-configure an existing pin |
+| `drive(strength)` | **no** | — | **no-op** | Drive-strength control. AVR raises a `CompileError`; the PIC implementation is an empty `pass`, so the call compiles but changes nothing. Only use it where the datasheet says the silicon has it |
+| `irq(trigger, handler=0)` | yes | — | yes | Configure an edge/level interrupt |
+
+On the RP2040/RP2350 a constant pin number const-folds all the way down: `Pin(25).toggle()`
+lowers to a single 32-bit store to `SIO_GPIO_OUT_XOR`. Only a genuinely runtime pin number pays
+for the shift and address arithmetic.
+
+### Native HAL examples — AVR (Arduino Uno / ATmega328P)
+
+```python
+from pymcu.hal.gpio import Pin
+from pymcu.types import uint8, uint16
+
+# Output pin
+led = Pin("PB5", Pin.OUT)
+led.high()
+led.low()
+led.toggle()
+
+# Input pin with pull-up
+btn = Pin("PD2", Pin.IN, pull=Pin.PULL_UP)
+v: uint8 = btn.value()
+
+# Interrupt-driven input (AVR INT0)
+btn2 = Pin("PD2", Pin.IN)
+btn2.irq(Pin.IRQ_FALLING)   # sets the trigger; use @interrupt(0x0002) for the handler
+
+# Pulse measurement (e.g. DHT11, HC-SR04)
+echo = Pin("PD4", Pin.IN)
+width: uint16 = echo.pulse_in(1, timeout_us=10000)
+```
+
+#### Using board pin names
+
+```python
+from pymcu.boards.arduino_uno import D13, D2, A0, LED_BUILTIN
+
+led = Pin(LED_BUILTIN, Pin.OUT)    # same as Pin("PB5", Pin.OUT)
+btn = Pin(D2, Pin.IN)              # same as Pin("PD2", Pin.IN)
+```
+
+`pymcu.boards` also ships `arduino_mega` and `arduino_leonardo`.
+
+### Native HAL examples — ARM (Raspberry Pi Pico / Pico 2)
+
+Pins are plain GPIO numbers. The on-board LED is GP25 on the Pico and Pico 2.
+
+```python
+from pymcu.hal.gpio import Pin
+from pymcu.time import delay_ms
+from pymcu.types import uint32
+
+def main():
+    led = Pin(25, Pin.OUT)
+    btn = Pin(15, Pin.IN, pull=Pin.PULL_UP)
+
+    while True:
+        pressed: uint32 = 1 - btn.value()
+        if pressed:
+            led.toggle()
+        delay_ms(100)
+```
+
+The constructor brings `IO_BANK0` and `PADS_BANK0` out of reset, sets the pad's input-enable
+bit, routes the pin to the SIO function (`FUNCSEL = 5`) and then sets the direction — so a
+`Pin(...)` is a complete bring-up, not just a direction write.
+
+:::caution[Advanced — native HAL only]
+Pin-change interrupts (`irq()`) and `pulse_in()` have no CircuitPython equivalent —
+`digitalio` deliberately omits interrupts. `machine.Pin` exposes `irq()` and
+`machine.time_pulse_us()`; everything else on this page needs the native HAL.
+
+Some of the API is wider than the silicon PyMCU targets today. `Pin.OPEN_DRAIN`,
+`Pin.PULL_DOWN` and `drive()` each raise a `CompileError` on AVR; `drive()` is an empty `pass`
+on PIC, and `pulse_in()` returns `0` without measuring on PIC and on the ATtiny / ATmega2560 /
+ATmega32U4 parts. These names exist so a portable driver can be written once, not because every
+backend implements them — check the table above before relying on one.
+
+The native HAL API may still change between alpha releases, so prefer
+[`machine.Pin`](/compat/micropython/) or
+[`digitalio.DigitalInOut`](/compat/circuitpython/) wherever they cover your use case.
+:::
+
+## See also
+
+- [Blink example](/examples/blink/) — the shortest complete program that drives a pin
+- [PWM](/stdlib/pwm/) — analog-like output on the pins that have a timer channel
+- [Time](/stdlib/time/) — `delay_ms()` / `delay_us()`, the other half of every blink loop

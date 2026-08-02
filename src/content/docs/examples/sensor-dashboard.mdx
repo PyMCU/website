@@ -1,0 +1,249 @@
+---
+title: Sensor Dashboard Example
+description: Two ISRs, ADC sampling and an integer averaging filter on an ATmega328P, with the whole dashboard in a few hundred bytes of flash.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+A multi-peripheral dashboard combining an INT0 button ISR, Timer0 overflow ISR, ADC sampling,
+a running average filter, and conditional verbose/compact UART output.
+
+:::note[AVR example]
+This page targets the **ATmega328P**: the raw register addresses, the `@interrupt` vector
+numbers and GPIOR0 are all AVR-specific. See the
+[RP2040 / RP2350 page](/examples/rp2040/) for the Pico peripheral set.
+:::
+
+## What it demonstrates
+
+- Two concurrent ISRs sharing data via `global` + GPIOR0 atomic flags.
+- ADC read triggered from the main loop, guarded by a timer flag.
+- EMA filter implemented with integer arithmetic — `float` is supported on AVR and ARM,
+  but integer shifts keep this loop small and exact.
+- Conditional output format selected at startup via UART.
+
+## Reading the analog input
+
+The sampling half of the dashboard is ordinary application code and reads the same in all
+three APIs. This is the piece you can lift straight into a MicroPython or CircuitPython
+project:
+
+<Tabs syncKey="api">
+<TabItem label="MicroPython">
+
+```python
+from machine import Pin, ADC, UART
+from pymcu.types import uint8, uint16
+
+
+def main():
+    uart = UART(0, 9600)
+    pot = ADC(Pin(14))              # Pin(14) == A0 == PC0
+
+    ema: uint16 = 0
+    while True:
+        raw: uint16 = pot.read()    # 0..1023, 10-bit
+        ema = ema - (ema >> 4) + (raw >> 4)
+        uart.print_byte(uint8(ema >> 2))
+```
+
+</TabItem>
+<TabItem label="CircuitPython">
+
+```python
+import board
+import busio
+from analogio import AnalogIn
+from pymcu.types import uint8, uint16
+
+
+def main():
+    uart = busio.UART(board.TX, board.RX, baudrate=9600)
+    pot = AnalogIn(board.A0)        # board.A0 == "PC0"
+
+    tx: uint8[1] = [0]
+    ema: uint16 = 0
+    while True:
+        raw: uint16 = pot.value >> 6   # .value is 16-bit; back to 0..1023
+        ema = ema - (ema >> 4) + (raw >> 4)
+        tx[0] = uint8(ema >> 2)
+        uart.write(tx)
+```
+
+</TabItem>
+<TabItem label="Native HAL">
+
+```python
+from pymcu.hal.adc import AnalogPin
+from pymcu.hal.uart import UART
+from pymcu.types import uint8, uint16
+
+
+def main():
+    uart = UART(9600)
+    pot = AnalogPin("PC0")
+
+    ema: uint16 = 0
+    while True:
+        raw: uint16 = pot.read()
+        ema = ema - (ema >> 4) + (raw >> 4)
+        uart.print_byte(uint8(ema >> 2))
+```
+
+</TabItem>
+</Tabs>
+
+`analogio.AnalogIn.value` is 16-bit by CircuitPython's spec, so it is the AVR's 10-bit
+reading shifted left by 6; `machine.ADC.read()` keeps MicroPython's native 0-1023 range
+(`read_u16()` gives you the scaled form). Both are zero-cost wrappers over
+`pymcu.hal.adc.AnalogPin`.
+
+## Source (annotated)
+
+The dashboard proper adds two interrupt handlers, which is where the compat APIs run out.
+The program below is native HAL throughout — it is the shipped
+`examples/sensor-dashboard` with the display branch abridged:
+
+```python
+from pymcu.types import uint8, uint16
+from pymcu.chips.atmega328p import TIFR0
+from pymcu.hal.gpio import Pin
+from pymcu.hal.uart import UART
+from pymcu.hal.timer import Timer
+from pymcu.hal.adc import AnalogPin
+
+# One flag per ISR, polled and cleared by main. Both are detected as
+# ISR-shared and auto-promoted to GPIOR registers -- no manual GPIOR idiom.
+ovf_f: uint8 = 0   # Timer0 overflow
+btn_f: uint8 = 0   # INT0 mode toggle
+
+
+def timer0_ovf_isr():
+    global ovf_f
+    ovf_f = 1
+
+
+def int0_isr():
+    global btn_f
+    btn_f = 1
+
+
+def main():
+    led  = Pin("PB5", Pin.OUT)
+    btn  = Pin("PD2", Pin.IN, pull=Pin.PULL_UP)
+    uart = UART(9600)
+    adc  = AnalogPin("PC0")
+
+    timer = Timer(0, 256)            # Timer0, prescaler 256
+    timer.irq(timer0_ovf_isr)
+    btn.irq(Pin.IRQ_FALLING, int0_isr)
+
+    uart.println("SENSOR DASHBOARD")
+
+    raw: uint8 = 0
+    avg: uint8 = 0
+    lo:  uint8 = 255
+    hi:  uint8 = 0
+    verbose: uint8 = 1
+    tick: uint8 = 0
+
+    while True:
+        # Timer0 OVF: count ticks, sample the ADC every 64 (~262 ms)
+        if ovf_f == 1:
+            ovf_f = 0
+            TIFR0[0] = 1             # clear TOV0 (write-1-to-clear)
+            tick += 1
+            if tick == 64:
+                tick = 0
+                raw16: uint16 = adc.read()
+                raw = raw16 >> 2     # scale 10-bit to 8-bit
+
+                if raw < lo:
+                    lo = raw
+                if raw > hi:
+                    hi = raw
+
+                avg = (avg + raw) >> 1
+                led.toggle()
+
+                if verbose == 1:
+                    uart.write_str("R:")
+                    uart.write_hex(raw)
+                    uart.write_str(" A:")
+                    uart.write_hex(avg)
+                    uart.write('\n')
+                else:
+                    uart.write_hex(avg)
+                    uart.write('\n')
+
+        # INT0: toggle verbose/compact mode
+        if btn_f == 1:
+            btn_f = 0
+            if verbose == 1:
+                verbose = 0
+                uart.println("MODE:COMPACT")
+            else:
+                verbose = 1
+                uart.println("MODE:VERBOSE")
+```
+
+:::caution[Advanced — native HAL only]
+Nothing in the interrupt half of this program has a CircuitPython equivalent, and only part
+of it has a MicroPython one:
+
+- `Timer(0, 256)` with `timer.irq(handler)` is a native-HAL construct. `machine.Timer`
+  exists but is AVR-only in the compat layer, and it does not expose the overflow vector
+  this example hooks.
+- `digitalio` deliberately omits interrupts, so there is no CircuitPython way to react to a
+  button edge. MicroPython has `machine.Pin.irq(trigger, handler)`, which covers the INT0
+  half but not the Timer0 overflow vector.
+- Clearing `TIFR0[0]` is direct register access through the chip definition, which has no
+  compat surface at all.
+
+The native HAL API may change between alpha releases, so keep as much of your program as
+possible on [`machine`](/compat/micropython/) or
+[`digitalio`](/compat/circuitpython/) and drop to the HAL only for the ISR layer, as above.
+:::
+
+## The averaging filter
+
+The shipped example uses the cheapest possible smoother, a one-shift running average:
+
+```text
+avg = (avg + raw) >> 1
+```
+
+The tabbed sampling loop further up uses a longer exponential moving average instead:
+
+```text
+EMA = EMA - EMA/16 + raw/16
+```
+
+which is `alpha = 1/16 = 0.0625` using only integer shifts. `float` would also compile here
+(soft-float on AVR, bootrom fast-float or the M33 FPU on ARM), but the shift form costs a
+couple of instructions instead of a call.
+
+## Key points
+
+- `Timer(0, 256)` selects Timer0 with a prescaler of 256. At 16 MHz that overflows every
+  `256 * 256 / 16e6` = 4.096 ms, so 64 overflows give one ADC sample every ~262 ms.
+- `ovf_f` and `btn_f` are plain module globals. The compiler detects that they are written
+  in an ISR and read in `main`, gives them volatile semantics and promotes them to GPIOR
+  registers automatically — you do not write the GPIOR idiom by hand.
+- The ISR bodies stay minimal: set a flag and return. All the work, including the UART
+  writes, happens in the main loop.
+- `AnalogPin("PC0")` is the port-pin name, not `"A0"` — see
+  [ADC](/stdlib/adc/) for the valid channel names.
+- `uart.write_hex()` and `uart.println()` walk their output straight out of flash, so the
+  two display formats cost no SRAM.
+
+## Build
+
+```bash
+cd examples/sensor-dashboard    # in the pymcu-avr repository
+pymcu build
+pymcu flash --port /dev/cu.usbmodem*
+```
+
+See [`pymcu build`](/driver/#pymcu-build) for the full command reference. Then open a
+serial terminal on the board's port at **9600 baud** to watch the readings.

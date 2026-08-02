@@ -1,0 +1,403 @@
+---
+title: Interrupts and ISRs
+description: Handling hardware interrupts in PyMCU - the .irq() pattern, raw @interrupt vectors, ISR-shared globals and critical sections.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+An interrupt lets the hardware call your code the moment something happens - a pin
+changes, a timer overflows, a byte arrives - instead of you polling for it in a loop.
+PyMCU gives you three levels of access:
+
+1. **`.irq(handler)` on a peripheral object** - the usual way. One call configures the
+   peripheral, enables its interrupt-enable bit, turns on global interrupts and registers
+   your function at the right vector.
+2. **`@interrupt(vector)`** - attach a function to a raw vector address yourself, when you
+   want to drive the peripheral registers by hand.
+3. **`enable_interrupts()` / `disable_interrupts()`** - the global mask, for critical
+   sections.
+
+Handlers are ordinary functions. There is no ISR object, no runtime dispatch table and no
+per-interrupt allocation: the vector is resolved at compile time.
+
+## Run code when a button is pressed
+
+<Tabs syncKey="api">
+<TabItem label="MicroPython">
+
+```python
+from machine import Pin, UART
+from pymcu.types import uint8
+
+uart = UART(0, 9600)
+led  = Pin(13, Pin.OUT)
+btn  = Pin(2, Pin.IN)
+
+flag: uint8 = 0
+
+def on_press(pin: Pin):
+    global flag
+    if pin.value() == 0:
+        flag = 1
+
+btn.irq(on_press, Pin.IRQ_FALLING)    # handler first, MicroPython order
+
+uart.println("PIN IRQ MP")
+
+while True:
+    if flag == 1:
+        flag = 0
+        led.toggle()
+        uart.println("PRESSED")
+```
+
+The MicroPython handler signature takes the pin as an argument. The compiler synthesises
+the parameterless ISR wrapper for you. From the `pin-irq-mp` example.
+
+</TabItem>
+<TabItem label="CircuitPython">
+
+CircuitPython has **no interrupt support** in `digitalio` - that is an upstream design
+decision, not a PyMCU gap. There is no `DigitalInOut.irq`, and nothing for PyMCU to
+implement compatibly.
+
+If you are writing CircuitPython-flavoured code and need an interrupt, use either the
+MicroPython `machine.Pin.irq` API or the native HAL in the next tab. Both can be imported
+from the same file - the compat flavours are import namespaces, not sandboxes.
+
+For the narrow case of *waking from sleep* on a pin edge, CircuitPython's `alarm` module
+is supported; see [Power management](/stdlib/power/).
+
+</TabItem>
+<TabItem label="Native HAL">
+
+```python
+from pymcu.types import uint8
+from pymcu.hal.gpio import Pin
+from pymcu.hal.uart import UART
+
+# Set by the ISR, polled and cleared by main.
+pressed: uint8 = 0
+
+
+def on_press():
+    global pressed
+    pressed = 1
+
+
+def main():
+    btn  = Pin("PD2", Pin.IN, pull=Pin.PULL_UP)
+    uart = UART(9600)
+
+    btn.irq(Pin.IRQ_FALLING, on_press)   # trigger first, native order
+
+    count: uint8 = 0
+    uart.println("PIN IRQ")
+
+    while True:
+        if pressed == 1:
+            pressed = 0
+            count = count + 1
+            uart.write(count)
+```
+
+From the `pin-irq` example. Expected output: a `PIN IRQ` banner, then one raw count byte
+per press.
+
+</TabItem>
+</Tabs>
+
+:::caution[The argument order differs between the two APIs]
+`machine.Pin.irq(handler, trigger)` puts the handler first, matching MicroPython. The
+native `pymcu.hal.gpio.Pin.irq(trigger, handler)` puts the trigger first. Swapping them
+silently gives you the wrong configuration, so copy the order from whichever API you are
+importing.
+:::
+
+## What `.irq()` does for you
+
+A single `.irq()` call expands, at compile time, into the register writes an expert would
+hand-write:
+
+- the peripheral's own configuration (edge select, compare mode, receive enable, ...)
+- the peripheral's interrupt-enable bit (`EIMSK`, `TIMSK1`, `RXCIE0`, `SPIE`, `TWIE`,
+  `ADIE`, ...)
+- the global interrupt flag - `SREG[7] = 1`, i.e. `SEI`, on AVR
+- registration of your handler at the correct vector, through the `compile_isr()`
+  intrinsic
+
+So you do **not** need an `@interrupt` decorator on the handler, and you do not need
+`asm("SEI")` anywhere. Both are common leftovers when porting Arduino C.
+
+### Which peripherals expose `.irq()`
+
+| Peripheral | AVR | PIC14 | PIC12 | PIC18 | ARM (RP2040 / RP2350) |
+|---|---|---|---|---|---|
+| `pymcu.hal.gpio.Pin` | yes | yes | - | - | - |
+| `pymcu.hal.timer.Timer` | yes | yes | yes | yes | - |
+| `pymcu.hal.uart.UART` | yes | yes | - | yes | - |
+| `pymcu.hal.adc.AnalogPin` | yes | yes | - | yes | - |
+| `pymcu.hal.spi.SPI` | yes | - | - | - | - |
+| `pymcu.hal.i2c.I2C` | yes | - | - | - | - |
+
+On the ATtiny parts `Pin.irq()` raises
+`CompileError: IRQ not yet supported on ATtiny`. On the RP2040 and RP2350 no peripheral
+exposes `.irq()` yet - see [Interrupts on the RP boards](#interrupts-on-the-rp2040-and-rp2350).
+
+### Pin trigger constants
+
+| Constant | Value | Meaning |
+|---|---|---|
+| `Pin.IRQ_FALLING` | 1 | Falling edge |
+| `Pin.IRQ_RISING` | 2 | Rising edge |
+| `Pin.IRQ_LOW_LEVEL` | 4 | Low level |
+| `Pin.IRQ_HIGH_LEVEL` | 8 | High level |
+
+There is no `Pin.IRQ_CHANGE` constant, but the underlying setup accepts **`3`** for
+any-edge - which is what a pin-change interrupt needs. The `pcint-counter` example passes
+it as a bare literal: `btn.irq(3, pcint0_isr)`, then reads the pin in the main loop to tell
+a press from a release.
+
+## Timer interrupts
+
+`Timer.irq(handler, mode)` takes `Timer.IRQ_OVF` (1, the default) for overflow or
+`Timer.IRQ_COMPA` (2) for compare-match. Compare-match plus `set_compare()` gives you an
+exact period; overflow gives you whatever the prescaler and counter width produce.
+
+```python
+from pymcu.types import uint8
+from pymcu.hal.gpio import Pin
+from pymcu.hal.uart import UART
+from pymcu.hal.timer import Timer
+
+tick: uint8 = 0
+
+
+def timer1_compa_isr():
+    global tick
+    tick = 1
+
+
+def main():
+    led  = Pin("PB5", Pin.OUT)
+    uart = UART(9600)
+
+    t = Timer(1, 256)                          # Timer1, prescaler 256
+    t.set_compare(62499)                       # (62499 + 1) * 256 / 16 MHz = 1.000 s
+    t.irq(timer1_compa_isr, Timer.IRQ_COMPA)   # OCIE1A + SEI + vector, in one call
+
+    uart.println("CTC")
+
+    while True:
+        if tick == 1:
+            tick = 0
+            led.toggle()
+            uart.write('C')
+            uart.write('\n')
+```
+
+From the `timer-ctc` example: a `CTC` banner, then `C` once per second.
+
+:::note[Timer0 is spoken for when you use `ticks_ms()` or `async`]
+The build injects `millis_init()` - Timer0 in overflow mode at prescaler 64 - when it sees
+`ticks_ms()`, or an `async def` on AVR. Do not also claim Timer0 for PWM or CTC in the same
+project. See [Timers](/stdlib/timer/).
+:::
+
+## Interrupt-driven UART receive
+
+`uart.irq(handler)` registers at the USART RX vector and enables `RXCIE0`. The stdlib ships
+the handler body: `uart_rx_isr()` pushes each received byte into a 16-byte ring buffer that
+the main loop drains without blocking.
+
+```python
+from pymcu.types import uint8
+from pymcu.hal.uart import UART, uart_rx_isr
+
+
+def on_rx():
+    uart_rx_isr()        # store the received byte in the ring buffer
+
+
+def main():
+    uart = UART(9600)
+    uart.irq(on_rx)
+
+    uart.println("RXIRQ")
+
+    while True:
+        if uart.rx_available():
+            c: uint8 = uart.rx_read()
+            uart.write(c)
+```
+
+From the `uart-rx-interrupt` example: an `RXIRQ` banner, then every received byte echoed
+back. Contrast with the polling `uart-echo` example, which blocks in `read()`.
+
+## ADC, SPI and I2C interrupts
+
+The same shape applies, but each peripheral has a contract your handler must honour or the
+interrupt misbehaves.
+
+| Peripheral | Registration | What the handler **must** do |
+|---|---|---|
+| `AnalogPin.irq(handler)` | ADC Conversion Complete vector, enables `ADIE` | Read `ADCL` **before** `ADCH` - reading the low byte latches the high byte. Example: `adc-interrupt` |
+| `SPI.irq(handler)` | SPI STC vector, enables `SPIE` | Read `SPDR`, which both captures the byte and clears `SPIF`. Skip it and the interrupt re-fires immediately. Example: `spi-irq` |
+| `I2C.irq(handler)` | TWI vector, enables `TWIE` | Re-arm by writing `TWCR` with `TWINT` set - `TWCR.value = 0xC4` sets `TWINT`, `TWEA` and `TWEN` together. Skip it and the peripheral stalls. Example: `i2c-irq` |
+
+The `spi-irq` and `i2c-irq` examples both configure the ATmega as a *peripheral* (`SPI(SPI.PERIPHERAL)`,
+`I2C(0x42)`) and report each received byte as two hex digits over UART.
+
+## Raw vectors with `@interrupt`
+
+When you configure the peripheral registers yourself, decorate the handler with the vector
+address instead:
+
+```python
+from pymcu.types import uint8, uint16, interrupt, asm
+from pymcu.chips.atmega328p import PORTB, DDRB, TCCR0B, TIMSK0, EICRA, EIMSK, GPIOR0
+from pymcu.hal.uart import UART
+
+
+@interrupt(0x0020)          # TIMER0_OVF
+def timer0_ovf_isr():
+    GPIOR0[0] = 1
+
+
+@interrupt(0x0002)          # INT0
+def int0_isr():
+    GPIOR0[1] = 1
+
+
+def main():
+    DDRB[5] = 1
+    TCCR0B.value = 5        # normal mode, prescaler 1024
+    TIMSK0[0] = 1           # TOIE0
+    EICRA.value = 2         # INT0 falling edge
+    EIMSK[0] = 1            # INT0 enable
+
+    uart = UART(9600)
+    uart.println("MULTI ISR")
+
+    asm("SEI")              # you own the global flag in this style
+    # ... poll GPIOR0[0] and GPIOR0[1] in the main loop
+```
+
+From the `multi-isr` fixture, which runs both handlers in one program. Vector addresses are
+**byte** addresses from the chip's datasheet - `0x0002` is INT0 and `0x0020` is TIMER0_OVF
+on the ATmega328P. Always pass one explicitly: the decorator has a default, and it is
+almost certainly not the vector you meant.
+
+`@interrupt` and `.irq()` mix freely in one program, and nothing stops several handlers
+from coexisting.
+
+## Sharing state between an ISR and main
+
+An ISR that only sets a flag, with the main loop doing the work, is the pattern nearly
+every example uses - and PyMCU makes the plumbing free.
+
+```python
+pressed: uint8 = 0      # a plain module global
+
+def on_press():
+    global pressed
+    pressed = 1         # written by the ISR
+
+def main():
+    while True:
+        if pressed == 1:
+            pressed = 0 # read and cleared by main
+            ...
+```
+
+Two things happen automatically:
+
+**The global becomes volatile.** The optimizer builds a call graph, works out which globals
+are touched from both an ISR and the main path, and marks them. Their values are never
+cached in a register across statements, so the main loop always re-reads what the ISR
+wrote. A `FunctionRef` handed to an `.irq()` registration counts as an ISR entry point, not
+as a synchronous call - so this works whichever registration style you used.
+
+**On AVR, hot single-byte flags move into GPIOR registers.** Eligible globals are rewritten
+from SRAM into the chip's general-purpose I/O registers, so the ISR write and the main
+poll become one-cycle `IN`/`OUT`, and bit operations on the bit-addressable register become
+atomic `SBI`/`CBI`/`SBIS`/`SBIC`. This is exactly the hand-written GPIOR idiom, with none of
+the boilerplate - and the global stops occupying SRAM entirely.
+
+The promotion rules, so you can predict it:
+
+| Rule | Detail |
+|---|---|
+| Type | `uint8` only. Wider or signed globals stay in SRAM |
+| Count | Up to three, the number of GPIOR registers |
+| Priority | Bit-manipulated flags get first claim on the bit-addressable register, then the most-used globals |
+| Chips | The megaAVR family (ATmega48/88/168/328, 640/1280/2560, 16U4/32U4, 164/324/644/1284) and the ATtiny 25/45/85 and 24/44/84 |
+| Skipped | Globals named in inline `asm()` operands, in a naked asm string, or in a virtual call or GC root - those paths resolve by SRAM address |
+| Never reassigned | A GPIOR your program already imports from `pymcu.chips.*` is left alone |
+
+Chips without a known GPIOR layout simply get no promotion; the globals stay in SRAM, which
+is always correct. Anything wider than a byte - a `uint16` counter, an array - also stays in
+SRAM and is still volatile, so incrementing it from main while an ISR writes it needs a
+critical section.
+
+## Critical sections
+
+```python
+from pymcu.hal.irq import enable_interrupts, disable_interrupts
+
+disable_interrupts()
+shared_counter = shared_counter + 1     # nothing can interrupt this
+enable_interrupts()
+```
+
+Both functions are `@inline` and fold to a single instruction on every architecture that
+has one:
+
+| Architecture | Emitted |
+|---|---|
+| AVR | `SEI` / `CLI` - the I flag in `SREG` |
+| ARM (Cortex-M0+ and M33) | `cpsie i` / `cpsid i` - `PRIMASK` |
+| PIC14 / PIC14E | `INTCON` bit 7 (`GIE`) at `0x0B` |
+| PIC18 | `INTCON` bit 7 (`GIE`) at `0xFF2` |
+| RISC-V | `csrsi mstatus, 8` / `csrci mstatus, 8` - the `MIE` bit |
+| PIC12 | No-op - the core has no interrupt controller |
+
+On ARM this is real: `cpsid i` masks every configurable exception, leaving NMI and HardFault
+alive by design. The `irq-critical-rp2040` example exists specifically to prove it, and
+prints:
+
+```
+IRQ
+C:3
+OK
+```
+
+## Interrupts on the RP2040 and RP2350
+
+Global masking works (the section above), but **no RP peripheral exposes `.irq()` yet**.
+The vector table lives in the runtime's `crt0.S` and points every configurable exception at
+a shared `Default_Handler`; there is no weak symbol for a Python function to override.
+Peripheral interrupts on the RP boards therefore mean driving the NVIC yourself with `ptr`
+and inline `asm()`, and that is not something the HAL wraps today. See
+[Limitations](/limitations/).
+
+## Writing a good ISR
+
+- **Keep it short.** Set a flag or copy one register, and let the main loop do the work.
+  Every cycle in an ISR is a cycle the rest of the program does not get.
+- **Clear the source.** Several peripherals require an explicit acknowledgement - see the
+  table above. Missing it means the handler fires forever.
+- **Do not call into slow HAL code.** UART writes, delays and driver methods inside an ISR
+  will bite you.
+- **Prefer a `uint8` flag** for the ISR-to-main handoff, so the GPIOR promotion can apply.
+- **Guard wider shared state** with `disable_interrupts()` / `enable_interrupts()`, or you
+  will eventually read half of a 16-bit value.
+
+## Related
+
+- [GPIO](/stdlib/gpio/) - `Pin`, including `irq()`
+- [Timers](/stdlib/timer/) - `Timer`, prescalers and compare mode
+- [UART](/stdlib/uart/) - the ring buffer behind `uart_rx_isr()`
+- [ADC](/stdlib/adc/), [SPI](/stdlib/spi/), [I2C](/stdlib/i2c/)
+- [Power management](/stdlib/power/) - sleeping until an interrupt wakes you
+- [Limitations](/limitations/)

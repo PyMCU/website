@@ -1,0 +1,179 @@
+---
+title: PyMCU Documentation
+description: "PyMCU compiles typed, allocation-free Python to native AVR, RP2040 / RP2350 and PIC firmware - no interpreter, no heap. Install, blink and flash in five minutes."
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+:::tip[Alpha 3 is out]
+Generators, async/await, dicts, ARM parity on RP2040 / RP2350 (exceptions, floats), CYW43
+WiFi on the Pico 2 W, and a brand-new PIC backend —
+[read the release notes](https://github.com/PyMCU/PyMCU/releases/tag/v0.1.0a3), or see
+[what changed](/changelog/).
+:::
+
+**PyMCU** compiles a statically-typed, allocation-free subset of Python directly to bare-metal
+MCU machine code — no runtime, no interpreter, and no heap unless you opt into one.
+
+Write the Python you already know — the MicroPython or CircuitPython you would write for a
+Pico — and flash it to an ATmega328P (Arduino Uno), a Raspberry Pi Pico (RP2040 / RP2350)
+or a PIC16 in seconds.
+
+<Tabs syncKey="api">
+<TabItem label="MicroPython">
+
+```python
+from machine import Pin
+from utime import sleep_ms
+
+led = Pin(13, Pin.OUT)
+
+while True:
+    led.toggle()
+    sleep_ms(500)
+```
+
+</TabItem>
+<TabItem label="CircuitPython">
+
+```python
+import board
+import digitalio
+import time
+
+led = digitalio.DigitalInOut(board.LED)
+led.direction = digitalio.Direction.OUTPUT
+
+while True:
+    led.value = not led.value
+    time.sleep(0.5)
+```
+
+</TabItem>
+<TabItem label="Native HAL">
+
+```python
+from pymcu.hal.gpio import Pin
+from pymcu.time import delay_ms
+
+def main():
+    led = Pin("PB5", Pin.OUT)
+    while True:
+        led.toggle()
+        delay_ms(500)
+```
+
+</TabItem>
+</Tabs>
+
+```bash
+pymcu build   # → dist/firmware.hex
+pymcu flash   # → avrdude upload to Arduino Uno
+```
+
+This is not Python-flavoured C: it is the same source that runs under MicroPython or
+CircuitPython on a Pico, compiled ahead of time. The MicroPython and native-HAL versions
+above produce **byte-for-byte identical firmware** — the compat API is a genuine zero-cost
+abstraction, not a wrapper.
+
+Pick a tab once and the whole site follows you — every example on every page switches to
+the API you chose.
+
+---
+
+## Why PyMCU?
+
+| | Arduino (C++) | MicroPython | CircuitPython | **PyMCU** |
+|---|---|---|---|---|
+| Language | C++ | Python | Python | **Python** |
+| Runtime | None | Interpreter | Interpreter | **None** |
+| Heap | None | Yes | Yes | **None by default** (opt-in `list[T]` arena on AVR) |
+| Flash footprint | Small | ~256 KB | ~256 KB | **Minimal** |
+| Familiar syntax | Partial | Full | Full | **Full** |
+| Static types | No | No | No | **Yes (required)** |
+
+PyMCU occupies the gap between "write C++" and "run MicroPython": you write Python, but the
+compiler produces tight machine code with zero runtime overhead — AVR and PIC assembly
+emitted directly, ARM through LLVM.
+
+---
+
+## Quick Start
+
+### Installation
+
+```bash
+pipx install --pip-args=--pre "pymcu-compiler[avr]"    # AVR (ATmega / ATtiny)
+pipx install --pip-args=--pre "pymcu-compiler[arm]"    # RP2040 / RP2350
+pipx install --pip-args=--pre "pymcu-compiler[pic]"    # PIC16
+pipx install --pip-args=--pre "pymcu-compiler[all]"    # everything
+```
+
+Each extra bundles its full toolchain — no system packages needed.
+
+### Create a project
+
+```bash
+pymcu new my_project
+cd my_project
+```
+
+### Build and flash
+
+```bash
+pymcu build
+pymcu flash --port /dev/cu.usbmodem*
+```
+
+---
+
+## Supported targets
+
+| Architecture | Chips |
+|---|---|
+| **AVR** (ATmega) | ATmega48/88/168/328P, ATmega2560, ATmega32U4 |
+| **AVR** (ATtiny) | ATtiny25/45/85, ATtiny24/44/84, ATtiny13/13A, ATtiny2313/4313 |
+| **ARM** (Cortex-M0+ / M33) | RP2040 (Pico / Pico W), RP2350 (Pico 2 / Pico 2 W) — PIO on both; CYW43 WiFi on the Pico 2 W (RP2350) only |
+| **PIC** (mid-range) | PIC16F84A, PIC16F877A — new in alpha 3 |
+
+See [Supported Targets](/targets/) for the per-architecture peripheral and language coverage.
+
+---
+
+## Which API should I write?
+
+Pick the API that matches your background — all three compile to the same bare-metal firmware.
+
+| Package | API surface | Status |
+|---|---|---|
+| [`pymcu-micropython`](/compat/micropython/) | `machine` (Pin, UART, ADC, PWM, SPI, I2C, Timer, WDT), `utime`, `rp2`; `network` on the Pico 2 W | **Recommended** |
+| [`pymcu-circuitpython`](/compat/circuitpython/) | `board`, `digitalio`, `analogio`, `busio`, `pwmio`, `time`, `neopixel`; `wifi` on the Pico 2 W | **Recommended** |
+| [`pymcu.hal.*`](/stdlib/) | Direct register-level native HAL, `@interrupt`, `asm()`, `@extern` | Advanced |
+
+Start with MicroPython or CircuitPython. They are stable, community-specified, backed by real
+hardware compatibility guarantees, and they cost nothing at runtime — the compiler sees
+through them to the same registers.
+
+Drop to `pymcu.hal.*` when you need what the compat APIs do not expose: direct register
+access, interrupt handlers, inline assembly or C interop.
+
+:::caution[The native HAL is alpha-unstable]
+`pymcu.hal.*` works and is well tested, but it is the layer being actively reshaped — its API
+may change between alpha releases. Code written against `machine` or `digitalio` will not need
+to change.
+:::
+
+---
+
+## Next steps
+
+- [Installation](/getting-started/installation/) — install the compiler and a toolchain
+- [Quick Start](/getting-started/quickstart/) — first firmware on real hardware in five minutes
+- [CLI Driver](/driver/) — `pymcu new` / `build` / `flash` / `lint` and every `pyproject.toml` key
+- [Language Reference](/language-reference/) — complete syntax and type reference
+- [Standard Library](/stdlib/) — GPIO, UART, ADC, Timer, SPI, I2C and more
+- [Supported Targets](/targets/) — per-architecture peripheral and language coverage
+- [Examples Gallery](/examples/) — annotated firmware, AVR and Pico
+- [Limitations](/limitations/) — what PyMCU deliberately does not compile, and why
+- [Changelog](/changelog/) — what landed in each alpha
+- [MicroPython migration](/migration/from-micropython/) · [CircuitPython migration](/migration/from-circuitpython/)

@@ -1,0 +1,108 @@
+---
+title: Blink Example
+description: The AVR hello-world — toggle the Arduino Uno LED at 1 Hz in 162 bytes of flash, in MicroPython, CircuitPython and the native HAL.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Toggles the built-in LED on Arduino Uno (pin 13 / PB5) at 1 Hz.
+
+:::note[AVR example]
+This page targets the **ATmega328P** — the port-string pin name and the byte figures below
+are AVR-specific. The same program for a Raspberry Pi Pico is on the
+[RP2040 / RP2350 page](/examples/rp2040/).
+:::
+
+**Flash:** 162 bytes  **SRAM:** 0 bytes
+
+## Blink the built-in LED
+
+<Tabs syncKey="api">
+<TabItem label="MicroPython">
+
+```python
+from machine import Pin
+from utime import sleep_ms
+
+
+def main():
+    led = Pin(13, Pin.OUT)      # D13 -> PB5, resolved at compile time
+    while True:
+        led.high()
+        sleep_ms(1000)
+        led.low()
+        sleep_ms(1000)
+```
+
+</TabItem>
+<TabItem label="CircuitPython">
+
+```python
+import board
+import digitalio
+import time
+
+
+def main():
+    led = digitalio.DigitalInOut(board.LED)   # board.LED == "PB5"
+    led.direction = digitalio.Direction.OUTPUT
+    while True:
+        led.value = True
+        time.sleep(1.0)
+        led.value = False
+        time.sleep(1.0)
+```
+
+</TabItem>
+<TabItem label="Native HAL">
+
+```python
+from pymcu.hal.gpio import Pin
+from pymcu.time import delay_ms
+
+
+def main():
+    led = Pin("PB5", Pin.OUT)
+    while True:
+        led.high()
+        delay_ms(1000)
+        led.low()
+        delay_ms(1000)
+```
+
+</TabItem>
+</Tabs>
+
+All three compile to the same `SBI` / `CBI` port toggles around the same delay loop —
+`machine.Pin` and `digitalio.DigitalInOut` are zero-cost wrappers over `pymcu.hal.gpio.Pin`.
+The 162-byte figure is for the native-HAL build; the MicroPython build matches it and the
+CircuitPython build is 2 bytes larger, because the `Direction.OUTPUT` setter clears `PORT`
+before setting `DDR` as its spec requires. Byte figures move between alpha compiler
+releases — `pymcu build` prints the current one for your own build.
+
+:::note[CircuitPython has no `sleep_ms`]
+CircuitPython's `time` module exposes `sleep(seconds)`, `monotonic()` and `monotonic_ns()`
+only. Use `time.sleep(1.0)`; `sleep_ms` is a MicroPython name and lives in `utime`.
+:::
+
+## Key points
+
+- `Pin("PB5", Pin.OUT)` is zero-cost: the `__init__` body is inlined, no SRAM is used for the
+  pin object — the port/ddr/bit constants are resolved at compile time.
+- `Pin(13, ...)` in the MicroPython layer maps the Arduino pin number to `"PB5"` through a
+  `match` that is fully constant-folded, so the integer form costs nothing extra.
+- `delay_ms(1000)` calls a non-inline helper (`_delay_1ms_avr`) 1000 times, avoiding label
+  duplication in the assembler.
+
+## Build
+
+```bash
+cd examples/blink        # in the pymcu-avr repository
+pymcu build
+pymcu flash --port /dev/cu.usbmodem*
+```
+
+See [`pymcu build`](/driver/#pymcu-build) for the full command reference.
+
+Set `stdlib = ["micropython"]` or `stdlib = ["circuitpython"]` in `[tool.pymcu]` to make the
+matching compat flavour importable — see the [Quick Start](/getting-started/quickstart/).

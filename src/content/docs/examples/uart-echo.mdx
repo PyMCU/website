@@ -1,0 +1,239 @@
+---
+title: UART Echo Example
+description: Banner plus byte-for-byte echo on UART0 in MicroPython, CircuitPython and the native HAL, on an ATmega328P.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Sends a startup banner then echoes every received byte back on UART0.
+
+:::note[AVR example]
+This page targets the **ATmega328P**; the register names and the UBRR0 value below are
+AVR-specific. The Pico version is on the [RP2040 / RP2350 page](/examples/rp2040/).
+:::
+
+## Banner, then echo every byte
+
+<Tabs syncKey="api">
+<TabItem label="MicroPython">
+
+```python
+from machine import UART
+from pymcu.types import uint8
+
+
+def main():
+    uart = UART(0, 9600)        # id 0 = USART0; pins are fixed on AVR
+    uart.println("ECHO")
+
+    while True:
+        b: uint8 = uart.read()  # blocks until a byte arrives
+        uart.write(b)
+```
+
+</TabItem>
+<TabItem label="CircuitPython">
+
+```python
+import board
+import busio
+from pymcu.types import uint8
+
+
+def main():
+    uart = busio.UART(board.TX, board.RX, baudrate=9600)
+    uart.write(b"ECHO\r\n")
+
+    rx: uint8[1] = [0]
+    while True:
+        uart.readinto(rx)       # blocks until the buffer is full
+        uart.write(rx)
+```
+
+</TabItem>
+<TabItem label="Native HAL">
+
+```python
+from pymcu.types import uint8
+from pymcu.hal.uart import UART
+
+
+def main():
+    uart = UART(9600)
+    uart.println("ECHO")
+
+    while True:
+        b: uint8 = uart.read()
+        uart.write(b)
+```
+
+</TabItem>
+</Tabs>
+
+:::note[The two UART constructors differ]
+`machine.UART` takes a **peripheral id** (`UART(0, 9600)`) because MicroPython addresses
+UARTs by number. `busio.UART` takes **pins** (`busio.UART(board.TX, board.RX, baudrate=9600)`)
+because CircuitPython addresses them by pin. On the ATmega328P the TX/RX pins are fixed at
+PD1/PD0, so the `tx`/`rx` arguments are accepted for source compatibility and the hardware
+USART0 is configured either way.
+:::
+
+## Echo only when a byte is waiting
+
+Blocking reads are fine for an echo, but a real loop usually wants to do other work. Each
+API has a "bytes available" query.
+
+<Tabs syncKey="api">
+<TabItem label="MicroPython">
+
+```python
+from machine import Pin, UART
+from pymcu.types import uint8
+
+
+def main():
+    uart = UART(0, 9600)
+    led = Pin(13, Pin.OUT)
+
+    while True:
+        if uart.any():
+            b: uint8 = uart.read()
+            uart.write(b)
+            led.toggle()
+```
+
+</TabItem>
+<TabItem label="CircuitPython">
+
+```python
+import board
+import busio
+import digitalio
+from pymcu.types import uint8
+
+
+def main():
+    uart = busio.UART(board.TX, board.RX, baudrate=9600)
+    led = digitalio.DigitalInOut(board.LED)
+    led.direction = digitalio.Direction.OUTPUT
+
+    rx: uint8[1] = [0]
+    while True:
+        if uart.in_waiting:
+            uart.readinto(rx)
+            uart.write(rx)
+            led.value = not led.value
+```
+
+</TabItem>
+<TabItem label="Native HAL">
+
+```python
+from pymcu.hal.gpio import Pin
+from pymcu.hal.uart import UART
+from pymcu.types import uint8
+
+
+def main():
+    uart = UART(9600)
+    led = Pin("PB5", Pin.OUT)
+
+    while True:
+        if uart.available():
+            b: uint8 = uart.read_nb()
+            uart.write(b)
+            led.toggle()
+```
+
+</TabItem>
+</Tabs>
+
+On a polled hardware USART, `any()` / `in_waiting` / `available()` all reduce to the same
+thing: the RXC0 bit of `UCSR0A`. They report 0 or 1, not a byte count — there is no RX ring
+buffer unless you enable the interrupt-driven path in the HAL.
+
+## Key points
+
+- `UART(9600)` inlines the initialization sequence — UBRR0 is pre-computed at compile time to
+  103 for a 16 MHz clock.
+- `uart.read()` blocks until `UCSR0A[7]` (RXC0) is set. `read_nb()` is the non-blocking form:
+  it reads `UDR0` immediately and is only meaningful after `available()` returns true.
+- `uart.write(b)` blocks until `UCSR0A[5]` (UDRE0) is set, then writes to `UDR0`.
+- `busio.UART.write(buf)` walks a buffer. A `bytes` literal such as `b"ECHO\r\n"` is unrolled
+  at compile time into individual `write` calls, so the banner costs no SRAM.
+
+## Native HAL reference
+
+The smallest variant spells the banner out one byte at a time instead of going through the
+flash string pool:
+
+```python
+from pymcu.types import uint8
+from pymcu.hal.uart import UART
+
+
+def main():
+    uart = UART(9600)
+    uart.write(69)    # E
+    uart.write(67)    # C
+    uart.write(72)    # H
+    uart.write(79)    # O
+    uart.write(10)    # \n
+
+    while True:
+        b: uint8 = uart.read()
+        uart.write(b)
+```
+
+The native `pymcu.hal.uart.UART` also exposes `write_str(s)`, `println(s)` and
+`print_byte(value)`, which walk a string straight out of flash. `machine.UART` re-exports
+all three; `busio.UART` does not have them — its API is buffer-based, so you write
+`uart.write(b"...")` instead.
+
+:::caution[Advanced — native HAL only]
+`busio.UART.read()` and `busio.UART.readline()` cannot return a `bytes` object on bare metal
+(there is no heap), so they compile to a no-op and emit a compiler warning. Use
+`readinto(buf)` with a pre-allocated buffer, as above.
+
+Interrupt-driven RX (`pymcu.hal.uart.uart_rx_isr`) and the raw `UCSR0A` / `UDR0` register
+access it is built on have no compat equivalent and require the native HAL.
+:::
+
+## Printing more than bytes
+
+`print()` and f-strings are compiler builtins, not part of any one API — they work the same
+whichever flavour you import, and route to the console UART:
+
+```python
+from pymcu.types import uint8
+
+
+def main():
+    n: uint8 = 42
+    print(f"ready n={n:03d}")
+```
+
+See [f-strings on the Pico page](/examples/rp2040/) for the value form (`s = f"..."`) and
+the supported format specs; the same lowering is used on AVR.
+
+:::note[Which baud rate does `print()` use?]
+Because this program constructs its own `UART(9600)`, the build leaves the hardware to it
+and `print()` comes out at **9600 baud**. In a program that calls `print()` without opening
+a UART, the build opens the console itself at `stdout_baud`, which defaults to **115200**.
+Full details under [Serial output](/driver/#serial-output-and-print).
+:::
+
+## Build
+
+```bash
+cd examples/uart-echo    # in the pymcu-avr repository
+pymcu build
+pymcu flash --port /dev/cu.usbmodem*
+```
+
+See [`pymcu build`](/driver/#pymcu-build) for the full command reference. Then open a serial
+terminal at **9600 baud** — `screen /dev/cu.usbmodem1401 9600` on macOS, `picocom -b 9600
+/dev/ttyACM0` on Linux — and every character you type comes straight back.
+
+The MicroPython and CircuitPython variants are shipped separately as
+`examples/uart-echo-mp` and `examples/uart-echo-cp`.

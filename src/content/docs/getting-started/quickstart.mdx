@@ -1,0 +1,372 @@
+---
+title: Quick Start
+description: Create a PyMCU project, write a blink in the MicroPython or CircuitPython API, build it and flash it.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+This guide takes you from an empty directory to a blinking LED on an Arduino Uno
+(ATmega328P @ 16 MHz). If you have not installed PyMCU yet, start with
+[Installation](/getting-started/installation/).
+
+Pick an API in the first tab set below and the rest of the page follows you — the
+`pyproject.toml` and the program always stay in step.
+
+## 1. Create a project
+
+```bash
+pymcu new blink
+cd blink
+```
+
+`pymcu new` is interactive. It asks for:
+
+- the **compatibility layer** — `micropython` or `circuitpython`
+- the **board** (manufacturer, then model) — e.g. Arduino → Arduino Uno
+- whether to **initialise a git repository** and **install dependencies** — both default to no
+
+It does *not* ask which package manager to use: it detects `uv`, then `poetry`, and tells
+you which it picked. Only if neither is on your PATH does it ask anything, and the question
+is whether to install `uv` — declining falls back to `pip`. Pass `--pkg-manager uv|poetry|pip`
+to choose explicitly.
+
+It then scaffolds:
+
+| File | Contents |
+|---|---|
+| `src/main.py` | Starter firmware, written in the compat API you picked |
+| `pyproject.toml` | Project config with a `[tool.pymcu]` section |
+| `Makefile` | Always written — a target that runs your package manager, then `pymcu sync` |
+| `requirements.txt` | Only when the package manager is **pip** |
+| `.gitignore` | Git ignore rules |
+
+## 2. Look at `pyproject.toml`
+
+The generated file pins the compiler, the stdlib and your compat package, and describes the
+target under `[tool.pymcu]`. The dependency list and the `stdlib` key are what differ
+between the three APIs:
+
+<Tabs syncKey="api">
+<TabItem label="MicroPython">
+
+```toml
+[project]
+name = "blink"
+version = "0.1.0"
+dependencies = [
+    "pymcu-stdlib",
+    "pymcu-compiler[avr]",
+    "pymcu-micropython",
+]
+
+[tool.pymcu]
+board     = "arduino_uno"
+frequency = 16000000
+sources   = "src"
+entry     = "main.py"
+stdlib    = ["micropython"]
+
+[tool.pymcu.flash]
+programmer = "avrdude"
+```
+
+</TabItem>
+<TabItem label="CircuitPython">
+
+```toml
+[project]
+name = "blink"
+version = "0.1.0"
+dependencies = [
+    "pymcu-stdlib",
+    "pymcu-compiler[avr]",
+    "pymcu-circuitpython",
+]
+
+[tool.pymcu]
+board     = "arduino_uno"
+frequency = 16000000
+sources   = "src"
+entry     = "main.py"
+stdlib    = ["circuitpython"]
+
+[tool.pymcu.flash]
+programmer = "avrdude"
+```
+
+</TabItem>
+<TabItem label="Native HAL">
+
+```toml
+[project]
+name = "blink"
+version = "0.1.0"
+dependencies = [
+    "pymcu-stdlib",
+    "pymcu-compiler[avr]",
+]
+
+[tool.pymcu]
+board     = "arduino_uno"
+frequency = 16000000
+sources   = "src"
+entry     = "main.py"
+
+[tool.pymcu.flash]
+programmer = "avrdude"
+```
+
+</TabItem>
+</Tabs>
+
+`board` selects the chip and its default toolchain and programmer; `frequency` is the CPU
+clock in Hz and is what `delay_ms` / `sleep_ms` calibrate against. `stdlib` selects which
+compat flavour is put on the import path — drop the key and only `pymcu.*` is importable.
+The full key list is in the [CLI Driver](/driver/) reference.
+
+Most of that is the scaffolder being explicit. The **minimum** PyMCU needs is one line:
+
+```toml
+[tool.pymcu]
+board = "arduino_uno"
+```
+
+`frequency` defaults to 4 MHz, `sources` to `"src"` and `entry` to `"main.py"`, so on a
+board whose clock is not 4 MHz — the Uno's is 16 — `frequency` is the one you really do want
+to keep. Use `target = "atmega328p"` instead of `board` to name a bare chip; setting
+**both** is a hard error, not a precedence rule:
+
+```text
+Error: Cannot set both 'target' and 'board' in [tool.pymcu].
+  'board = "arduino_uno"' implies target = "atmega328p". Remove the 'target' key.
+```
+
+CircuitPython code needs `board` rather than `target`, because `import board` resolves to a
+module generated from that key.
+
+:::tip[Which API should I use?]
+Prefer **MicroPython** or **CircuitPython** during the alpha. They are stable and
+community-specified, and they compile to exactly the same firmware as the native HAL. The
+`pymcu.hal.*` API works, but it may change between alpha releases.
+:::
+
+## 3. Write the program
+
+Edit `src/main.py`. All three programs do the same thing: configure the LED pin as an
+output, then loop *on → wait 500 ms → off → wait 500 ms* forever.
+
+<Tabs syncKey="api">
+<TabItem label="MicroPython">
+
+```python
+from machine import Pin
+from utime import sleep_ms
+
+led = Pin(13, Pin.OUT)      # Arduino pin number; 25 on a Pico
+
+while True:
+    led.value(1)
+    sleep_ms(500)
+    led.value(0)
+    sleep_ms(500)
+```
+
+</TabItem>
+<TabItem label="CircuitPython">
+
+```python
+import board
+import digitalio
+import time
+
+led = digitalio.DigitalInOut(board.LED)
+led.direction = digitalio.Direction.OUTPUT
+
+while True:
+    led.value = True
+    time.sleep(0.5)
+    led.value = False
+    time.sleep(0.5)
+```
+
+</TabItem>
+<TabItem label="Native HAL">
+
+```python
+from pymcu.hal.gpio import Pin
+from pymcu.time import delay_ms
+
+led = Pin("PB5", Pin.OUT)   # port/pin string on AVR and PIC; Pin(25, ...) on ARM
+
+while True:
+    led.high()
+    delay_ms(500)
+    led.low()
+    delay_ms(500)
+```
+
+</TabItem>
+</Tabs>
+
+The first two are the same code you would run on a board under the real MicroPython or
+CircuitPython interpreter — except here it is compiled ahead of time.
+
+:::note[`sleep_ms` is a MicroPython name]
+MicroPython's `utime` (and its `time` alias) has `sleep_ms`, `sleep_us` and the `ticks_*`
+family. CircuitPython's `time` deliberately does **not** — it has `sleep(seconds)`,
+`monotonic()` and `monotonic_ns()`, so a half-second delay is `time.sleep(0.5)`.
+:::
+
+Top-level statements are fine, as written above — the compiler wraps them into `main()` for
+you. Writing `def main():` yourself works identically.
+
+## 4. Build
+
+```bash
+pymcu build
+```
+
+```text
+Flash: 162 / 32768 bytes (0% of program storage)
+  Done! ---------------------------------------- 0:00:02
+Build successful! Artifacts in: dist/
+```
+
+The artefacts land in `dist/`: `firmware.hex` for AVR and PIC, `firmware.bin` plus a
+drag-and-drop `firmware.uf2` for ARM, and alongside them the assembly listing
+(`firmware.asm`) and IR dump (`firmware.mir`) used for inspecting code generation.
+
+:::note[That figure excludes a fixed 106-byte preamble]
+On AVR the driver subtracts the constant startup preamble every PyMCU binary carries — 26
+interrupt-vector slots of 4 bytes each, plus a 2-byte `__bad_interrupt` jump — so the number
+is comparable with an `avr-gcc -Os` build, whose `crt0` costs the same. Run `avr-size` on
+`dist/firmware.hex` and you will see 106 bytes more. The ARM path reports the raw
+`firmware.bin` size with no deduction.
+:::
+
+Those 162 bytes are not a typo. For this blink:
+
+| Source | Total flash | SRAM |
+|---|---|---|
+| C (`avr-gcc -Os`) | 176 B | 0 B |
+| **PyMCU** (native HAL) | **162 B** | 0 B |
+| **PyMCU** (MicroPython API) | **162 B** | 0 B |
+| **PyMCU** (CircuitPython API) | **164 B** | 0 B |
+| Arduino (IDE defaults) | ~1 024 B | 9 B |
+
+`Pin(13, Pin.OUT)` and `sleep_ms(500)` are resolved entirely at compile time — the compiler
+sees through the Python objects and emits the same `SBI` / `CBI` port toggles a C programmer
+would write by hand. The MicroPython and native-HAL variants are byte-for-byte identical;
+CircuitPython costs 2 bytes because the `Direction.OUTPUT` setter clears `PORT` before
+setting `DDR`, as its spec requires.
+
+## 5. Flash
+
+Connect the board over USB, then:
+
+```bash
+pymcu flash --port /dev/cu.usbmodem*   # macOS
+pymcu flash --port /dev/ttyACM0        # Linux
+pymcu flash --port COM3                # Windows
+```
+
+A successful upload ends with avrdude reporting the bytes written and verified:
+
+```text
+avrdude: 162 bytes of flash written
+avrdude: verifying ...
+avrdude: 162 bytes of flash verified
+```
+
+### Did it work?
+
+The LED on pin 13 blinks at 1 Hz. If it does not:
+
+- **Nothing happens at all.** Press the board's reset button — the sketch starts on reset.
+  Check the LED is the built-in one on pin 13 (`PB5`), not a wire you moved.
+- **`programmer is not responding`.** The port is wrong, or something else is holding it.
+  Close any serial terminal you have open on that port and try again; on macOS make sure the
+  path starts `/dev/cu.`, not `/dev/tty.`. There is a fuller checklist in
+  [Troubleshooting](/driver/#troubleshooting).
+- **It flashed but behaves oddly — delays are wrong, UART is garbled.** `frequency` in
+  `pyproject.toml` does not match the actual crystal. Every delay and baud divisor is
+  computed from that number at compile time, so a wrong value skews all of them by the same
+  ratio.
+
+## 6. See the output
+
+Blink tells you the board is alive; the moment you want a *number* out of it you need a
+serial terminal. Add a `print()` to the loop:
+
+```python
+from machine import Pin
+from utime import sleep_ms
+from pymcu.types import uint8
+
+led = Pin(13, Pin.OUT)
+count: uint8 = 0
+
+while True:
+    led.value(1)
+    sleep_ms(500)
+    led.value(0)
+    sleep_ms(500)
+    count = count + 1
+    print(count)
+```
+
+When the build sees a `print()` and your program has not constructed a `UART` itself, it
+opens the console UART for you before `main()` runs — the same convenience MicroPython
+gives you, except resolved at compile time. **The default is 115200 baud.**
+
+Rebuild, reflash, then open a terminal on the same port:
+
+```bash
+screen /dev/cu.usbmodem1401 115200     # macOS - quit with Ctrl-A then K
+picocom -b 115200 /dev/ttyACM0         # Linux
+minicom -D /dev/ttyACM0 -b 115200      # Linux
+```
+
+On Windows, use PuTTY or the Arduino IDE's **Serial Monitor** — set its baud dropdown, in
+the bottom-right corner, to 115200.
+
+:::note[There is no `pymcu monitor`]
+PyMCU does not ship a terminal of its own; use whichever one you already have. Opening the
+port resets the board on most Arduino-style designs, so start the terminal *first* and you
+will catch the output from the beginning.
+:::
+
+To change the rate — for example to match a 9600-baud USB-serial adapter — set it in
+`pyproject.toml`:
+
+```toml
+[tool.pymcu]
+stdout      = "uart0"     # default
+stdout_baud = 9600        # default is 115200
+```
+
+If your program constructs its own `UART(9600)`, that takes ownership of the hardware and
+`print()` follows *its* baud rate; `stdout_baud` is then ignored.
+
+:::caution[`print()` is silent on some targets]
+On AVR and on the RP2040 / RP2350 everything prints — strings, integers and floats. On
+PIC14 strings print but numbers do not. On **pic12, pic18 and riscv `print()` compiles to
+nothing at all**, with no error and no warning. See
+[Serial output](/driver/#serial-output-and-print).
+:::
+
+## What just happened?
+
+Unlike MicroPython or CircuitPython, PyMCU did **not** upload an interpreter to your board.
+The compiler on your machine translated the Python source straight to machine code; the MCU
+runs that code at full clock speed, and no Python runtime exists on the device. That is why
+the firmware is measured in *bytes* rather than *hundreds of kilobytes*.
+
+## Next steps
+
+- [CLI Driver](/driver/) — every command, flag and `pyproject.toml` key
+- [Supported Targets](/targets/) — AVR, ARM (RP2040 / RP2350) and PIC
+- [Language Reference](/language-reference/) — the compiled model and type system
+- [Examples](/examples/) — annotated firmware, from [blink](/examples/blink/) to a
+  [sensor dashboard](/examples/sensor-dashboard/)
+- [Limitations](/limitations/) — what the subset does not accept

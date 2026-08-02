@@ -1,0 +1,228 @@
+---
+title: Time
+description: Delays and tick counters — utime, CircuitPython time, and the native delay_ms / delay_us.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Waiting is available through three APIs. **MicroPython** (`utime`, also importable as `time`) and
+**CircuitPython** (`time`) are the recommended ones — they are stable, community-specified, and
+both compile down to the same `pymcu.time` busy-wait loops. The native `pymcu.time.delay_ms` /
+`delay_us` is the layer underneath, and it never claims a hardware timer, so it can never collide
+with your own timer or PWM setup.
+
+## Blink with a half-second delay
+
+<Tabs syncKey="api">
+<TabItem label="MicroPython">
+
+```python
+from machine import Pin
+from utime import sleep_ms
+
+def main():
+    led = Pin(13, Pin.OUT)
+
+    while True:
+        led.toggle()
+        sleep_ms(500)
+```
+
+</TabItem>
+<TabItem label="CircuitPython">
+
+```python
+import board
+import digitalio
+import time
+
+def main():
+    led = digitalio.DigitalInOut(board.LED)
+    led.direction = digitalio.Direction.OUTPUT
+
+    while True:
+        led.value = not led.value
+        time.sleep(0.5)          # CircuitPython has no sleep_ms
+```
+
+</TabItem>
+<TabItem label="Native HAL">
+
+```python
+from pymcu.hal.gpio import Pin
+from pymcu.time import delay_ms
+
+def main():
+    led = Pin("PB5", Pin.OUT)    # Pin(25, Pin.OUT) on a Pico
+
+    while True:
+        led.toggle()
+        delay_ms(500)
+```
+
+</TabItem>
+</Tabs>
+
+## Measure how long something took
+
+<Tabs syncKey="api">
+<TabItem label="MicroPython">
+
+```python
+from utime import ticks_ms, ticks_diff, sleep_ms
+from pymcu.types import uint32
+
+def main():
+    start: uint32 = ticks_ms()
+    sleep_ms(250)
+    elapsed: uint32 = ticks_diff(ticks_ms(), start)
+    print("elapsed: ", elapsed, sep="")
+```
+
+</TabItem>
+<TabItem label="CircuitPython">
+
+```python
+import time
+from pymcu.types import uint32
+
+def main():
+    start: uint32 = time.monotonic_ns()
+    time.sleep(0.25)
+    elapsed: uint32 = time.monotonic_ns() - start   # nanoseconds
+    print("elapsed: ", elapsed, sep="")
+```
+
+</TabItem>
+<TabItem label="Native HAL">
+
+```python
+from pymcu.hal.timer import millis
+from pymcu.time import delay_ms
+from pymcu.types import uint32
+
+def main():
+    start: uint32 = millis()
+    delay_ms(250)
+    elapsed: uint32 = millis() - start
+    print("elapsed: ", elapsed, sep="")
+```
+
+</TabItem>
+</Tabs>
+
+:::caution[Two things that will bite you]
+**CircuitPython has no `sleep_ms`.** `time.sleep()` takes fractional seconds, so a half-second
+wait is `time.sleep(0.5)`, not `time.sleep_ms(500)`. The multiplication by 1000 folds at compile
+time, so the float costs nothing at run time.
+
+**`monotonic_ns()` wraps quickly.** The underlying counter is 32-bit, so `millis() * 1_000_000`
+rolls over after about 4.29 seconds. It is fine for sub-second interval measurement and nothing
+longer. `monotonic()` returns a float and pulls in the soft-float runtime on AVR — the compiler
+emits a warning to that effect.
+:::
+
+## The three time APIs side by side
+
+| MicroPython (`utime` / `time`) | CircuitPython (`time`) | Native (`pymcu.time`, `pymcu.hal.timer`) | Notes |
+|---|---|---|---|
+| `sleep_ms(ms)` | — | `delay_ms(ms)` | Millisecond busy-wait |
+| `sleep_us(us)` | — | `delay_us(us)` | Microsecond busy-wait |
+| `sleep(seconds)` — integer seconds | `sleep(seconds)` — float seconds | — | MicroPython's is `delay_ms(s * 1000)` |
+| `ticks_ms() -> uint32` | `monotonic() -> float` | `millis() -> uint32` | Milliseconds since boot; the float form needs soft-float |
+| `ticks_us() -> uint32` | `monotonic_ns() -> uint32` | `micros() -> uint32` | `monotonic_ns()` is `millis() * 1_000_000`, so it wraps at ~4.29 s |
+| `ticks_cpu() -> uint32` | — | `micros() -> uint32` | Alias for `ticks_us()`; PyMCU has no separate CPU counter |
+| `ticks_diff(new, old)` | plain subtraction | plain subtraction | 32-bit difference |
+| `ticks_add(ticks, delta)` | plain addition | plain addition | Wraps at the 32-bit boundary |
+
+`millis()` and `micros()` come from `pymcu.hal.timer`, are backed by Timer0, and are **ATmega
+only** — on ATtiny85/45/25 they compile to no-ops. `millis_init()` is auto-injected by the build
+driver when it sees `ticks_ms()` in your source, so you do not need to call it yourself. The
+delay functions in `pymcu.time` have no such restriction and work on every target.
+
+---
+
+## Native HAL reference - pymcu.time
+
+```python
+from pymcu.time import delay_ms, delay_us
+```
+
+Delay helpers that never claim a hardware timer, so they can never collide with your own timer
+or PWM setup. `pymcu.time` is available on **AVR**, **ARM** (RP2040 / RP2350), **PIC**
+(PIC12 / PIC14 / PIC14E / PIC18) and **RISC-V**; the architecture dispatch is dead-code
+eliminated at compile time, so only the loop for your target reaches flash.
+
+### `delay_ms(ms: uint16)`
+
+Waits for approximately `ms` milliseconds.
+
+- `ms` may be a runtime variable.
+- Maximum: 65535 ms (~65 seconds).
+- On AVR the per-millisecond helper is emitted **once** as a shared subroutine, calibrated for
+  the configured `__FREQ__` (1, 8, 12, 16 or 20 MHz; other frequencies fall back to the 16 MHz
+  helper).
+- On the RP2040 / RP2350 it is `delay_us(ms * 1000)`, i.e. it inherits the hardware timer's
+  accuracy.
+
+### `delay_us(us: uint8)`
+
+Waits for approximately `us` microseconds.
+
+- `us` may be a runtime variable.
+- Maximum: 255 µs on AVR and PIC (`uint8`).
+- On AVR the body is a 12-NOP loop emitted once as a shared subroutine — a delay-heavy driver
+  such as the HD44780 LCD would otherwise pay ~24 bytes of inline NOPs per call site. The fixed
+  `CALL`/`RET` overhead is under 0.6 µs.
+- On the RP2040 / RP2350 this is **not** a counted loop: it polls the free-running 1 MHz
+  hardware `TIMER` (`TIMERAWL`), so the delay is accurate regardless of the CPU clock and
+  correct across the 32-bit roll-over (up to ~71 minutes).
+
+### Example
+
+```python
+from pymcu.time import delay_ms
+from pymcu.hal.gpio import Pin
+
+def main():
+    led = Pin("PB5", Pin.OUT)      # Pin(25, Pin.OUT) on a Pico
+    while True:
+        led.high()
+        delay_ms(500)
+        led.low()
+        delay_ms(500)
+```
+
+### Accuracy
+
+| Target | Mechanism | Accuracy |
+|---|---|---|
+| AVR | Cycle-counted loop, calibrated per `__FREQ__` | `<0.1 %` at 1, 8, 12, 16 and 20 MHz |
+| ARM (RP2040 / RP2350) | Poll of the 1 MHz hardware `TIMER` | Timer-accurate |
+| PIC | Cycle-counted loop, calibrated per `__FREQ__` | `<0.1 %` at 4, 8, 16 and 20 MHz |
+| RISC-V | Cycle-counted loop | Approximate |
+
+### Notes
+
+- Interrupts are not disabled during a delay. An ISR that runs mid-delay extends a counted loop
+  on AVR/PIC; the RP2040/RP2350 timer poll simply resumes and still ends at the right time.
+- For scheduled work rather than blind waiting, use a hardware timer interrupt
+  ([`Timer`](/stdlib/timer/) on AVR/PIC) or `await asyncio.sleep_ms(...)`.
+- `delay_us(n)` is accurate for `n >= 4` on the ATmega328P at 16 MHz.
+
+:::caution[Advanced — native HAL only]
+Almost nothing on this page is native-HAL-only: `utime.sleep_ms()` and CircuitPython's
+`time.sleep()` both lower to `delay_ms()`. What the compat APIs do not give you is a choice of
+mechanism. `pymcu.time` is deliberately a busy-wait that leaves every hardware timer free for
+your own use, whereas `millis()` / `micros()` — and therefore `ticks_ms()`, `ticks_us()`,
+`monotonic()` and `monotonic_ns()` — claim Timer0 on ATmega and are unavailable on ATtiny.
+
+The native HAL API may still change between alpha releases, so prefer
+[`utime`](/compat/micropython/) or [CircuitPython's `time`](/compat/circuitpython/) wherever they
+cover your use case.
+:::
+
+## See also
+
+- [Timer](/stdlib/timer/) — `millis()` and interrupt-driven periodic work
+- [Power management](/stdlib/power/) — sleep instead of spinning when you only need to wait

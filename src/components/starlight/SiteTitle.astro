@@ -1,0 +1,45 @@
+---
+const { siteTitleHref } = Astro.locals.starlightRoute;
+---
+
+<a href={siteTitleHref} class="site-title sl-flex" translate="no">
+  {/* Both halves live inside ONE flex item: .site-title sets a flex `gap`, so two
+      sibling spans would render as "Py MCU" with a gap between them. */}
+  <span class="site-title__word"
+    ><span class="site-title__py">Py</span><span class="site-title__mcu">MCU</span></span
+  >
+</a>
+
+<style>
+  /* Mirrors the .site-title rules of Starlight's own SiteTitle, which are scoped to
+     that component and therefore lost when it is overridden. */
+  .site-title {
+    align-items: center;
+    gap: var(--sl-nav-gap);
+    font-size: var(--sl-text-h4);
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    min-width: 0;
+  }
+
+  .site-title__word {
+    overflow: hidden;
+  }
+
+  .site-title__py {
+    color: var(--sl-color-text);
+  }
+
+  .site-title__mcu {
+    color: var(--sl-color-accent);
+  }
+
+  :global([data-theme='dark']) .site-title__py {
+    color: var(--sl-color-accent);
+  }
+
+  :global([data-theme='dark']) .site-title__mcu {
+    color: #fff;
+  }
+</style>

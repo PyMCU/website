@@ -1,0 +1,258 @@
+---
+title: Inheritance ZCA Example
+description: Single-level zero-cost-abstraction class inheritance, resolved entirely at compile time.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Demonstrates single-level ZCA class inheritance. The derived class extends the base with an
+additional method. No SRAM is used — everything is inlined.
+
+ZCA inheritance is a **compiler** feature, not an API feature: it works the same whichever
+peripheral layer the class wraps, and on every backend. What changes between the tabs below
+is only how the pin is opened.
+
+## Extend a base sensor class
+
+`Sensor` opens an input pin and caches its last reading; `CountingSensor` inherits that and
+adds a press counter. Neither class allocates an instance struct.
+
+<Tabs syncKey="api">
+<TabItem label="MicroPython">
+
+```python
+from machine import Pin
+from pymcu.types import uint8, const
+
+
+class Sensor:
+    @inline
+    def __init__(self, pin_id: const[uint8]):
+        self._pin = Pin(pin_id, Pin.IN, Pin.PULL_UP)
+        self._value: uint8 = 0
+
+    @inline
+    def read(self) -> uint8:
+        self._value = self._pin.value()
+        return self._value
+
+
+class CountingSensor(Sensor):
+    @inline
+    def __init__(self, pin_id: const[uint8]):
+        self._count: uint8 = 0
+        Sensor.__init__(self, pin_id)
+
+    @inline
+    def poll(self) -> uint8:
+        v: uint8 = self.read()
+        if v == 0:              # active low
+            self._count += 1
+        return self._count
+
+
+def main():
+    s = CountingSensor(2)       # Arduino D2 -> PD2
+    while True:
+        n: uint8 = s.poll()
+```
+
+</TabItem>
+<TabItem label="CircuitPython">
+
+```python
+import board
+from digitalio import DigitalInOut, Direction, Pull
+from pymcu.types import uint8
+
+
+class Sensor:
+    @inline
+    def __init__(self, pin):
+        self._pin = DigitalInOut(pin)
+        self._pin.direction = Direction.INPUT
+        self._pin.pull = Pull.UP
+        self._value: uint8 = 0
+
+    @inline
+    def read(self) -> uint8:
+        self._value = self._pin.value
+        return self._value
+
+
+class CountingSensor(Sensor):
+    @inline
+    def __init__(self, pin):
+        self._count: uint8 = 0
+        Sensor.__init__(self, pin)
+
+    @inline
+    def poll(self) -> uint8:
+        v: uint8 = self.read()
+        if v == 0:              # active low
+            self._count += 1
+        return self._count
+
+
+def main():
+    s = CountingSensor(board.D2)
+    while True:
+        n: uint8 = s.poll()
+```
+
+</TabItem>
+<TabItem label="Native HAL">
+
+```python
+from pymcu.hal.gpio import Pin
+from pymcu.types import uint8
+
+
+class Sensor:
+    @inline
+    def __init__(self, pin: str):
+        self._pin = Pin(pin, Pin.IN, pull=Pin.PULL_UP)
+        self._value: uint8 = 0
+
+    @inline
+    def read(self) -> uint8:
+        self._value = self._pin.value()
+        return self._value
+
+
+class CountingSensor(Sensor):
+    @inline
+    def __init__(self, pin: str):
+        self._count: uint8 = 0
+        Sensor.__init__(self, pin)
+
+    @inline
+    def poll(self) -> uint8:
+        v: uint8 = self.read()
+        if v == 0:              # active low
+            self._count += 1
+        return self._count
+
+
+def main():
+    s = CountingSensor("PD2")   # port string on AVR/PIC; Pin(2, ...) on ARM
+    while True:
+        n: uint8 = s.poll()
+```
+
+</TabItem>
+</Tabs>
+
+The three programs emit the same code. The pin constant, the direction write and the
+pull-up write are all folded at compile time; `self._value` and `self._count` become plain
+registers.
+
+## Key points
+
+- `Sensor.__init__` is explicitly called from `CountingSensor.__init__` — no automatic MRO.
+- `self._pin` is a ZCA member: the wrapped `Pin` / `DigitalInOut` object exists only in the
+  compiler, so there is no SRAM instance struct.
+- `self.read()` inside `poll` resolves through the inherited method at compile time.
+- The pin identifier must be a compile-time constant. On the MicroPython layer that is what
+  `const[uint8]` states; the `board` constants and the port strings are constants by
+  construction.
+
+## Native HAL reference — the shipped example
+
+The project shipped as `examples/inheritance-zca` in the pymcu-avr repository pairs
+inheritance with **function overloading**, and reports both over UART. `LED` inherits
+`on()`, `off()` and `read()` from `GPIODevice` and adds one method of its own:
+
+```python
+from pymcu.types import uint8, uint16, inline
+from pymcu.hal.uart import UART
+from pymcu.hal.gpio import Pin
+
+
+class GPIODevice:
+    @inline
+    def __init__(self, pin_name):
+        self._pin = Pin(pin_name, Pin.OUT)
+
+    @inline
+    def on(self):
+        self._pin.high()
+
+    @inline
+    def off(self):
+        self._pin.low()
+
+    @inline
+    def read(self) -> uint8:
+        return self._pin.value()
+
+
+class LED(GPIODevice):
+    @inline
+    def blink_code(self, code: uint8):
+        i: uint8 = 0
+        while i < code:
+            self.on()
+            self.off()
+            i += 1
+
+
+# Function overloading: same name, different parameter types
+@inline
+def encode(val: uint8) -> uint8:
+    return val
+
+@inline
+def encode(val: uint16) -> uint16:
+    return val
+
+
+def main():
+    uart = UART(9600)
+    uart.println("IZ")
+
+    led = LED("PB5")
+    led.on()
+    r: uint8 = led.read()      # reading an output pin returns its latch
+    led.off()
+
+    b: uint8 = encode(0xAB)    # picks the uint8 overload
+    w: uint16 = encode(0x1234) # picks the uint16 overload
+```
+
+- `LED` declares no `__init__` of its own: it inherits `GPIODevice.__init__`, so
+  `LED("PB5")` opens the pin through the base class.
+- `blink_code` calls `self.on()` and `self.off()` — inherited methods resolved at compile
+  time, with no vtable and no indirect call.
+- `_pin` is a ZCA member: the wrapped `Pin` exists only in the compiler, so there is no SRAM
+  instance struct.
+- The two `encode` definitions are an **overload set**, not a redefinition. The compiler
+  picks by argument type at each call site; the loser is never emitted.
+
+The full program writes each result to the UART: a boot banner `IZ`, then an `A:` line for
+the pin read, a `B:` line for the `uint8` overload and a `C:` line for the `uint16` one —
+enough for the integration test to assert that the right overload ran.
+
+:::caution[Advanced — native HAL only]
+`println(s)` and `write_hex(value)` walk a string or format an integer straight out of
+flash. `machine.UART` re-exports the string helpers, so a MicroPython rendering of this
+program is a small change. `busio.UART` has no equivalent — its API is buffer-based
+(`write(b"IZ\r\n")`) and cannot format an integer — so there is no faithful CircuitPython
+version of the reporting half, and none is shown.
+
+The native HAL API may change between alpha releases; prefer
+[`machine`](/compat/micropython/) or [`digitalio`](/compat/circuitpython/) for the pin layer,
+as in the tabbed example above.
+:::
+
+## Build
+
+```bash
+cd examples/inheritance-zca    # in the pymcu-avr repository
+pymcu build
+pymcu flash --port /dev/cu.usbmodem*
+```
+
+See [`pymcu build`](/driver/#pymcu-build) for the full command reference. Open a serial
+terminal at **9600 baud** — the baud rate this program passes to `UART(...)` — to see the
+four lines above.

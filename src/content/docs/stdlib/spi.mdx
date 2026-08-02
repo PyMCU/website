@@ -1,0 +1,301 @@
+---
+title: SPI
+description: Hardware SPI — machine.SPI, busio.SPI and the native HAL (AVR SPI controller/peripheral, RP2040 / RP2350 PL022 SPI0).
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+SPI is available through three APIs. **MicroPython** (`machine.SPI`) and **CircuitPython**
+(`busio.SPI`) are the recommended ones — they are stable, community-specified, and compile to the
+same register writes as the native HAL. The native `pymcu.hal.spi.SPI` is the layer underneath;
+reach for it for peripheral (target) mode, the SPI-complete interrupt, and the RP2040 / RP2350.
+
+## Write three bytes to a device
+
+The chip-select convention differs: `machine.SPI` leans on the hardware SS pin, CircuitPython
+expects you to drive CS yourself with a `digitalio.DigitalInOut`, and the native HAL gives you a
+`with spi:` context manager that selects and deselects around the block.
+
+<Tabs syncKey="api">
+<TabItem label="MicroPython">
+
+```python
+from machine import SPI
+from pymcu.types import uint8
+
+def main():
+    spi = SPI()
+
+    out_buf: uint8[3] = [0xAA, 0xBB, 0xCC]
+    spi.write(out_buf)              # len(out_buf) folds at compile time
+```
+
+</TabItem>
+<TabItem label="CircuitPython">
+
+```python
+import board
+import busio
+import digitalio
+from pymcu.types import uint8
+
+def main():
+    spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
+    cs = digitalio.DigitalInOut(board.D10)
+    cs.switch_to_output(value=1)
+
+    while not spi.try_lock():
+        pass
+    spi.configure(baudrate=1000000)
+
+    out_buf: uint8[3] = [0xAA, 0xBB, 0xCC]
+    cs.value = 0
+    spi.write(out_buf)
+    cs.value = 1
+    spi.unlock()
+```
+
+</TabItem>
+<TabItem label="Native HAL">
+
+```python
+from pymcu.hal.spi import SPI
+from pymcu.types import uint8
+
+def main():
+    spi = SPI()                     # SPI(baud=1_000_000, sck=2, ...) on a Pico
+
+    out_buf: uint8[3] = [0xAA, 0xBB, 0xCC]
+    with spi:                       # select() before the block, deselect() after
+        spi.write_bytes(out_buf, 3)
+```
+
+</TabItem>
+</Tabs>
+
+## Full-duplex exchange
+
+<Tabs syncKey="api">
+<TabItem label="MicroPython">
+
+```python
+from machine import SPI
+from pymcu.types import uint8
+
+def main():
+    spi = SPI()
+
+    out_buf: uint8[3] = [0x9F, 0x00, 0x00]
+    in_buf:  uint8[3] = [0, 0, 0]
+
+    spi.write_readinto(out_buf, in_buf)     # byte count inferred from out_buf
+    one: uint8 = spi.read(0xFF)             # single byte, sending 0xFF on MOSI
+```
+
+</TabItem>
+<TabItem label="CircuitPython">
+
+```python
+import board
+import busio
+from pymcu.types import uint8
+
+def main():
+    spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
+
+    while not spi.try_lock():
+        pass
+
+    out_buf: uint8[3] = [0x9F, 0x00, 0x00]
+    in_buf:  uint8[3] = [0, 0, 0]
+
+    spi.write_readinto(out_buf, in_buf)
+    spi.readinto(in_buf, write_value=0xFF)  # read-only, sending 0xFF on MOSI
+    spi.unlock()
+```
+
+</TabItem>
+<TabItem label="Native HAL">
+
+```python
+from pymcu.hal.spi import SPI
+from pymcu.types import uint8
+
+def main():
+    spi = SPI()
+
+    out_buf: uint8[3] = [0x9F, 0x00, 0x00]
+    in_buf:  uint8[3] = [0, 0, 0]
+
+    with spi:
+        spi.write_readinto_n(out_buf, in_buf, 3)
+        one: uint8 = spi.transfer(0xFF)
+```
+
+</TabItem>
+</Tabs>
+
+:::note[The `try_lock()` / `unlock()` dance]
+CircuitPython's bus objects are shared resources, so `busio.SPI` requires you to hold the lock
+before any transfer. On bare metal there is no other owner, so PyMCU's `try_lock()` always
+succeeds and `unlock()` is a no-op — but keeping the calls in your source means the same file
+runs unchanged on real CircuitPython. `machine.SPI` has no lock protocol at all.
+
+`busio.SPI.configure(baudrate=..., polarity=..., phase=...)` is accepted for API compatibility;
+on AVR only `baudrate` is recorded (for the `frequency` property) because the hardware settings
+are fixed at Mode 0, MSB-first, f_osc/4.
+:::
+
+---
+
+## Native HAL reference - pymcu.hal.spi
+
+```python
+from pymcu.hal.spi import SPI
+```
+
+`pymcu.hal.spi` is available on **AVR** (ATmega / ATtiny) and **ARM** (RP2040 / RP2350). It is
+not implemented for PIC — importing it there raises a `CompileError`. For bit-banged SPI on any
+target with GPIO, use `pymcu.hal.softspi.SoftSPI(sck, mosi, miso, mode=0, cs=None, baudrate=500)`,
+which takes `Pin` objects rather than pin names.
+
+### `SPI(mode=0, cs="")` — AVR
+
+Initializes the hardware SPI peripheral. In controller mode the defaults are Mode 0, MSB-first,
+at f_osc/4 (4 MHz with a 16 MHz clock).
+
+| Parameter | Type | Description |
+|---|---|---|
+| `mode` | `uint8` | `SPI.CONTROLLER` (0, default) or `SPI.PERIPHERAL` (1) |
+| `cs` | `const[str]` | Optional chip-select pin, e.g. `"PB0"`. When omitted, `select()`/`deselect()` drive the hardware SS pin. |
+
+**Pinout (ATmega328P / Arduino Uno):**
+
+| Pin | Arduino | Function |
+|---|---|---|
+| `PB5` | D13 | SCK |
+| `PB4` | D12 | MISO |
+| `PB3` | D11 | MOSI |
+| `PB2` | D10 | SS |
+
+#### SPI methods - AVR
+
+| Method | Description |
+|---|---|
+| `transfer(data: uint8) -> uint8` | Full-duplex byte exchange |
+| `write(data: uint8)` | Send a byte, discard the received one |
+| `write_bytes(buf, n: uint8)` | Send `n` bytes from a buffer |
+| `readinto_n(buf, n, write_byte)` | Clock out `write_byte` `n` times, store the received bytes |
+| `write_readinto_n(write_buf, read_buf, n)` | Full-duplex block transfer |
+| `select()` / `deselect()` | Drive CS low / high |
+| `ready() -> uint8` | 1 when a transfer has completed (SPIF) |
+| `send` / `receive` | Peripheral-mode byte exchange |
+| `irq(handler)` | Register an SPI-complete handler |
+| `__enter__()` / `__exit__()` | `select()` / `deselect()` — used by `with spi:` |
+
+### `SPI(...)` — RP2040 / RP2350
+
+Wraps SPI0 (the PL022 PrimeCell) in controller mode.
+
+```python
+spi = SPI(baud=1_000_000, sck=2, mosi=3, miso=4, cs=5)
+```
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `baud` | `const` | `1000000` | Bit clock; the CPSDVSR/SCR divisor is folded at compile time |
+| `polarity` | `const` | `0` | Clock polarity (SPO) |
+| `phase` | `const` | `0` | Clock phase (SPH) |
+| `sck` | `const` | `2` | GPIO for SCK |
+| `mosi` | `const` | `3` | GPIO for MOSI |
+| `miso` | `const` | `4` | GPIO for MISO |
+| `cs` | `const` | `-1` | Optional software chip-select GPIO (idle high); `-1` disables it |
+
+Because the divisor is folded at build time it assumes the pico-sdk default peripheral clock:
+**125 MHz on the RP2040** and **150 MHz on the RP2350**. Re-clocking the chip at run time
+invalidates the computed baud rate.
+
+#### SPI methods - RP2040 / RP2350
+
+| Method | Description |
+|---|---|
+| `transfer(data: uint8) -> uint8` | Full-duplex byte exchange |
+| `write(data: uint8)` | Send a byte, discard the received one |
+| `select()` / `deselect()` | Drive the software CS low / high |
+
+The ARM table is three rows to the AVR's ten because the RP2040 / RP2350 wrapper is younger: the
+PL022 is driven one byte at a time through `transfer()`, and the block helpers
+(`write_bytes()`, `readinto_n()`, `write_readinto_n()`), peripheral mode and the transfer-complete
+interrupt are not wrapped there yet. Loop over `transfer()` for a block, and keep the AVR-only
+methods behind an `if __CHIP__.arch == "avr":` guard in portable code.
+
+### Context manager (`with` statement)
+
+The AVR `SPI` and `SoftSPI` classes implement `__enter__`/`__exit__`, so `with spi:` selects
+and deselects the device automatically around a transaction. The RP2040/RP2350 `SPI` does not
+yet — call `select()` / `deselect()` explicitly there.
+
+```python
+with spi:
+    spi.write(0xAB)           # select() before the block, deselect() after
+```
+
+This is the preferred pattern — `deselect()` is guaranteed to run even if the block exits
+early via `return`.
+
+### Example — 74HC595 shift register (AVR)
+
+```python
+from pymcu.hal.spi import SPI
+from pymcu.time import delay_ms
+from pymcu.types import uint8
+
+def main():
+    spi = SPI()
+
+    data: uint8 = 0x01
+    while True:
+        with spi:
+            spi.write(data)
+        data = (data << 1) | (data >> 7)   # rotate left
+        delay_ms(100)
+```
+
+### Example — the same loop on a Pico
+
+```python
+from pymcu.hal.spi import SPI
+from pymcu.time import delay_ms
+from pymcu.types import uint8
+
+def main():
+    spi = SPI(baud=1_000_000, sck=2, mosi=3, miso=4, cs=5)
+
+    data: uint8 = 0x01
+    while True:
+        spi.select()
+        spi.write(data)
+        spi.deselect()
+        data = (data << 1) | (data >> 7)
+        delay_ms(100)
+```
+
+:::caution[Advanced — native HAL only]
+Peripheral (target) mode — `SPI.PERIPHERAL`, `send`, `receive` — the SPI-complete interrupt
+(`irq()`, `ready()`) and the `with spi:` chip-select context manager have no MicroPython or
+CircuitPython equivalent.
+
+`machine.SPI` and `busio.SPI` are also **AVR only** today — both compat packages import their
+SPI backend behind an `__CHIP__.arch == "avr"` guard. On the RP2040 / RP2350, use
+`pymcu.hal.spi.SPI` directly.
+
+The native HAL API may still change between alpha releases, so prefer
+[`machine.SPI`](/compat/micropython/) or [`busio.SPI`](/compat/circuitpython/) wherever they
+cover your use case.
+:::
+
+## See also
+
+- [I2C](/stdlib/i2c/) — the other synchronous bus, two wires instead of four
+- [GPIO](/stdlib/gpio/) — the `Pin` objects `SoftSPI` takes, and manual chip select
+- [UART](/stdlib/uart/) — asynchronous serial when there is no clock line

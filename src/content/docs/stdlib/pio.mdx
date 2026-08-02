@@ -1,0 +1,203 @@
+---
+title: PIO state machines
+description: Drive the RP2040 and RP2350 PIO blocks from Python with the MicroPython-shaped rp2 API - @rp2.asm_pio programs and StateMachine.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+The RP2040 and RP2350 carry **PIO** blocks: tiny programmable state machines that drive
+GPIO pins without the CPU. PyMCU exposes them through `rp2`, the same API shape
+MicroPython uses, so a PIO program you already have mostly copies across.
+
+The whole thing happens at **compile time**. The `@rp2.asm_pio` body is assembled by the
+compiler into 16-bit PIO machine words, and `StateMachine(...)` lowers to a fixed list of
+constant MMIO stores: ungate PIO0, route the pins, load the program, program the clock
+divider and the wrap/shift/pin registers, then set `CTRL.SM_ENABLE`. There is no runtime
+assembler, no allocator and no PIO library in the firmware.
+
+:::caution[ARM only]
+PIO exists only on the RP2040 and RP2350 - there is no PIO block on an AVR or PIC part for
+this API to drive. The register addresses `StateMachine(...)` emits are chosen from the
+build's target chip, so a PIO program only makes sense in a project targeting one of those
+two.
+:::
+
+## Blink an LED from PIO, with the CPU idle
+
+This guide is built from the `pio-blink-rp2040` and `pio-blink-rp2350` examples in the
+`pymcu-arm` repo - the same source compiles for both chips.
+
+```python
+# Blink GP25 entirely from a PIO state machine (no CPU in the loop).
+import rp2
+from rp2 import PIO, StateMachine
+
+
+@rp2.asm_pio(set_init=[PIO.OUT_LOW])
+def blink():
+    set(pindirs, 1)
+    wrap_target()
+    set(pins, 1)[20]
+    set(pins, 0)[20]
+    wrap()
+
+
+def main():
+    sm = StateMachine(0, blink, freq=1000000, set_base=25)
+    while True:
+        pass
+```
+
+`main()` never touches the LED again. The state machine holds the program, and the `while
+True: pass` is just somewhere for the CPU to be.
+
+The instruction names inside the decorated function - `set`, `wrap_target`, `wrap` and the
+rest - are not Python functions and are never looked up at runtime. The parser diverts the
+whole body to the PIO assembler before name resolution ever happens, which is why the body
+compiles without importing anything.
+
+## What the MVP actually supports
+
+The PIO backend is deliberately small right now. Read this table before porting a
+MicroPython program that does more than drive pins.
+
+| Capability | Status |
+|---|---|
+| PIO block | **PIO0 only.** PIO1 (and PIO2 on RP2350) are not addressed |
+| State machine | **SM0 only.** `StateMachine(1, ...)` raises `CompileError: PIO StateMachine MVP supports state machine 0 only (sm_id=0)` |
+| Program size | Up to 32 instructions, the PIO hardware limit |
+| Instruction set | Complete - all nine PIO opcodes, plus `nop()` and a raw `word()` escape hatch |
+| Labels, `wrap_target()`, `wrap()` | Supported |
+| `.side()` and `[delay]` | Supported, in either order |
+| Starting the machine | Automatic - `StateMachine(...)` enables SM0 as its last store |
+| `sm.active()`, `sm.put()`, `sm.get()`, `sm.irq()` | **Not implemented.** There are no methods on the returned object |
+| `fifo_join` | Parsed and validated, but not written to `SHIFTCTRL` - it currently has no effect |
+
+Because there is no `put()`/`get()`, a PIO program today is a fire-and-forget pin driver:
+anything that needs to hand data between the CPU and the FIFOs is out of scope until the
+FIFO methods land.
+
+## Configuring the program: `@asm_pio(...)` arguments
+
+All arguments are keywords, and all must be compile-time constants. A sequence argument
+(`set_init=[PIO.OUT_LOW]`) is counted, not evaluated - the compiler needs the *number* of
+pins, and takes the direction from the `StateMachine` pin bases.
+
+| Argument | Effect |
+|---|---|
+| `set_init` | Number of `SET` pins. A bare value counts as 1 |
+| `out_init` | Number of `OUT` pins |
+| `sideset_init` | Number of side-set bits; enables `.side()` |
+| `sideset_opt` | Side-set is optional - costs one extra bit, sets `EXECCTRL.SIDE_EN` |
+| `side_pindir` | Side-set drives pin *directions* instead of pin values |
+| `autopush` / `autopull` | Enable automatic ISR push / OSR pull |
+| `push_thresh` / `pull_thresh` | Shift thresholds, 1 to 32 (32 is encoded as 0) |
+| `in_shiftdir` / `out_shiftdir` | `PIO.SHIFT_LEFT` (default) or `PIO.SHIFT_RIGHT` |
+| `fifo_join` | Accepted, currently not applied - see the table above |
+
+Anything else raises `CompileError: unknown @asm_pio argument '<key>'`.
+
+The `PIO` class supplies the constants: `OUT_LOW`, `OUT_HIGH`, `IN_LOW`, `IN_HIGH`,
+`SHIFT_LEFT`, `SHIFT_RIGHT`, `JOIN_NONE`, `JOIN_TX`, `JOIN_RX`.
+
+## Configuring the machine: `StateMachine(...)` arguments
+
+```python
+sm = StateMachine(0, blink, freq=1000000, set_base=25)
+```
+
+The first two arguments are positional: the state-machine id (must be `0`) and the name of
+an `@asm_pio` program. Everything else is a keyword.
+
+| Keyword | Effect |
+|---|---|
+| `freq` | Target state-machine clock in Hz. Lowered to an **integer** `CLKDIV` divider computed from `[tool.pymcu] frequency`, clamped to 1 to 65535. The fractional divider is not used, so the achieved rate is `sysclk // freq` |
+| `set_base` | First GPIO consumed by `set(pins, ...)` / `set(pindirs, ...)` |
+| `out_base` | First GPIO consumed by `out(pins, ...)` |
+| `sideset_base` | First GPIO driven by `.side()` |
+| `in_base` | First GPIO read by `in_(pins, ...)` |
+
+Omitting `freq` leaves the divider at `/1`, so the machine runs at the full system clock.
+
+:::note[Pin routing covers outputs only]
+The compiler switches the pad function to PIO0 for the `set_base`, `out_base` and
+`sideset_base` pins (and, on RP2350, de-isolates those pads). `in_base` is written into
+`PINCTRL` but its pins are not routed, so an input-heavy program may need its pads
+configured by hand.
+:::
+
+## The instruction set
+
+Nine PIO opcodes, spelled exactly as MicroPython spells them. `in_` carries the trailing
+underscore because `in` is a Python keyword.
+
+| Instruction | Operands |
+|---|---|
+| `jmp(label)` / `jmp(cond, label)` | Conditions: `not_x`, `x_dec`, `not_y`, `y_dec`, `x_not_y`, `pin`, `not_osre` |
+| `wait(polarity, source, index)` | Sources: `gpio`, `pin`, `irq` |
+| `in_(source, bit_count)` | Sources: `pins`, `x`, `y`, `null`, `isr`, `osr`. Count 1 to 32 |
+| `out(dest, bit_count)` | Destinations: `pins`, `x`, `y`, `null`, `pindirs`, `pc`, `isr`, `exec`. Count 1 to 32 |
+| `push()` | Modifiers: `block` (default), `noblock`, `iffull` |
+| `pull()` | Modifiers: `block` (default), `noblock`, `ifempty` |
+| `mov(dest, src)` | Destinations: `pins`, `x`, `y`, `exec`, `pc`, `isr`, `osr`. Sources: `pins`, `x`, `y`, `null`, `status`, `isr`, `osr`. Wrap the source in `invert(...)` or `reverse(...)` to apply the bitwise operators |
+| `irq(index)` | Also `irq(block, n)`, `irq(clear, n)` and `irq(rel(n))` |
+| `set(dest, value)` | Destinations: `pins`, `x`, `y`, `pindirs`. Value 0 to 31 |
+| `nop()` | Assembles to `mov(y, y)` |
+| `word(value)` | PyMCU extension: emit a raw 16-bit instruction word verbatim |
+
+Three directives shape the program rather than emitting an instruction:
+
+- `label("name")` - marks a `jmp` target. `jmp` accepts the name as a string or a bare
+  identifier.
+- `wrap_target()` - where the machine jumps back to. Defaults to instruction 0.
+- `wrap()` - marks the end of the loop. It attaches to the *preceding* instruction, and
+  defaults to the last instruction in the program.
+
+### Delay and side-set
+
+Every instruction can carry a delay in cycles and, if the program declared `sideset_init`,
+a side-set value. Both suffixes may appear in either order:
+
+```python
+set(pins, 1)[20]              # 20 idle cycles after the SET
+out(pins, 1).side(1)[3]       # side-set 1, then 3 idle cycles
+```
+
+The delay and the side-set share one 5-bit field, so the delay budget shrinks as side-set
+grows: `delay_bits = 5 - (sideset_init count + 1 if sideset_opt else 0)`. Overflowing it is
+a compile error, as is using `.side()` in a program that declared no `sideset_init`.
+
+## Compile-time errors you may see
+
+The PIO assembler reports problems as located `CompileError` diagnostics with your file and
+line, just like the rest of the compiler.
+
+| Message | Cause |
+|---|---|
+| `@asm_pio program '<name>' is empty` | The body has no instructions (only directives, `pass`, or a docstring) |
+| `@asm_pio program '<name>' has N instructions (max 32)` | The program does not fit in PIO instruction memory |
+| `undefined label '<name>'` | A `jmp` target with no matching `label()` |
+| `duplicate label '<name>'` | Two `label()` calls with the same name |
+| `unknown PIO instruction '<name>'` | A call in the body that is not a PIO opcode |
+| `invalid 'set' destination '<name>'` | `set` only reaches `pins`, `x`, `y`, `pindirs` |
+| `.side() used but @asm_pio has no sideset_init` | Declare `sideset_init` on the decorator |
+| `delay N too large for M delay bits` | Side-set has eaten the delay field |
+| `<operand> must be a compile-time integer constant` | PIO operands cannot be runtime values |
+| `PIO StateMachine MVP supports state machine 0 only (sm_id=0)` | Only SM0 is wired |
+
+## The layer underneath: `pymcu.pio`
+
+`pymcu.pio` is the primitive DSL layer beneath `rp2` - it defines `PIORegister` and the
+`PINS` / `PIN` / `GPIO` / `NULL` / `ISR` / `OSR` register objects, plus function-shaped
+intrinsics (`pull`, `push`, `out`, `in_`, `wait`, `delay`) and a `pio_program` marker. The
+compiler knows about `PIORegister` and treats it as a pointer-like type.
+
+It is not the API to write programs against: the supported entry points are
+`@rp2.asm_pio` and the bare `@asm_pio` form, and those are what this page documents. Reach
+for `pymcu.pio` only if you are working on the compiler itself.
+
+## Related
+
+- [GPIO](/stdlib/gpio/) - driving the same pins from the CPU
+- [Targets](/targets/) - what the RP2040 and RP2350 backends support
+- [Limitations](/limitations/) - the current edges of the language and the HAL

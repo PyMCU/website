@@ -1,0 +1,171 @@
+---
+title: EEPROM
+description: Non-volatile byte storage — microcontroller.nvm, avr.EEPROM and the native EEPROM class.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Non-volatile byte storage using the internal EEPROM: values written here survive a reset and a
+power cycle. Every read and write compiles to a bare register-level sequence with no SRAM
+overhead, whichever API you go through.
+
+**CircuitPython** calls this `microcontroller.nvm` and indexes it like a byte array — that is the
+genuine CircuitPython spelling, so prefer it if you are writing CircuitPython. On the
+**MicroPython** side there is no community-specified EEPROM API at all (stock MicroPython has no
+`machine.EEPROM` on AVR), so the `pymcu-micropython` package ships `avr.EEPROM` as a PyMCU
+extension module.
+
+:::note[AVR only]
+EEPROM is implemented for the AVR backend (ATmega / ATtiny) only, in all three APIs. Importing it
+for an ARM (RP2040 / RP2350) or PIC target raises a `CompileError` at build time. On the RP2040
+and RP2350 there is no on-chip EEPROM — persist data in external flash or an external I2C EEPROM
+instead.
+:::
+
+## Persist a calibration byte across power cycles
+
+<Tabs syncKey="api">
+<TabItem label="MicroPython">
+
+```python
+from avr import EEPROM      # PyMCU extension module, not upstream MicroPython
+
+ee = EEPROM()
+
+ee.write(0x00, 42)          # blocks ~3.4 ms until the cell is committed
+cal = ee.read(0x00)         # still 42 after a power cycle
+```
+
+</TabItem>
+<TabItem label="CircuitPython">
+
+```python
+import microcontroller
+
+microcontroller.nvm[0] = 42             # blocks ~3.4 ms
+cal = microcontroller.nvm[0]            # still 42 after a power cycle
+
+size = len(microcontroller.nvm)         # 1024 bytes on the ATmega328P
+```
+
+</TabItem>
+<TabItem label="Native HAL">
+
+```python
+from pymcu.hal.eeprom import EEPROM
+from pymcu.types import uint8
+
+def main():
+    ee = EEPROM()
+
+    ee.write(0x00, 42)          # blocks ~3.4 ms
+    cal: uint8 = ee.read(0x00)  # still 42 after a power cycle
+```
+
+</TabItem>
+</Tabs>
+
+:::note[`nvm` is a byte at a time, not a slice]
+CircuitPython's `microcontroller.nvm[a:b]` slice form needs a heap-allocated `bytearray` and is
+not available on bare metal — index one byte at a time in a loop instead. `len(nvm)` reports the
+ATmega328P size (1024 bytes); other AVR parts differ, and a chip-aware size constant is a planned
+addition. All three APIs bottom out in the same `pymcu.hal.eeprom` code, so they are freely
+mixable within one program.
+:::
+
+---
+
+## Native HAL reference - pymcu.hal.eeprom
+
+```python
+from pymcu.hal.eeprom import EEPROM
+```
+
+`EEPROM` is a zero-cost `@inline` class — no registers are written at construction time and no
+SRAM is allocated for the handle.
+
+### The EEPROM class
+
+```python
+EEPROM()
+```
+
+#### EEPROM methods
+
+| Method | Signature | Description |
+|---|---|---|
+| `write` | `write(addr: uint16, value: uint8)` | Write one byte. Blocks ~3.4 ms until the write completes. |
+| `read` | `read(addr: uint16) -> uint8` | Read one byte. Returns immediately. |
+
+### Capacity by chip
+
+| Chip | Size | Address range | Write latency |
+|---|---|---|---|
+| ATmega328P | 1024 bytes | `0x000`–`0x3FF` | ~3.4 ms |
+| ATmega2560 | 4096 bytes | `0x000`–`0xFFF` | ~3.4 ms |
+| ATmega32U4 | 1024 bytes | `0x000`–`0x3FF` | ~3.4 ms |
+| ATtiny85 / 45 / 25 | 512 / 256 / 128 bytes | varies | ~3.4 ms |
+
+Endurance: **100 000 write/erase cycles** per cell. Data retention: **20+ years** at 25 °C.
+
+### Example
+
+```python
+from pymcu.hal.eeprom import EEPROM
+from pymcu.types import uint8
+
+def main():
+    ee = EEPROM()
+
+    # Persist a calibration offset
+    ee.write(0x00, 42)
+
+    # Read it back after a power cycle
+    cal: uint8 = ee.read(0x00)
+```
+
+### Wear-levelling
+
+Each cell has a finite write endurance (~100 000 cycles). For values that change frequently —
+counters, log entries, run-time settings — spread the writes across several addresses instead of
+hammering the same cell.
+
+```python
+from pymcu.hal.eeprom import EEPROM
+from pymcu.types import uint8, uint16
+
+RING_BASE = 0x100
+RING_LEN  = 64
+
+def log_sample(ee: EEPROM, slot: uint16, value: uint8):
+    ee.write(RING_BASE + (slot % RING_LEN), value)
+```
+
+The same pattern works unchanged through `microcontroller.nvm[...]` or `avr.EEPROM` — the
+endurance limit is a property of the silicon, not of the API you reach it through.
+
+### ATmega328P EEPROM register map
+
+| Register | Address | Description |
+|---|---|---|
+| `EEARH` | `0x42` | EEPROM Address High |
+| `EEARL` | `0x41` | EEPROM Address Low |
+| `EEDR` | `0x40` | EEPROM Data Register |
+| `EECR` | `0x3F` | EEPROM Control Register (EEPE, EEMPE, EERIE, EEPM) |
+
+:::caution[Advanced — native HAL only]
+Direct access to the `EEARH` / `EEARL` / `EEDR` / `EECR` registers via `ptr[T]` — for an
+EEPROM-ready interrupt, a custom programming mode, or split erase/write — has no compat
+equivalent in either ecosystem.
+
+For ordinary byte storage the compat APIs cover everything this page shows, so prefer
+[`microcontroller.nvm`](/compat/circuitpython/) or
+[`avr.EEPROM`](/compat/micropython/): the native HAL API may still change between alpha releases.
+Bear in mind that `avr.EEPROM` is a PyMCU extension rather than an upstream MicroPython class, so
+it carries the same "no stability promise" caveat as the HAL itself.
+:::
+
+## See also
+
+- [Watchdog](/stdlib/watchdog/) — recover from hangs without losing stored state
+- [Power management](/stdlib/power/) — avoid EEPROM writes with a marginal supply voltage

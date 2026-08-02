@@ -1,0 +1,255 @@
+---
+title: Watchdog
+description: Hardware watchdog timer — machine.WDT, microcontroller.watchdog and the native Watchdog class.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+A watchdog resets the MCU if the firmware stops feeding it within the configured timeout — the
+standard way to recover a production board from an unexpected hang.
+
+All three APIs cover it. **MicroPython** (`machine.WDT`) and **CircuitPython**
+(`microcontroller.watchdog`) are the recommended ones — they are stable, community-specified,
+and compile to exactly the same register writes as the native `pymcu.hal.watchdog.Watchdog`
+underneath them.
+
+:::note[AVR only]
+The watchdog is implemented for the AVR backend (ATmega / ATtiny) only, in all three APIs;
+importing it for an ARM or PIC target raises a `CompileError`. The RP2040 and RP2350 do have a
+hardware watchdog, but it is not wrapped yet.
+:::
+
+## Guard the main loop
+
+A heartbeat LED plus a watchdog: if the loop ever stops running, the board reboots.
+
+<Tabs syncKey="api">
+<TabItem label="MicroPython">
+
+```python
+from machine import Pin, WDT
+from utime import sleep_ms
+
+led = Pin(13, Pin.OUT)
+wdt = WDT(timeout=500)      # milliseconds; armed on construction
+
+while True:
+    led.toggle()
+    wdt.feed()              # must happen within 500 ms
+    sleep_ms(100)
+```
+
+</TabItem>
+<TabItem label="CircuitPython">
+
+```python
+import board
+import digitalio
+import microcontroller
+import time
+
+led = digitalio.DigitalInOut(board.LED)
+led.direction = digitalio.Direction.OUTPUT
+
+microcontroller.watchdog.timeout = 0.5      # seconds
+microcontroller.watchdog.mode = microcontroller.WatchDogMode.RESET
+
+while True:
+    led.value = not led.value
+    microcontroller.watchdog.feed()         # must happen within 500 ms
+    time.sleep(0.1)
+```
+
+</TabItem>
+<TabItem label="Native HAL">
+
+```python
+from pymcu.hal.gpio import Pin
+from pymcu.hal.watchdog import Watchdog
+from pymcu.time import delay_ms
+
+led = Pin("PB5", Pin.OUT)
+wdt = Watchdog(timeout_ms=500)
+wdt.enable()
+
+while True:
+    led.toggle()
+    wdt.feed()              # must happen within 500 ms
+    delay_ms(100)
+```
+
+</TabItem>
+</Tabs>
+
+:::note[Arming differs, and so do the units]
+`machine.WDT` arms the watchdog **in its constructor** and takes the timeout in
+**milliseconds**. CircuitPython arms it when you assign `.mode`, and its `.timeout` is in
+**seconds** as a float — so it pulls in the soft-float runtime for the seconds-to-milliseconds
+conversion. The native `Watchdog(timeout_ms=...)` takes milliseconds and requires a compile-time
+constant; the CircuitPython path goes through the HAL's runtime `arm_ms()` instead, so there the
+timeout may come from a variable. Note also that `WatchDogMode` lives on `microcontroller`, not
+in a separate `watchdog` module.
+:::
+
+## Reset the board from software
+
+<Tabs syncKey="api">
+<TabItem label="MicroPython">
+
+```python
+import machine
+
+machine.reset()     # soft reset: jumps to address 0 and re-runs the startup stub
+```
+
+</TabItem>
+<TabItem label="CircuitPython">
+
+```python
+import microcontroller
+
+microcontroller.reset()     # arms a ~16 ms watchdog and spins until it fires
+```
+
+</TabItem>
+<TabItem label="Native HAL">
+
+```python
+from pymcu.hal.watchdog import Watchdog
+
+def reset():
+    wd = Watchdog(16)       # shortest timeout, ~16 ms
+    wd.enable()
+    while True:
+        pass                # spin until the watchdog resets the chip
+```
+
+</TabItem>
+</Tabs>
+
+:::caution[These are not the same reset]
+`machine.reset()` is a **soft** reset — it jumps to address 0 and re-runs the startup stub, so
+peripheral registers keep whatever state they were left in. `microcontroller.reset()` is a
+**hardware** reset via the watchdog, which restores registers to their reset values. If you need
+peripherals genuinely reinitialised, use the watchdog form.
+:::
+
+---
+
+## Native HAL reference - pymcu.hal.watchdog
+
+```python
+from pymcu.hal.watchdog import Watchdog
+```
+
+### The Watchdog class
+
+```python
+Watchdog(timeout_ms=500)
+```
+
+| Parameter | Type | Description |
+|---|---|---|
+| `timeout_ms` | `const[uint16]` | Timeout in milliseconds. Must be a **compile-time constant** — it is resolved to a WDP prescaler at build time. |
+
+#### Timeout table (ATmega328P, ~3 V, 25 °C)
+
+| `timeout_ms` | WDP | Actual timeout |
+|---|---|---|
+| 16 | `0b000` | ~16 ms |
+| 32 | `0b001` | ~32 ms |
+| 64 | `0b010` | ~64 ms |
+| 125 | `0b011` | ~125 ms |
+| 250 | `0b100` | ~250 ms |
+| 500 | `0b101` | ~500 ms |
+| 1000 | `0b110` | ~1 s |
+| 2000 | `0b111` | ~2 s |
+| 4000 | `0b1000` | ~4 s |
+| 8000 | `0b1001` | ~8 s |
+
+#### Watchdog methods
+
+| Method | Description |
+|---|---|
+| `enable()` | Enable the watchdog with the configured timeout |
+| `disable()` | Disable the watchdog (timed-disable sequence: WDCE + WDE) |
+| `feed()` | Reset the watchdog counter (`WDR` instruction) |
+| `arm_ms(ms)` | Enable the watchdog with a **runtime** timeout in milliseconds |
+
+`arm_ms()` is the escape hatch from the compile-time-constant rule, and it is what
+`microcontroller.watchdog` uses when you assign `.mode`.
+
+### Example
+
+```python
+from pymcu.hal.watchdog import Watchdog
+from pymcu.hal.uart import UART
+
+def main():
+    uart = UART(9600)
+    wdt = Watchdog(timeout_ms=500)
+    wdt.enable()
+
+    while True:
+        uart.write_str("alive\n")
+        wdt.feed()      # must be called within 500 ms
+```
+
+### Safety notes
+
+- Call `wdt.feed()` on **every code path** that can take longer than the timeout — including
+  interrupt handlers that block the main loop.
+- The watchdog persists across soft resets on the ATmega328P. If `disable()` is not called at
+  start-up while the WDRF flag is set in `MCUSR`, the device resets in a loop. Clear `MCUSR` and
+  call `disable()` at the top of `main()` to break out of that state.
+- Long blocking work — a 750 ms `DS18B20` conversion, a 2 s `DHT11` interval — must either feed
+  the watchdog in the middle or run under a timeout longer than the operation.
+
+### Ultra-low-power periodic wake
+
+Combined with [power management](/stdlib/power/), the watchdog is the cheapest periodic wake
+source: the MCU sits at ~0.1 µA between ticks.
+
+```python
+from pymcu.hal.power import sleep_power_down
+from pymcu.hal.watchdog import Watchdog
+
+wdt = Watchdog(timeout_ms=1000)
+
+@interrupt(0x0018)    # WDT vector (ATmega328P)
+def on_wdt():
+    pass              # just wake; do nothing in the ISR
+
+def main():
+    wdt.enable()
+    asm("sei")
+    while True:
+        sleep_power_down()   # ~1 s at ~0.1 µA, then run the loop body
+        do_periodic_task()
+```
+
+### ATmega328P watchdog register map
+
+| Register | Address | Description |
+|---|---|---|
+| `WDTCSR` | `0x60` | WD Control/Status (WDP, WDEN, WDIE, WDIF, WDCE, WDE) |
+| `MCUSR` | `0x54` | MCU Status Register (WDRF, BORF, EXTRF, PORF) |
+
+:::caution[Advanced — native HAL only]
+`disable()`, `arm_ms()` and the interrupt-mode watchdog have no MicroPython equivalent —
+`machine.WDT` exposes only `feed()` and, once armed, cannot be turned off. The
+`@interrupt(0x0018)` WDT handler used for the periodic-wake pattern above, and the `MCUSR`
+register access needed to break out of a watchdog reset loop, have no compat equivalent in
+either ecosystem: ISR vectors and `ptr[T]` register access are native-HAL-only.
+
+CircuitPython does expose `microcontroller.watchdog.deinit()` and reports the last reset cause as
+`microcontroller.cpu.reset_reason`, so reach for
+[`microcontroller`](/compat/circuitpython/) before the HAL if that is all you need. The native
+HAL API may still change between alpha releases.
+:::
+
+## See also
+
+- [Power management](/stdlib/power/) — the watchdog is the wake source for `sleep_power_down()`
+- [Timer](/stdlib/timer/) — a periodic interrupt when you want a tick, not a reset
+- [EEPROM](/stdlib/eeprom/) — state that has to survive the reset the watchdog causes

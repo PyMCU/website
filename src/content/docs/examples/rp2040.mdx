@@ -1,0 +1,839 @@
+---
+title: Raspberry Pi Pico (RP2040 / RP2350)
+description: Runnable PyMCU programs for the Raspberry Pi Pico and Pico 2 — GPIO, UART, SPI, I2C, PWM, ADC, DMA, the PIO DSL, exceptions, float and CYW43439 WiFi.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+These examples target the **Raspberry Pi Pico (RP2040, Cortex-M0+)** and the
+**Raspberry Pi Pico 2 (RP2350, Cortex-M33)** through the ARM backend:
+
+```bash
+pipx install --pip-args=--pre "pymcu-compiler[arm]"
+```
+
+The ARM backend does not emit assembly directly — it lowers PyMCU's
+architecture-agnostic IR to **LLVM IR** and hands it to LLVM, so register allocation,
+instruction selection, the AAPCS calling convention and the optimisation passes are
+LLVM's. `pymcu build` produces `dist/firmware.bin`, a **flat flash image** with the
+second-stage bootloader at offset 0, and packs a `dist/firmware.uf2` next to it for
+drag-and-drop or `pymcu flash`. The codegen itself is chip-agnostic: only the
+triple and CPU change between the two targets
+(`thumbv6m-none-eabi` / `cortex-m0plus` vs `thumbv8m.main-none-eabi` / `cortex-m33`).
+
+All three API styles work on the Pico: the MicroPython `machine` shim, the CircuitPython
+`board` / `digitalio` / `busio` shim, and the native PyMCU HAL. MicroPython is the natural
+starting point here — it is what most Pico code is already written in.
+
+:::note[What the compat layers cover on the Pico]
+On ARM the compat shims currently wrap **GPIO and UART**: `machine.Pin`, `machine.UART`,
+`digitalio.DigitalInOut` and `busio.UART`. The other peripherals — ADC, PWM, SPI, I2C, DMA —
+are reached through `pymcu.hal.*` on this target, and the PIO DSL lives in MicroPython's
+`rp2` module. Those sections below are marked accordingly.
+:::
+
+## Project layout
+
+Every example is an ordinary Python project with a `[tool.pymcu]` table. The `stdlib` key
+selects which compat flavour is importable:
+
+<Tabs syncKey="api">
+<TabItem label="MicroPython">
+
+```toml
+[project]
+name = "rp2040-blink"
+version = "0.1.0"
+requires-python = ">=3.11"
+
+[tool.pymcu]
+target    = "rp2040"
+frequency = 125000000
+sources   = "src"
+entry     = "main.py"
+stdlib    = ["micropython"]
+```
+
+</TabItem>
+<TabItem label="CircuitPython">
+
+```toml
+[project]
+name = "rp2040-blink"
+version = "0.1.0"
+requires-python = ">=3.11"
+
+[tool.pymcu]
+board     = "raspberry_pi_pico"
+frequency = 125000000
+sources   = "src"
+entry     = "main.py"
+stdlib    = ["circuitpython"]
+```
+
+`board = "raspberry_pi_pico"` is what makes the `board` module resolve; the MicroPython and
+native-HAL styles use plain GP numbers and only need `target`.
+
+</TabItem>
+<TabItem label="Native HAL">
+
+```toml
+[project]
+name = "rp2040-blink"
+version = "0.1.0"
+requires-python = ">=3.11"
+
+[tool.pymcu]
+target    = "rp2040"
+frequency = 125000000
+sources   = "src"
+entry     = "main.py"
+```
+
+</TabItem>
+</Tabs>
+
+For the Pico 2, swap the target and the clock:
+
+```toml
+[tool.pymcu]
+target    = "rp2350"
+frequency = 150000000
+sources   = "src"
+entry     = "main.py"
+```
+
+On RP2350 the build driver injects a call to `pymcu.hal.rp2350.clocks.clock_init()` at the
+top of `main()` so the part comes up at the requested system clock with a 1 MHz tick — you
+do not write it yourself. The rewritten entry point is dropped in `dist/_generated/main.py`
+if you want to read it.
+
+## Blink
+
+The same source builds for both boards; only `target`/`frequency` differ. The on-board LED
+is GP25 on the Pico and Pico 2.
+
+<Tabs syncKey="api">
+<TabItem label="MicroPython">
+
+```python
+# Blink the Raspberry Pi Pico on-board LED (GP25).
+from machine import Pin
+from utime import sleep_ms
+
+
+def main():
+    led = Pin(25, Pin.OUT)      # on ARM the number IS the GPIO number
+    while True:
+        led.high()
+        sleep_ms(500)
+        led.low()
+        sleep_ms(500)
+```
+
+Top-level statements work as well — they are wrapped into `main()` automatically:
+
+```python
+# Tight toggle loop (no delay) -- standard MicroPython API.
+from machine import Pin
+
+led = Pin(25, Pin.OUT)
+while True:
+    led.value(1)
+    led.value(0)
+```
+
+</TabItem>
+<TabItem label="CircuitPython">
+
+```python
+# Blink the Raspberry Pi Pico on-board LED (board.LED == GP25).
+import board
+import digitalio
+import time
+
+
+def main():
+    led = digitalio.DigitalInOut(board.LED)
+    led.direction = digitalio.Direction.OUTPUT
+    while True:
+        led.value = True
+        time.sleep(0.5)
+        led.value = False
+        time.sleep(0.5)
+```
+
+CircuitPython's `time` has `sleep(seconds)`, `monotonic()` and `monotonic_ns()` — there is
+no `sleep_ms`, so a half-second delay is `time.sleep(0.5)`.
+
+</TabItem>
+<TabItem label="Native HAL">
+
+```python
+# Blink the Raspberry Pi Pico on-board LED (GP25).
+from pymcu.hal.gpio import Pin
+from pymcu.time import delay_ms
+
+
+def main():
+    led = Pin(25, Pin.OUT)
+    while True:
+        led.high()
+        delay_ms(500)
+        led.low()
+        delay_ms(500)
+```
+
+A constant pin number const-folds all the way down: `Pin(25).toggle()` lowers to a single
+32-bit store to `SIO_GPIO_OUT_XOR`.
+
+</TabItem>
+</Tabs>
+
+## UART echo
+
+Echoes bytes received on UART0 (GP0 = TX, GP1 = RX) back to the sender, toggling the LED on
+every byte. Each of these files also runs unmodified under the real MicroPython or
+CircuitPython interpreter on a Pico.
+
+<Tabs syncKey="api">
+<TabItem label="MicroPython">
+
+```python
+# MicroPython-style UART echo on the Raspberry Pi Pico.
+from machine import Pin, UART
+
+
+def main():
+    uart = UART(0, 115200)
+    led = Pin(25, Pin.OUT)
+    uart.println("READY")
+    while True:
+        c: int = uart.read()
+        led.toggle()
+        uart.write(c)
+```
+
+</TabItem>
+<TabItem label="CircuitPython">
+
+```python
+# CircuitPython-style blink + UART echo on the Raspberry Pi Pico.
+# Save this as code.py and it runs unmodified under CircuitPython.
+import board
+import digitalio
+import busio
+from pymcu.types import uint8
+
+
+def main():
+    led = digitalio.DigitalInOut(board.LED)
+    led.direction = digitalio.Direction.OUTPUT
+
+    uart = busio.UART(board.TX, board.RX, baudrate=115200)
+    uart.write(b"READY\r\n")
+
+    buf: uint8[1] = bytearray(1)
+    while True:
+        uart.readinto(buf)
+        led.value = buf[0] & 1
+        uart.write(buf)
+```
+
+`busio.UART.read()` and `readline()` cannot return a `bytes` object without a heap, so they
+compile to a warning-emitting no-op — use `readinto(buf)` with a pre-allocated buffer.
+
+</TabItem>
+<TabItem label="Native HAL">
+
+```python
+# Echo bytes received on UART0 back to the sender.
+from pymcu.hal.uart import UART
+
+
+def main():
+    uart = UART(115200)
+    uart.println("ECHO")
+    while True:
+        c = uart.read()
+        uart.write(c)
+```
+
+</TabItem>
+</Tabs>
+
+`machine.UART` takes a peripheral id (`UART(0, 115200)`); `busio.UART` takes pins
+(`busio.UART(board.TX, board.RX, baudrate=115200)`). Both configure the same UART0 block.
+
+:::note[Pico `board` constants]
+`board.LED` is GP25, `board.TX` / `board.RX` are GP0 / GP1, `board.SDA` / `board.SCL` are
+GP4 / GP5 and `board.SCK` / `board.MOSI` / `board.MISO` are GP18 / GP19 / GP16 — the
+standard Pico pinout. `board.GP0` … `board.GP28` are also defined.
+:::
+
+## Native HAL peripherals
+
+:::caution[Advanced — native HAL only]
+ADC, PWM, SPI, I2C and DMA are reached through `pymcu.hal.*` on the Pico. `machine.ADC`,
+`machine.PWM`, `machine.SPI`, `machine.I2C`, `analogio`, `pwmio`, `busio.I2C` and
+`busio.SPI` exist in the compat packages but are wired to the AVR HAL only, so they are not
+usable on this target yet.
+
+The native HAL API may change between alpha releases — keep the GPIO and UART parts of your
+program on [`machine`](/compat/micropython/) or [`digitalio`](/compat/circuitpython/) and
+drop to the HAL for the peripherals below.
+:::
+
+### PWM
+
+```python
+# Drive GP2 with a 5 kHz PWM at 50% duty.
+from pymcu.hal.pwm import PWM
+
+
+def main():
+    pwm = PWM(2, 5000, 32768)
+    while True:
+        pass
+```
+
+### ADC
+
+```python
+# Read ADC channel 0 (GP26) and drive the LED (GP25) when above mid-scale.
+from pymcu.hal.gpio import Pin
+from pymcu.hal.adc import AnalogPin
+
+
+def main():
+    led = Pin(25, Pin.OUT)
+    adc = AnalogPin(0)
+    while True:
+        v = adc.read()
+        if v > 2048:
+            led.high()
+        else:
+            led.low()
+```
+
+### SPI
+
+```python
+# Write a few bytes out on SPI0 (GP2=SCK, GP3=MOSI, GP4=MISO).
+from pymcu.hal.spi import SPI
+
+
+def main():
+    spi = SPI(1000000)
+    spi.transfer(0xAB)
+    spi.transfer(0xCD)
+    spi.transfer(0xEF)
+    while True:
+        pass
+```
+
+### I2C
+
+```python
+# Write a byte to an I2C device at address 0x3C on I2C0 (SDA=GP4, SCL=GP5).
+from pymcu.hal.i2c import I2C
+
+
+def main():
+    bus = I2C(100000)
+    bus.write_to(0x3C, 0x12)
+    bus.write_to(0x3C, 0x34)
+    while True:
+        pass
+```
+
+### DMA
+
+```python
+# DMA a word from one RAM location to another, then light GP25 if it arrived.
+from pymcu.hal.gpio import Pin
+from pymcu.hal.dma import DMA
+from pymcu.types import ptr, uint32
+
+
+def main():
+    led = Pin(25, Pin.OUT)
+    src: ptr[uint32] = ptr(0x20010000)
+    dst: ptr[uint32] = ptr(0x20010100)
+    src.value = 0xDEADBEEF
+    dst.value = 0
+
+    dma = DMA(0)
+    dma.transfer(0x20010000, 0x20010100, 1)
+
+    if dst.value == 0xDEADBEEF:
+        led.high()
+    else:
+        led.low()
+    while True:
+        pass
+```
+
+## PIO — `@rp2.asm_pio`
+
+The PIO assembler is built into the compiler: a function decorated with `@rp2.asm_pio`
+is assembled at compile time and the resulting program plus the state-machine
+configuration are emitted as constant MMIO writes. The CPU is not in the loop — the
+blink below runs entirely on the PIO block.
+
+```python
+# Blink GP25 entirely from a PIO state machine (no CPU in the loop).
+import rp2
+from rp2 import PIO, StateMachine
+
+
+@rp2.asm_pio(set_init=[PIO.OUT_LOW])
+def blink():
+    set(pindirs, 1)
+    wrap_target()
+    set(pins, 1)[20]
+    set(pins, 0)[20]
+    wrap()
+
+
+def main():
+    sm = StateMachine(0, blink, freq=1000000, set_base=25)
+    while True:
+        pass
+```
+
+This needs the MicroPython stdlib (`stdlib = ["micropython"]` in `[tool.pymcu]`), since
+`rp2` is part of that flavour. The MVP covers PIO0 / state machine 0; the FIFO methods
+(`sm.put()` / `sm.get()`) and the other blocks are not wired yet — see
+[Limitations](/limitations/).
+
+:::caution[Advanced — `rp2` only]
+The PIO DSL has no CircuitPython equivalent in PyMCU (CircuitPython's own `rp2pio` is not
+wrapped), and no native-HAL form — `@rp2.asm_pio` *is* the API. It is the one place where
+the MicroPython flavour is required rather than merely recommended.
+:::
+
+## Language features
+
+Everything from here down is a **compiler** feature, not an API feature: exceptions, `float`,
+f-strings, `dict` / `set`, generators and `async` behave identically whichever flavour you
+import. The samples use `pymcu.hal.uart` for output because it is the shortest way to show
+the result; substituting `machine.UART(0, 115200)` or `print()` changes nothing about the
+feature being demonstrated.
+
+### Exceptions
+
+`try` / `except` / `finally` / `raise` use the same zero-cost flag-propagation model on
+ARM as on AVR: a global error flag plus a code, no heap, no unwinder, no tables. An
+uncaught exception reaches the runtime handler, which prints `E:<Name>` and halts.
+
+```python
+from pymcu.types import uint8
+from pymcu.hal.uart import UART
+from pymcu.exceptions import ValueError, TypeError, KeyError
+
+
+def risky(x: uint8) -> uint8:
+    if x == 0:
+        raise ValueError
+    return 42
+
+
+def pick(x: uint8) -> uint8:
+    if x == 1:
+        raise TypeError
+    return 7
+
+
+def main():
+    uart = UART(115200)
+    uart.println("EXNS")
+
+    # raise in a callee, caught here
+    try:
+        r: uint8 = risky(0)
+        uart.println("A:missed")
+    except ValueError:
+        uart.println("A:caught")
+
+    # handler discrimination by exception type
+    try:
+        r3: uint8 = pick(1)
+        uart.println("C:missed")
+    except ValueError:
+        uart.println("C:value")
+    except TypeError:
+        uart.println("C:type")
+
+    # finally runs after a caught raise
+    try:
+        r4: uint8 = risky(0)
+    except ValueError:
+        pass
+    finally:
+        uart.println("E:fin")
+```
+
+### Float
+
+`float` is IEEE-754 single precision on both parts. On RP2040 the arithmetic goes through
+the **bootrom fast-float library** (correctly-rounded routines already in ROM; `crt0`
+resolves the table and shims `__aeabi_f*`), so it costs almost no flash. On RP2350 it goes
+to the Cortex-M33 **FPU**. `print()` of a float works on both.
+
+```python
+from pymcu.types import uint16, int16
+from pymcu.hal.uart import UART
+
+
+def main():
+    uart = UART(115200)
+    uart.println("FLT")
+
+    a: float = 2.5
+    b: float = 4.0
+    c: float = a * b + 1.5     # 11.5
+    d: float = c / 2.0         # 5.75
+    if d > 5.0:
+        uart.println("G")
+
+    n: uint16 = int(d * 10.0)  # 57
+    print(n)
+
+    e: float = -2.5
+    m: int16 = int(e)          # -2, toward zero
+    print(m)
+
+    print(d)                   # 5.75 -> "5.7" (one-decimal contract)
+    print(e)                   # -2.5
+
+    while True:
+        pass
+```
+
+### f-strings as values
+
+f-strings work streamed (`print(f"...")`, `uart.write_str(f"...")`) *and* as values: the
+compiler builds the result into a fixed, compiler-managed buffer — no heap. `len(s)`,
+`s[i]` and re-assignment inside a loop (which reuses the same buffer) all work.
+
+```python
+from pymcu.types import uint8, uint16, int16
+from pymcu.hal.uart import UART
+
+
+def main():
+    uart = UART(115200)
+    uart.println("FSTR")
+
+    t: uint8 = 23
+    reg: uint16 = 0xBEEF
+    neg: int16 = -42
+    s = f"t={t}C reg={reg:04x} n={neg}"
+    print(s)
+
+    n: uint16 = len(s)
+    print(f"L:{n}")
+
+    first: uint8 = s[0]
+    uart.write(first)
+
+    k: uint8 = 0
+    line = f"k={k} "
+    while k < 3:
+        line = f"k={k} "      # reuses the same buffer
+        uart.write_str(line)
+        k = k + 1
+
+    v: uint8 = 7
+    p = f"pad=[{v:3d}]=[{v:03d}]"
+    print(p)
+```
+
+### dict and set literals
+
+Closed `dict` / `set` literals are compile-time lookup tables. A constant subscript folds;
+a runtime subscript lowers to a compare chain that raises a **catchable** `KeyError`;
+`x in d` is a membership test and `len(d)` is a constant.
+
+```python
+from pymcu.types import uint8
+from pymcu.hal.uart import UART
+from pymcu.exceptions import KeyError
+
+SCALE = {0: 10, 1: 20, 2: 30}
+MODES = {"low": 1, "mid": 2, "high": 3}
+OK = {1, 3, 5}
+
+
+def main():
+    uart = UART(115200)
+    uart.println("DICT")
+
+    v: uint8 = SCALE[2]        # folds to 30
+    print(f"V:{v}")
+
+    k: uint8 = 1
+    r: uint8 = SCALE[k]        # compare chain
+    print(f"R:{r}")
+
+    try:
+        k = 7
+        bad: uint8 = SCALE[k]
+    except KeyError:
+        print("E:caught")
+
+    a: uint8 = 3
+    if a in OK:
+        print("S:1")
+
+    n: uint8 = len(SCALE)      # compile-time constant
+    print(f"N:{n}")
+
+    m: uint8 = MODES["mid"]
+    print(f"M:{m}")
+```
+
+For a **mutable** fixed-capacity mapping, use `pymcu.collections.FixedDict(capacity)`.
+Unbounded/growing dicts and sets remain unsupported — see [Limitations](/limitations/).
+
+### Generators
+
+A top-level function containing `yield` is lowered to a state machine, and
+`for x in gen(...)` desugars to a poll loop with Python-exact `break` / `continue`.
+
+```python
+from pymcu.types import uint16, uint32
+from pymcu.hal.uart import UART
+
+
+def powers(n: uint32):
+    p: uint32 = 1
+    k: uint32 = 0
+    while k < n:
+        yield p
+        p = p * 2
+        k = k + 1
+
+
+def main():
+    uart = UART(115200)
+    uart.println("GEN")
+
+    total: uint32 = 0
+    for v in powers(4):        # 1, 2, 4, 8
+        t: uint16 = v
+        print(t)
+        total = total + v
+    print(f"S:{total}")        # 15
+
+    found: uint32 = 0
+    for w in powers(10):
+        if w > 4:
+            found = w          # abandons the generator mid-iteration
+            break
+    print(f"F:{found}")        # 8
+```
+
+### async / await
+
+`await asyncio.sleep_ms(...)` can appear anywhere in a coroutine body — inside
+`if` / `elif` / `else`, `while <cond>` and `for i in range(...)` at any nesting, with
+`break` and `continue`. `return expr` surfaces through `._value`. `asyncio.run(coro)` and
+`asyncio.gather(a, b)` are the executors.
+
+```python
+import asyncio
+from pymcu.types import uint32
+from pymcu.hal.uart import UART
+
+
+async def worker(n: uint32):
+    total: uint32 = 0
+    for i in range(n):
+        if i == 2:
+            await asyncio.sleep_ms(2)
+            total = total + 10
+        else:
+            await asyncio.sleep_ms(1)
+            total = total + 1
+    return total
+
+
+async def pinger():
+    k: uint32 = 0
+    while k < 3:
+        await asyncio.sleep_ms(1)
+        k = k + 1
+        if k == 2:
+            continue
+    print("P")
+
+
+def main():
+    uart = UART(115200)
+    uart.println("AV2")
+    w = worker(4)
+    p = pinger()
+    asyncio.gather(w, p)
+    r: uint32 = w._value       # 13
+    print(f"T:{r}")
+    while True:
+        pass
+```
+
+Awaiting another coroutine (rather than a sleep) and `await` in an arbitrary expression
+position are not supported yet.
+
+## WiFi on the Pico 2 W
+
+:::caution[Pico 2 W (RP2350) only, and open networks only]
+The native WiFi HAL is wired for the **Pico 2 W (RP2350)** alone. On any other chip
+`pymcu.hal.wifi` raises `CompileError: WiFi (CYW43439) is only supported on the Pico 2 W
+(rp2350) so far` — there is no RP2040 CYW43 driver, so this does not work on a Pico W yet.
+
+There is also **no WPA**. `connect()` rejects a non-empty key at compile time:
+
+```text
+CompileError: WiFi: WPA is not supported yet; connect() can only join open networks
+-- leave key empty
+```
+
+The `key` parameter exists only so the signature matches MicroPython's `WLAN.connect()`.
+:::
+
+The CYW43439 radio is driven over bit-banged gSPI: bring-up, WLAN join, RX drain and a
+TCP/MQTT publish. Validated end to end against the RP2350Sharp CYW43439 model and its
+built-in broker. All three styles reach the same radio driver.
+
+<Tabs syncKey="api">
+<TabItem label="MicroPython">
+
+`network.WLAN` + `umqtt.simple`, with `stdlib = ["micropython"]`:
+
+```python
+import network
+from umqtt.simple import MQTTClient
+from machine import Pin
+from dht import DHT11
+from pymcu.types import uint32
+
+
+def main():
+    wlan = network.WLAN(network.STA_IF)
+    wlan.active(True)
+    wlan.connect("RP2350Sharp-AP")
+
+    sensor = DHT11(Pin(2, Pin.IN))
+    sensor.measure()
+    t: uint32 = sensor.temperature()
+
+    client = MQTTClient(wlan, "pm", "192.168.4.1")
+    client.connect()
+    client.publish(t)          # DHT reading -> MQTT topic "dht"
+    while True:
+        pass
+```
+
+</TabItem>
+<TabItem label="CircuitPython">
+
+`socketpool` + `adafruit_minimqtt`, with `stdlib = ["circuitpython"]`:
+
+```python
+from pymcu.hal.wifi import CYW43
+import socketpool
+import adafruit_minimqtt.adafruit_minimqtt as MQTT
+from pymcu.types import uint32
+
+
+def main():
+    radio = CYW43()
+    radio.connect("RP2350Sharp-AP")
+    pool = socketpool.SocketPool(radio)
+    client = MQTT.MQTT(broker="192.168.4.1", socket_pool=pool)
+    client.connect()
+    reading: uint32 = 42
+    client.publish("dht", reading)
+    while True:
+        pass
+```
+
+</TabItem>
+<TabItem label="Native HAL">
+
+```python
+# CYW43439 WiFi on a Pico 2 W: gSPI bring-up -> WLAN join -> drain the post-join
+# async events -> connect to an MQTT broker and PUBLISH a reading.
+from pymcu.hal.rp2350.cyw43 import CYW43
+from pymcu.types import uint8
+
+
+def main():
+    wifi = CYW43()
+    wifi.init()
+    wifi.join_open("RP2350Sharp-AP")
+    pkt: uint8[256] = [0] * 256
+    wifi._drain_rx(pkt)
+    wifi.mqtt_publish(42)
+    while True:
+        pass
+```
+
+</TabItem>
+</Tabs>
+
+:::note[Module-level `wifi.radio`]
+The idiomatic CircuitPython `wifi.radio` module-level singleton resolves and compiles, but
+a cross-module singleton's method still has a runtime self-binding gap, so the examples
+construct the radio locally.
+:::
+
+## Peripheral coverage
+
+Both parts share the same HAL surface; the backend is single-core (core 0) for now.
+
+| Peripheral | RP2040 | RP2350 |
+|---|---|---|
+| GPIO (`pymcu.hal.gpio`) | Yes | Yes |
+| UART0 (`pymcu.hal.uart`) | Yes | Yes |
+| SPI (`pymcu.hal.spi`) | Yes | Yes |
+| I2C (`pymcu.hal.i2c`) | Yes | Yes |
+| PWM (`pymcu.hal.pwm`) | Yes | Yes |
+| ADC (`pymcu.hal.adc`) | Yes | Yes |
+| DMA (`pymcu.hal.dma`) | Yes | Yes |
+| PIO (`@rp2.asm_pio`) | Yes (PIO0 / SM0) | Yes (PIO0 / SM0) |
+| CYW43439 WiFi | No | Pico 2 W only, open networks |
+| Exceptions, `float`, f-strings, generators, async | Yes | Yes |
+| Second core | No | No |
+| Garbage collector | No (by design) | No (by design) |
+
+## Build and flash
+
+```bash
+pymcu build          # -> dist/firmware.bin (flat image, boot2 at offset 0) + firmware.uf2
+pymcu flash          # picotool if present, otherwise the RPI-RP2 BOOTSEL volume
+```
+
+To enter BOOTSEL mode, hold the BOOTSEL button while plugging in USB. `pymcu flash` picks
+the artefact from the target family — the `.uf2` here, Intel HEX on AVR and PIC — so the
+same command works on every target. See [`pymcu build`](/driver/#pymcu-build) and
+[`pymcu flash`](/driver/#pymcu-flash) for the full reference.
+
+Several of these programs `print()`. Open a serial terminal on the board at **115200 baud**
+(the `stdout_baud` default) to read the output — see
+[Serial output](/driver/#serial-output-and-print).
+
+## Validating in CI
+
+Compiled `firmware.bin` images are driven headlessly by the RP2040Sharp / RP2350Sharp
+TestKits: assert on GPIO, UART, SPI, I2C, PWM, ADC, DMA, PIO and even the CYW43439 radio
+exactly as on real silicon, with deterministic, bounded runs. The programs on this page are
+the sources of that suite — each one is compiled and asserted on every CI run.
+
+## See also
+
+- [Limitations](/limitations/) — what the ARM backend does not do yet
+- [Roadmap](/roadmap/) — what is next
+- [MicroPython compatibility](/compat/micropython/) / [CircuitPython compatibility](/compat/circuitpython/)
+- [AVR examples](/examples/) — the rest of the gallery

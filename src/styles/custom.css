@@ -1,0 +1,17 @@
+@import '@fontsource-variable/inter';
+
+:root {
+	--sl-color-accent-low: #1e3a8a;
+	--sl-color-accent: #2a7cb5;
+	--sl-color-accent-high: #60a5fa;
+	--sl-font: 'Inter Variable', -apple-system, BlinkMacSystemFont, sans-serif;
+	--sl-font-system: 'Inter Variable', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Starlight renders wide content (the roadmap and comparison tables) inside .content;
+   keep long tables scrollable instead of pushing the page sideways. */
+.sl-markdown-content table {
+	display: block;
+	overflow-x: auto;
+	max-width: 100%;
+}

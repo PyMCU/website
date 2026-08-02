@@ -1,0 +1,360 @@
+---
+title: UART
+description: Hardware serial — machine.UART, busio.UART and the native HAL (USART0 on AVR, PL011 UART0 on RP2040 / RP2350, USART on PIC).
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Serial is available through three APIs. **MicroPython** (`machine.UART`) and **CircuitPython**
+(`busio.UART`) are the recommended ones — they are stable, community-specified, and compile down
+to the same register writes as the native HAL. The native `pymcu.hal.uart.UART` is the layer
+underneath; reach for it when you need something the compat APIs do not expose, such as the
+interrupt-driven RX ring buffer or the width-specific decimal printers.
+
+## Print a banner, then echo received bytes
+
+<Tabs syncKey="api">
+<TabItem label="MicroPython">
+
+```python
+from machine import UART
+from pymcu.types import uint8
+
+def main():
+    uart = UART(0, 9600)
+    uart.println("PyMCU ready")
+
+    while True:
+        b: uint8 = uart.read()      # blocks until a byte arrives
+        uart.write(b)
+```
+
+</TabItem>
+<TabItem label="CircuitPython">
+
+```python
+import board
+import busio
+from pymcu.types import uint8
+
+def main():
+    uart = busio.UART(board.TX, board.RX, baudrate=9600)
+    uart.write(b"PyMCU ready\n")
+
+    buf: uint8[1] = bytearray(1)
+    while True:
+        uart.readinto(buf)          # blocks until the buffer is full
+        uart.write(buf)
+```
+
+</TabItem>
+<TabItem label="Native HAL">
+
+```python
+from pymcu.hal.uart import UART
+from pymcu.types import uint8
+
+def main():
+    uart = UART(9600)               # UART(115200, tx=0, rx=1) on a Pico
+    uart.println("PyMCU ready")
+
+    while True:
+        b: uint8 = uart.read()
+        uart.write(b)
+```
+
+</TabItem>
+</Tabs>
+
+## Read a line into a buffer
+
+There is no heap, so every read fills a buffer you own. Declare it with a size annotation —
+`uint8[16]` — and the length folds to a compile-time constant.
+
+<Tabs syncKey="api">
+<TabItem label="MicroPython">
+
+```python
+from machine import UART
+from pymcu.types import uint8
+
+def main():
+    uart = UART(0, 9600)
+    line: uint8[16] = bytearray(16)
+
+    while True:
+        n: uint8 = uart.readline(line)    # reads up to '\n' or len(line) - 1
+        i: uint8 = 0
+        while i < n:
+            uart.write(line[i])
+            i += 1
+```
+
+</TabItem>
+<TabItem label="CircuitPython">
+
+```python
+import board
+import busio
+from pymcu.types import uint8
+
+def main():
+    uart = busio.UART(board.TX, board.RX, baudrate=9600)
+    buf: uint8[4] = bytearray(4)
+
+    while True:
+        uart.readinto(buf)               # blocks until all 4 bytes arrive
+        uart.write(buf)
+```
+
+</TabItem>
+<TabItem label="Native HAL">
+
+```python
+from pymcu.hal.uart import UART
+from pymcu.types import uint8
+
+def main():
+    uart = UART(9600)
+    line: uint8[16] = bytearray(16)
+
+    while True:
+        n: uint8 = uart.read_line(line, 16)
+        i: uint8 = 0
+        while i < n:
+            uart.write(line[i])
+            i += 1
+```
+
+</TabItem>
+</Tabs>
+
+:::note[Two deviations worth knowing]
+`busio.UART.read()` and `busio.UART.readline()` cannot return a `bytes` object without a heap,
+so in PyMCU they are compile-time warnings and no-ops — use `readinto(buf)` instead.
+`machine.UART.readline(buf)` likewise takes a caller-provided buffer rather than returning
+bytes. `busio.UART.in_waiting` and `machine.UART.any()` both reflect the RXC flag (0 or 1) on a
+polled hardware UART; enable the HAL's interrupt-driven RX path for a true byte count.
+:::
+
+`print()` routes through the console dispatcher, which writes to this same UART:
+
+```python
+print("H: ", humidity, "  T: ", temperature, sep="")
+print(f"count={count:04d}")
+```
+
+:::caution[`print()` of a number does not reach PIC]
+`pymcu.hal.console` only imports `uart_write_str` for `pic14`, so **string** output works on
+AVR, ARM (RP2040 / RP2350) and PIC. The decimal and float formatters are a different story:
+`uart_write_decimal_*` and `uart_write_float` exist on AVR and ARM only, so `print(count)`,
+`print(temperature)` and the interpolated fields of `print(f"...")` have nothing to bind to on
+PIC. Print your own digits there, or use `uart.print_byte()` / `uart.print_uint16()` from the
+PIC `UART` class.
+
+`print()` emits nothing at all on pic12, pic18 and RISC-V — those targets import no string
+writer, so the call is dropped rather than failing to link.
+:::
+
+---
+
+## Native HAL reference - pymcu.hal.uart
+
+```python
+from pymcu.hal.uart import UART
+```
+
+`pymcu.hal.uart` is available on **AVR** (USART0), **ARM** (RP2040 / RP2350, UART0) and
+**PIC** (USART / SPBRG). `UART` is an `@inline` class — it compiles to peripheral register writes with
+no SRAM allocation and no runtime library.
+
+### `UART(...)` — AVR
+
+```python
+uart = UART(9600)
+```
+
+| Parameter | Type | Description |
+|---|---|---|
+| `baud` | `const[uint16]` | Baud rate; folded into the `UBRR0` divisor at compile time. Default `9600`. |
+
+| Baud rate | UBRR0 value (16 MHz) |
+|---|---|
+| 9600 | 103 |
+| 19200 | 51 |
+| 38400 | 25 |
+| 57600 | 16 |
+| 115200 | 8 |
+
+### `UART(...)` — RP2040 / RP2350
+
+```python
+uart = UART(115200, tx=0, rx=1)
+```
+
+| Parameter | Type | Description |
+|---|---|---|
+| `baud` | `const` | Baud rate. Default `115200`. |
+| `tx` | `const` | GPIO used for TX. Default `0`. |
+| `rx` | `const` | GPIO used for RX. Default `1`. |
+
+The `IBRD`/`FBRD` divisors are folded at compile time from the constant baud rate, so they
+assume a fixed peripheral clock — the pico-sdk default:
+
+| Chip | Assumed `clk_peri` |
+|---|---|
+| RP2040 | 125 MHz |
+| RP2350 | 150 MHz |
+
+If you reconfigure the clocks at run time the divisor will no longer match. A configurable
+clocks HAL is planned; until then, leave `clk_peri` at the default when using this module.
+
+### UART methods
+
+The PIC `UART` class is a subset of this table: `write()`, `read()`, `write_str()`,
+`println()`, `print_byte()`, `print_uint16()`, `available()` and `irq()`.
+
+| Method | AVR | ARM | Description |
+|---|---|---|---|
+| `write(data: uint8)` | yes | yes | Send one byte (blocks while the TX FIFO/register is full) |
+| `read() -> uint8` | yes | yes | Receive one byte |
+| `read_blocking() -> uint8` | yes | yes | Poll until a byte arrives, then return it |
+| `read_nb() -> uint8` | yes | yes | Non-blocking read; returns 0 when nothing is waiting |
+| `available() -> uint8` | yes | yes | 1 when a byte is waiting |
+| `write_str(s)` | yes | yes | Send a string held in flash |
+| `println(s)` | yes | yes | `write_str(s)` followed by `\n` (0x0A) |
+| `write_hex(byte: uint8)` | yes | yes | Send the byte as two hex digits |
+| `print_byte(value: uint8)` | yes | yes | Send `value` as decimal digits + newline |
+| `read_line(buf, max_len) -> uint8` | yes | yes | Read until `\n` or `max_len` bytes into a buffer; returns the byte count |
+| `print_uint16` / `print_int16` / `print_uint32` / `print_float` | yes | — | Width-specific decimal printers |
+| `read_byte_isr() -> uint8` | yes | — | Raw `UDR0` read for use inside an `@interrupt` handler |
+| `enable_rx_interrupt()` / `rx_isr()` / `rx_available()` / `rx_read()` | yes | — | RX-complete interrupt with a ring buffer |
+| `irq(handler)` | yes | — | Register an RX-complete handler |
+
+### Native HAL examples
+
+#### Send and receive
+
+```python
+from pymcu.hal.uart import UART
+from pymcu.types import uint8
+
+uart = UART(9600)
+
+# Send a byte
+uart.write(65)         # 'A'
+
+# Receive a byte (blocking)
+b: uint8 = uart.read()
+
+# Send a flash string
+uart.write_str("Hello, world!")
+uart.println("ready")
+
+# Print a number
+val: uint8 = 42
+uart.print_byte(val)   # sends "42\n"
+```
+
+#### Echo loop
+
+```python
+from pymcu.hal.uart import UART
+from pymcu.types import uint8
+
+def main():
+    uart = UART(9600)
+    while True:
+        b: uint8 = uart.read()
+        uart.write(b)
+```
+
+#### Non-blocking receive with the walrus operator
+
+```python
+from pymcu.hal.uart import UART
+
+def main():
+    uart = UART(9600)
+    while True:
+        if c := uart.read_nb():     # assign and test in one step
+            uart.write(c)
+```
+
+A walrus target does not have to be declared first — an undeclared one is created as a `uint8`,
+which is exactly what `read_nb()` returns. Annotate it beforehand (`c: uint16 = 0`) when the
+value is wider than a byte, or the assignment truncates.
+
+#### Interrupt-driven ring buffer (AVR)
+
+```python
+from pymcu.hal.uart import UART
+from pymcu.types import uint8
+
+uart = UART(9600)
+
+@interrupt(0x0024)    # USART0 RX Complete (ATmega328P)
+def on_rx():
+    uart.rx_isr()     # store the byte in the ring buffer
+
+def main():
+    uart.enable_rx_interrupt()
+    while True:
+        if uart.available():
+            b: uint8 = uart.read_nb()
+            uart.write(b)
+```
+
+#### Formatted output with f-strings
+
+f-strings are supported, both streamed straight into the UART and assigned to a name first:
+
+```python
+from pymcu.hal.uart import UART
+from pymcu.types import uint8, uint16
+
+def main():
+    uart = UART(115200)
+    count: uint16 = 0
+    while True:
+        uart.println(f"count={count:04d} hex={count:04x}")
+        count += 1
+```
+
+Supported format specs include `{x:02x}`, `{x:X}`, `{x:08b}`, `{x:o}`, `{x:5d}` and `{x:04d}`.
+See [Limitations](/limitations/) for the edges that are not covered yet.
+
+#### Serial output on the Pico
+
+```python
+from pymcu.hal.uart import UART
+
+def main():
+    uart = UART(115200, tx=0, rx=1)   # GP0 = TX, GP1 = RX
+    uart.println("pico up")
+    while True:
+        b = uart.read()
+        uart.write(b)
+```
+
+:::caution[Advanced — native HAL only]
+The RX-complete interrupt and its ring buffer (`enable_rx_interrupt()`, `rx_isr()`,
+`rx_available()`, `rx_read()`, `irq()`), the raw `read_byte_isr()` read for use inside an
+`@interrupt` handler, `write_hex()` and the width-specific decimal printers have no
+MicroPython or CircuitPython equivalent — they are native HAL only, and AVR only.
+
+Both `machine.UART` and `busio.UART` do work on ARM as well as AVR, because the underlying UART
+HAL is imported unconditionally by the compat packages. The pin arguments (`board.TX` /
+`board.RX`, and `machine.UART`'s `id`) are accepted for API compatibility: on AVR the USART pins
+are fixed in silicon.
+
+The native HAL API may still change between alpha releases, so prefer
+[`machine.UART`](/compat/micropython/) or [`busio.UART`](/compat/circuitpython/) wherever they
+cover your use case.
+:::
+
+## See also
+
+- [UART echo example](/examples/uart-echo/) — the complete round-trip program
+- [Time](/stdlib/time/) — `delay_ms()` for pacing a transmit loop
+- [SPI](/stdlib/spi/) and [I2C](/stdlib/i2c/) — the other two serial buses

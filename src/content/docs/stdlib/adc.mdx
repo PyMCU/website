@@ -1,0 +1,245 @@
+---
+title: ADC
+description: Analog input — machine.ADC, analogio.AnalogIn and the native AnalogPin on AVR, ARM and PIC.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Analog input is available through three APIs. **MicroPython** (`machine.ADC`) and
+**CircuitPython** (`analogio.AnalogIn`) are the recommended ones — they are stable,
+community-specified, and compile to the same ADC register writes as the native HAL. The native
+`pymcu.hal.adc.AnalogPin` is the layer underneath; reach for it for the interrupt-driven
+conversion path, the internal channels, and the RP2040 / RP2350.
+
+## Read a potentiometer and print the value
+
+Wire the wiper to A0 — `PC0` on an Arduino Uno.
+
+<Tabs syncKey="api">
+<TabItem label="MicroPython">
+
+```python
+from machine import ADC, Pin
+from utime import sleep_ms
+from pymcu.types import uint16
+
+def main():
+    pot = ADC(Pin("PC0"))            # A0 on an Arduino Uno; Pin(14) also works
+
+    while True:
+        raw: uint16 = pot.read()     # 0-1023 (10-bit)
+        print("adc: ", raw, sep="")
+        sleep_ms(200)
+```
+
+</TabItem>
+<TabItem label="CircuitPython">
+
+```python
+import board
+import time
+from analogio import AnalogIn
+from pymcu.types import uint16
+
+def main():
+    pot = AnalogIn(board.A0)
+
+    while True:
+        raw: uint16 = pot.value      # 0-65535 (10-bit result scaled 64x)
+        print("adc: ", raw, sep="")
+        time.sleep(0.2)
+```
+
+</TabItem>
+<TabItem label="Native HAL">
+
+```python
+from pymcu.hal.adc import AnalogPin
+from pymcu.time import delay_ms
+from pymcu.types import uint16
+
+def main():
+    pot = AnalogPin("PC0")           # AnalogPin(0) = GP26 on a Pico
+
+    while True:
+        pot.start()                  # not needed on ARM: read() is self-contained
+        raw: uint16 = pot.read()     # 0-1023 on AVR, 0-4095 on ARM
+        print("adc: ", raw, sep="")
+        delay_ms(200)
+```
+
+</TabItem>
+</Tabs>
+
+:::note[Three different result widths]
+`machine.ADC.read()` returns the raw 10-bit value (0–1023); `read_u16()` scales it to the full
+16-bit range. `analogio.AnalogIn.value` is always 16-bit (0–65535) — CircuitPython specifies it
+that way, so PyMCU shifts the 10-bit AVR result left by 6. The native `AnalogPin.read()` returns
+whatever the silicon gives: 10-bit on AVR, 12-bit on RP2040 / RP2350.
+`AnalogIn.reference_voltage` is a compile-time `5.0` float on standard 5 V AVR boards.
+:::
+
+---
+
+## Native HAL reference - pymcu.hal.adc
+
+```python
+from pymcu.hal.adc import AnalogPin
+```
+
+`pymcu.hal.adc` is available on **AVR**, **ARM** (RP2040 / RP2350) and **PIC**. The class name
+is shared; the channel argument and the result width differ per family.
+
+| Target | Channel argument | Resolution |
+|---|---|---|
+| AVR (ATmega328P) | Port/pin name string, `"PC0"`–`"PC5"` (ADC channels 0–5), plus `"TEMP"` and `"VBG"` | 10-bit, 0–1023 |
+| ARM (RP2040 / RP2350) | Channel number: `0`–`3` = GP26–GP29, `4` = on-chip temperature sensor | 12-bit, 0–4095 |
+| PIC (PIC16F877A) | Channel name string per the chip definition | Partial — `AnalogPin(...)` and `start()` are wired up; `read()` is still a stub |
+
+### `AnalogPin(channel)` — AVR
+
+```python
+adc = AnalogPin("PC0")     # A0 on an Arduino Uno
+```
+
+The channel is the AVR port/pin name rather than the Arduino silk-screen `A0` label: `"PC0"`
+through `"PC5"` select ADC0–ADC5. Two internal channels are also available — `"TEMP"`, the
+on-chip temperature sensor read against the internal 1.1 V reference, and `"VBG"`, the 1.1 V
+bandgap measured against AVcc (which lets you compute Vcc as `1.1 * 1024 / raw`). `"ADC8"` is
+accepted as a synonym for `"TEMP"`.
+
+:::caution[An unrecognised channel name reads ADC0 silently]
+The channel lookup falls through to `ADMUX = 0x40` — ADC0, i.e. `"PC0"` — for anything it does
+not recognise. `AnalogPin("A0")` therefore compiles without a word of complaint and quietly
+reads the wrong pin whenever your sensor is not on A0. Write the port/pin name.
+:::
+
+#### AnalogPin methods - AVR
+
+| Method | Return type | Description |
+|---|---|---|
+| `start()` | — | Begin a conversion (sets ADSC in `ADCSRA`) |
+| `read()` | `uint16` | 10-bit result, 0–1023 |
+| `read_u16()` | `uint16` | Result scaled to the full 16-bit range, 0–65535 |
+| `start_conversion()` | — | Start a conversion with the ADC interrupt enabled (ADIE + ADSC) |
+| `read_result()` | `uint16` | Read `ADCL`/`ADCH` directly — for use from the ADC ISR |
+| `irq(handler)` | — | Register an ADC-complete handler |
+
+#### Example — polling
+
+```python
+from pymcu.hal.adc import AnalogPin
+from pymcu.types import ptr, uint8, uint16
+
+ADCSRA: ptr[uint8] = ptr(0x7A)
+
+def main():
+    adc = AnalogPin("PC0")
+    while True:
+        adc.start()
+        while ADCSRA[6]:        # wait for ADSC to clear
+            pass
+        result: uint16 = adc.read()   # 0-1023
+```
+
+#### Example — interrupt-driven
+
+```python
+from pymcu.hal.adc import AnalogPin
+from pymcu.types import uint16
+
+sensor = AnalogPin("PC0")
+result: uint16 = 0
+
+@interrupt(0x002A)    # ADC Complete vector (ATmega328P)
+def on_adc():
+    global result
+    result = sensor.read_result()
+
+def main():
+    sensor.start_conversion()
+    while True:
+        pass
+```
+
+#### ATmega328P ADC register map
+
+| Register | Address | Description |
+|---|---|---|
+| `ADMUX` | `0x7C` | MUX select + reference voltage |
+| `ADCSRA` | `0x7A` | Control: ADEN, ADSC, ADIE, prescaler |
+| `ADCSRB` | `0x7B` | Free-running mode |
+| `ADCL` | `0x78` | Result low byte |
+| `ADCH` | `0x79` | Result high byte |
+
+### `AnalogPin(channel=0)` — RP2040 / RP2350
+
+```python
+adc = AnalogPin(0)     # GP26
+```
+
+| Parameter | Type | Description |
+|---|---|---|
+| `channel` | `const[uint8]` | `0`–`3` for GP26–GP29, `4` for the on-chip temperature sensor. Default `0`. |
+
+The constructor brings the ADC out of reset, powers it on (and enables the temperature sensor
+when `channel == 4`), then waits for `READY`.
+
+#### AnalogPin methods - RP2040 / RP2350
+
+| Method | Return type | Description |
+|---|---|---|
+| `read()` | `uint16` | Select the channel, run one conversion, return the 12-bit result (0–4095) |
+
+`read()` is blocking and self-contained — there is no separate `start()` step.
+
+#### Example — read a potentiometer on GP26
+
+```python
+from pymcu.hal.adc import AnalogPin
+from pymcu.hal.uart import UART
+from pymcu.time import delay_ms
+from pymcu.types import uint16
+
+def main():
+    adc = AnalogPin(0)          # GP26 / ADC0
+    uart = UART(115200)
+    while True:
+        raw: uint16 = adc.read()    # 0-4095
+        uart.println(f"adc={raw:04d}")
+        delay_ms(200)
+```
+
+#### Example — on-chip temperature sensor
+
+```python
+from pymcu.hal.adc import AnalogPin
+from pymcu.types import uint16
+
+def main():
+    temp = AnalogPin(4)         # internal temperature sensor
+    raw: uint16 = temp.read()
+    # 12-bit result against a 3.3 V reference; the RP2040/RP2350 datasheet gives
+    # T = 27 - (V - 0.706) / 0.001721
+```
+
+:::caution[Advanced — native HAL only]
+The interrupt-driven conversion path (`start_conversion()`, `read_result()`, `irq()`) and the
+internal `"TEMP"` / `"VBG"` channels have no MicroPython or CircuitPython equivalent.
+
+`machine.ADC` and `analogio.AnalogIn` are also **AVR only** today — both compat packages import
+their ADC backend behind an `__CHIP__.arch == "avr"` guard. On the RP2040 / RP2350, use
+`pymcu.hal.adc.AnalogPin` directly. `analogio.AnalogOut` needs a hardware DAC, which AVR does
+not have; it compiles to a warning and a no-op, so use [PWM](/stdlib/pwm/) when you want an
+analog-like output.
+
+The native HAL API may still change between alpha releases, so prefer
+[`machine.ADC`](/compat/micropython/) or [`analogio.AnalogIn`](/compat/circuitpython/) wherever
+they cover your use case.
+:::
+
+## See also
+
+- [PWM](/stdlib/pwm/) — the usual companion for an analog-in / analog-out loop
+- [DS18B20](/stdlib/drivers/ds18b20/) — a calibrated external temperature sensor when the
+  on-chip one is too rough

@@ -1,0 +1,296 @@
+---
+title: Timer
+description: Periodic timer interrupts — machine.Timer and the native HAL (AVR Timer0/1/2, PIC Timer0).
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Periodic hardware timers are available through two APIs. **MicroPython** (`machine.Timer`) is the
+recommended one — it takes a period in milliseconds or a frequency in Hz and picks the prescaler
+and compare value for you. The native `pymcu.hal.timer.Timer` is the layer underneath, where you
+choose the prescaler yourself and drive `OCR` / `TCNT` directly.
+
+CircuitPython has no timer module, so this page has two tabs rather than three.
+
+:::note[AVR and PIC only]
+`pymcu.hal.timer` covers **AVR** (Timer0/1/2 on ATmega, Timer0/1 on ATtiny) and **PIC**
+(Timer0). It is not implemented for the RP2040 / RP2350 — on those, use
+[`pymcu.hal.pwm`](/stdlib/pwm/) for waveform generation and the microsecond hardware timer
+behind [`delay_us()`](/stdlib/time/) for timing. `machine.Timer` is narrower still: **AVR only**.
+:::
+
+## Toggle an LED from a timer interrupt
+
+Every 100 ms, without blocking `main()`.
+
+<Tabs syncKey="api">
+<TabItem label="MicroPython">
+
+```python
+from machine import Pin, Timer
+from pymcu.types import uint8
+
+led_state: uint8 = 0
+
+def on_tick():
+    global led_state
+    if led_state:
+        led_state = 0
+    else:
+        led_state = 1
+
+def main():
+    led = Pin("PB5", Pin.OUT)
+
+    # period in milliseconds; prescaler and OCR are chosen for you.
+    # Timer(1, freq=10, callback=on_tick) is the equivalent frequency form.
+    t = Timer(1, period=100, callback=on_tick)
+
+    while True:
+        if led_state:
+            led.high()
+        else:
+            led.low()
+```
+
+</TabItem>
+<TabItem label="Native HAL">
+
+```python
+from pymcu.hal.gpio import Pin
+from pymcu.hal.timer import Timer
+from pymcu.types import uint8, ptr
+
+TIMSK1: ptr[uint8] = ptr(0x6F)
+
+led_state: uint8 = 0
+
+@interrupt(0x0016)    # Timer1 COMPA vector (ATmega328P)
+def on_compare():
+    global led_state
+    if led_state:
+        led_state = 0
+    else:
+        led_state = 1
+
+def main():
+    led = Pin("PB5", Pin.OUT)
+
+    t = Timer(1, 1024)        # 64 us per tick at 16 MHz
+    t.set_compare(1562)       # 1562 * 64 us ~= 100 ms, CTC mode
+    TIMSK1[1] = 1             # enable OCIE1A
+    t.start()
+    # sei is emitted automatically because an @interrupt handler is registered
+
+    while True:
+        if led_state:
+            led.high()
+        else:
+            led.low()
+```
+
+</TabItem>
+</Tabs>
+
+## `machine.Timer` reference
+
+```python
+from machine import Timer
+```
+
+`machine.Timer` wraps the native HAL and does the prescaler arithmetic for you. It is currently
+**AVR only** — the compat package imports its timer backend behind an `__CHIP__.arch == "avr"`
+guard.
+
+### The machine.Timer class
+
+```python
+Timer(id=255, prescaler=64, period=0, mode=1, callback=0, freq=0)
+```
+
+| Parameter | Type | Description |
+|---|---|---|
+| `id` | `const[uint8]` | Timer number (0, 1 or 2 on AVR). `255` is the sentinel for MicroPython's `Timer(-1)` "auto-pick" and maps to Timer1. |
+| `prescaler` | `uint16` | Low-level override; ignored when `period` or `freq` is set |
+| `period` | `const[uint16]` | Interval in milliseconds |
+| `mode` | `const[uint8]` | `Timer.ONE_SHOT` (0) or `Timer.PERIODIC` (1, default) |
+| `callback` | `Callable` | Called on each tick |
+| `freq` | `const[uint32]` | Frequency in Hz; takes precedence over `period` |
+
+Passing `period` or `freq` to the constructor calls `init()` for you, so
+`Timer(1, period=100, callback=on_tick)` is a complete setup.
+
+### machine.Timer methods
+
+| Method | Description |
+|---|---|
+| `init(period=0, mode=1, callback=0, prescaler=0, freq=0)` | (Re)configure; enables interrupts |
+| `deinit()` | Stop the timer and disconnect its clock source |
+| `start()` | Re-enable the timer's interrupt |
+| `irq(handler, trigger=Timer.IRQ_OVF)` | Register a handler; `trigger` is `Timer.IRQ_OVF` (1) or `Timer.IRQ_COMPA` (2) |
+
+### Prescaler selection
+
+`init()` picks the prescaler and compare value from `freq` or `period` on AVR Timer1 at 16 MHz,
+so that `OCR` always fits a `uint16`:
+
+| Requested `freq` | Prescaler | `OCR` |
+|---|---|---|
+| >= 245 Hz | 1 | `16 000 000 / freq - 1` |
+| >= 31 Hz | 8 | `2 000 000 / freq - 1` |
+| >= 4 Hz | 64 | `250 000 / freq - 1` |
+| >= 1 Hz | 1024 | `15 625 / freq - 1` |
+
+| Requested `period` | Prescaler | `OCR` | Accuracy |
+|---|---|---|---|
+| `<= 262 ms` | 64 | `250 * period - 1` | exact |
+| `<= 4194 ms` | 1024 | `15 * period` | ~0.6 ms error per step |
+
+---
+
+## Native HAL reference - pymcu.hal.timer
+
+```python
+from pymcu.hal.timer import Timer
+```
+
+Hardware timer/counter configuration. `Timer` is an `@inline` class — the timer number is a
+compile-time constant, so both the architecture dispatch and the timer-number dispatch fold
+away and only the register writes for the selected timer survive.
+
+### The Timer class
+
+```python
+Timer(n, prescaler)
+```
+
+| Parameter | Type | Description |
+|---|---|---|
+| `n` | `const[uint8]` | Timer number. AVR: 0, 1 or 2 (0 or 1 on ATtiny). PIC: 0 only. |
+| `prescaler` | `uint16` | Clock divider — 1, 8, 64, 256 or 1024 |
+
+The constructor is what starts the clock: it writes the waveform-generation mode to `TCCRnA` and
+the clock-select bits derived from `prescaler` to `TCCRnB`. From that moment the counter is
+running.
+
+| Prescaler | Divisor | Period per tick (16 MHz) |
+|---|---|---|
+| 1 | /1 | 62.5 ns |
+| 8 | /8 | 500 ns |
+| 64 | /64 | 4 µs |
+| 256 | /256 | 16 µs |
+| 1024 | /1024 | 64 µs |
+
+#### Timer constants
+
+| Constant | Value | Description |
+|---|---|---|
+| `Timer.IRQ_OVF` | 1 | Overflow interrupt |
+| `Timer.IRQ_COMPA` | 2 | Output-compare A interrupt |
+
+#### Timer methods
+
+| Method | Description |
+|---|---|
+| `start()` | Enable the **overflow interrupt** — it sets `TIMSKn[0]` (TOIEn) and nothing else. It does *not* write the clock-select bits; the constructor already did that |
+| `stop()` | Clear `TIMSKn[0]` and write `0` to `TCCRnB`, which disconnects the clock source |
+| `clear()` | Reset `TCNT` to 0 |
+| `counter() -> uint16` | Read the current counter value |
+| `overflow() -> uint8` | Read (and consume) the overflow flag |
+| `set_compare(value: uint16)` | Set the `OCR` register, switch to CTC mode and enable `OCIEnA` |
+| `irq(handler, mode=Timer.IRQ_OVF)` | Register an overflow or compare-A handler |
+| `reinit(prescaler: uint16)` | Change the prescaler on a running timer |
+
+:::note[`start()` is an interrupt enable, not a run/stop switch]
+The name is inherited from `machine.Timer`, but on AVR the prescaler — and therefore the clock —
+is programmed in the constructor. `Timer(0, 64)` is already counting before you call `start()`;
+`start()` only opens the interrupt gate. If you are polling `counter()` rather than taking an
+interrupt, you never need to call it at all.
+:::
+
+### `millis()` — free-running milliseconds
+
+```python
+from pymcu.hal.timer import millis_init, millis
+```
+
+`millis_init()` starts a Timer0-based free-running counter and `millis()` returns the elapsed
+milliseconds since then. Both are ATmega-only; on ATtiny85/45/25 they compile to no-ops. This is
+what backs [`utime.ticks_ms()`](/stdlib/time/), and the build driver auto-injects `millis_init()`
+when it sees `ticks_ms()` in your code.
+
+### Native HAL examples
+
+#### Overflow interrupt (periodic task)
+
+```python
+from pymcu.hal.timer import Timer
+from pymcu.types import uint8, ptr
+
+TIMSK0: ptr[uint8] = ptr(0x6E)
+
+tick: uint8 = 0
+
+@interrupt(0x0020)    # Timer0 OVF vector (ATmega328P)
+def on_timer0_ovf():
+    global tick
+    tick += 1
+
+def main():
+    t = Timer(0, 64)
+    TIMSK0[1] = 1     # enable TOIE0
+    t.start()
+    # sei is emitted automatically because an @interrupt handler is registered
+    while True:
+        pass
+```
+
+#### CTC mode (precise frequency)
+
+```python
+from pymcu.hal.timer import Timer
+from pymcu.types import uint8, ptr
+
+TIMSK1: ptr[uint8] = ptr(0x6F)
+
+@interrupt(0x0016)    # Timer1 COMPA vector (ATmega328P)
+def on_compare():
+    pass              # fires at exactly 1 kHz (16 MHz / 64 / 250)
+
+def main():
+    t = Timer(1, 64)
+    t.set_compare(250)        # OCR1A = 250, CTC mode
+    TIMSK1[1] = 1             # enable OCIE1A
+    t.start()
+    while True:
+        pass
+```
+
+### ATmega328P Timer0 register map
+
+| Register | Address | Description |
+|---|---|---|
+| `TCCR0A` | `0x44` | Waveform generation mode |
+| `TCCR0B` | `0x45` | Clock select (prescaler) |
+| `TCNT0` | `0x46` | Counter value |
+| `OCR0A` | `0x47` | Output Compare A |
+| `OCR0B` | `0x48` | Output Compare B |
+| `TIMSK0` | `0x6E` | Interrupt mask (TOIE0, OCIE0A, OCIE0B) |
+| `TIFR0` | `0x35` | Interrupt flag register |
+
+:::caution[Advanced — native HAL only]
+CircuitPython has no timer API at all — its model is a `time.monotonic()` polling loop, not a
+periodic interrupt. Periodic timers in PyMCU are therefore reachable only through
+[`machine.Timer`](/compat/micropython/) or the native HAL on this page. If you need code that
+compiles on both dialects, poll [`ticks_ms()` / `monotonic()`](/stdlib/time/) instead of arming
+a timer.
+
+The native HAL API may still change between alpha releases, so prefer `machine.Timer` where it
+covers your use case.
+:::
+
+## See also
+
+- [PWM](/stdlib/pwm/) — the same timers driving a waveform instead of an interrupt
+- [Time](/stdlib/time/) — `millis()`, `ticks_ms()` and the busy-wait delays
+- [Power management](/stdlib/power/) — Timer2 async mode keeps running in `sleep_power_save()`

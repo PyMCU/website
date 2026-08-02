@@ -1,0 +1,245 @@
+---
+title: PWM
+description: Hardware PWM — machine.PWM, pwmio.PWMOut and the native HAL (AVR Timer0/1/2, RP2040 / RP2350 PWM slices, PIC16).
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+PWM is available through three APIs. **MicroPython** (`machine.PWM`) and **CircuitPython**
+(`pwmio.PWMOut`) are the recommended ones — they are stable, community-specified, and compile to
+the same timer register writes as the native HAL. The native `pymcu.hal.pwm.PWM` is the layer
+underneath; reach for it on the RP2040 / RP2350, where the compat wrappers are not wired up yet.
+
+## Fade an LED
+
+D6 (`PD6`, Timer0 OC0A) on an Arduino Uno.
+
+<Tabs syncKey="api">
+<TabItem label="MicroPython">
+
+```python
+from machine import Pin, PWM
+from utime import sleep_ms
+from pymcu.types import uint8
+
+def main():
+    led = PWM(Pin("PD6"))       # D6 = OC0A
+    led.init()                  # start the Fast PWM output
+
+    duty: uint8 = 0
+    while True:
+        led.duty(duty)          # 8-bit: 0 = off, 255 = full on
+        duty += 5
+        sleep_ms(20)
+```
+
+</TabItem>
+<TabItem label="CircuitPython">
+
+```python
+import board
+import time
+from pwmio import PWMOut
+from pymcu.types import uint16
+
+def main():
+    led = PWMOut(board.D6, duty_cycle=0, frequency=500)
+
+    level: uint16 = 0
+    while True:
+        led.duty_cycle = level  # 16-bit: 0 = off, 65535 = full on
+        level += 1280
+        time.sleep(0.02)
+```
+
+</TabItem>
+<TabItem label="Native HAL">
+
+```python
+from pymcu.hal.pwm import PWM
+from pymcu.time import delay_ms
+from pymcu.types import uint8
+
+def main():
+    led = PWM("PD6", duty=0)    # PWM(25, freq=1000, duty=0) on a Pico
+    led.start()
+
+    duty: uint8 = 0
+    while True:
+        led.set_duty(duty)      # 8-bit on AVR/PIC, 16-bit on RP2040 / RP2350
+        duty += 5
+        delay_ms(20)
+```
+
+</TabItem>
+</Tabs>
+
+:::note[Duty cycle is 8-bit in one place and 16-bit in two others]
+`machine.PWM.duty(value)` takes an **8-bit** duty (0–255), matching the AVR's `OCR0A` register
+directly. `machine.PWM.duty_u16(value)` and CircuitPython's `pwmio.PWMOut.duty_cycle` are both
+**16-bit** (0–65535) as their upstream specs require, and PyMCU shifts them down by 8 to reach
+the AVR compare register. So `duty(128)`, `duty_u16(32768)` and `duty_cycle = 32768` all mean
+50 %. The native `PWM.set_duty()` follows the hardware: 8-bit on AVR and PIC, 16-bit scaled
+against the slice `TOP` on RP2040 / RP2350.
+:::
+
+## Change the frequency
+
+<Tabs syncKey="api">
+<TabItem label="MicroPython">
+
+```python
+from machine import Pin, PWM
+
+def main():
+    buzzer = PWM(Pin("PD6"), freq=1000, duty_u16=32768)
+    buzzer.init()
+    buzzer.freq(2000)           # retune to 2 kHz
+    buzzer.deinit()             # stop the output
+```
+
+</TabItem>
+<TabItem label="CircuitPython">
+
+```python
+import board
+from pwmio import PWMOut
+
+def main():
+    buzzer = PWMOut(board.D6, duty_cycle=32768, frequency=1000,
+                    variable_frequency=1)
+    buzzer.frequency = 2000     # retune to 2 kHz
+    buzzer.deinit()             # stop the output
+```
+
+</TabItem>
+<TabItem label="Native HAL">
+
+```python
+from pymcu.hal.pwm import PWM
+
+def main():
+    buzzer = PWM("PD6", duty=128, freq=1000)
+    buzzer.start()
+    buzzer.set_freq(2000)       # retune to 2 kHz
+    buzzer.stop()               # disable the output
+```
+
+</TabItem>
+</Tabs>
+
+---
+
+## Native HAL reference - pymcu.hal.pwm
+
+```python
+from pymcu.hal.pwm import PWM
+```
+
+`pymcu.hal.pwm` is available on **AVR**, **ARM** (RP2040 / RP2350) and **PIC**. The constructor
+signature differs between the AVR/PIC form (pin name + 8-bit duty) and the RP form (GPIO number
++ frequency + 16-bit duty), because the underlying hardware is structured differently.
+
+### `PWM(pin, duty, freq=0)` — AVR and PIC
+
+| Parameter | Type | Description |
+|---|---|---|
+| `pin` | `str` | Port/pin name; the timer and output-compare channel are derived from it |
+| `duty` | `uint8` | Duty cycle, 0 = 0 %, 255 = 100 % |
+| `freq` | `uint16` | Optional frequency hint; `0` keeps the timer's default prescaler |
+
+On the ATmega328P the supported PWM pins and their Timer/Counter channels are:
+
+| Pin | Arduino | Timer channel | Note |
+|---|---|---|---|
+| `"PD6"` | D6 | Timer0 OC0A | Fast PWM, 8-bit |
+| `"PD5"` | D5 | Timer0 OC0B | Fast PWM, 8-bit |
+| `"PB1"` | D9 | Timer1 OC1A | Fast PWM, 8-bit |
+| `"PB2"` | D10 | Timer1 OC1B | Fast PWM, 8-bit |
+| `"PB3"` | D11 | Timer2 OC2A | Fast PWM, 8-bit |
+| `"PD3"` | D3 | Timer2 OC2B | Fast PWM, 8-bit |
+
+#### PWM methods - AVR and PIC
+
+| Method | Description |
+|---|---|
+| `start()` | Enable the PWM output |
+| `stop()` | Disable the PWM output |
+| `set_duty(duty: uint8)` | Update the duty cycle while running |
+| `set_freq(freq: uint16)` | Update the frequency (prescaler) |
+
+#### Example
+
+```python
+from pymcu.hal.pwm import PWM
+from pymcu.time import delay_ms
+from pymcu.types import uint8
+
+def main():
+    pwm = PWM("PD6", duty=0)    # OC0A
+    pwm.start()
+
+    duty: uint8 = 0
+    while True:
+        pwm.set_duty(duty)
+        duty += 5
+        delay_ms(20)
+```
+
+### `PWM(pin, freq=1000, duty=0)` — RP2040 / RP2350
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `pin` | `const` | — | GPIO number. The PWM slice is `(pin >> 1) & 7` and the channel is `pin & 1`. |
+| `freq` | `const` | `1000` | Output frequency in Hz; the slice `TOP` is folded at compile time |
+| `duty` | `const` | `0` | Initial duty cycle, scaled 0–65535 |
+
+#### PWM methods - RP2040 / RP2350
+
+| Method | Description |
+|---|---|
+| `set_duty(duty: uint16)` | Update the duty cycle, scaled 0–65535 against the slice `TOP` |
+| `stop()` | Disable the slice (clears `CSR`) |
+
+There is no `start()` — the constructor routes the pin to the PWM function, programs `TOP` and
+the compare value, and enables the slice.
+
+`TOP` is computed as `clk_sys / freq - 1`, with `clk_sys` fixed at the pico-sdk default:
+**125 MHz on the RP2040**, **150 MHz on the RP2350**. Changing the system clock at run time
+shifts the actual output frequency.
+
+#### Example — fading LED on a Pico
+
+```python
+from pymcu.hal.pwm import PWM
+from pymcu.time import delay_ms
+from pymcu.types import uint16
+
+def main():
+    led = PWM(25, freq=1000, duty=0)   # on-board LED
+
+    level: uint16 = 0
+    while True:
+        led.set_duty(level)
+        level += 1024
+        delay_ms(20)
+```
+
+:::caution[Advanced — native HAL only]
+`machine.PWM` and `pwmio.PWMOut` are **AVR only** today — both compat packages import their PWM
+backend behind an `__CHIP__.arch == "avr"` guard. On the RP2040 / RP2350 the PWM slices are only
+reachable through `pymcu.hal.pwm.PWM`.
+
+`pwmio.PWMOut.frequency` only takes effect when the object was constructed with
+`variable_frequency=1`, matching CircuitPython; `pwmio.PWMOut.enabled` always reports 1 between
+construction and `deinit()`.
+
+The native HAL API may still change between alpha releases, so prefer
+[`machine.PWM`](/compat/micropython/) or [`pwmio.PWMOut`](/compat/circuitpython/) wherever they
+cover your use case.
+:::
+
+## See also
+
+- [ADC](/stdlib/adc/) — the analog-in half of a dimmer loop
+- [Timer](/stdlib/timer/) — direct timer control when you need a non-PWM waveform
