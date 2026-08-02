@@ -242,7 +242,7 @@ build time, not on the bench.
 Even where exceptions work, an explicit status return is often the clearest bare-metal
 style: it reads the same on every backend including PIC, and it makes the error path
 obvious at each call site. See the return-code pattern in
-[Limitations](/pymcu/limitations/).
+[Limitations](/limitations/).
 
 ## Where this is tested
 
@@ -260,6 +260,6 @@ way. The model is flag propagation, as described above — trust the code, not t
 
 ## See also
 
-- [Limitations](/pymcu/limitations/) — the full exception-handling reference table
-- [Dictionaries and sets](/pymcu/guides/dicts/) — `KeyError` from a lookup is catchable
-- [UART](/pymcu/stdlib/uart/) — where `E:<TypeName>` is printed
+- [Limitations](/limitations/) — the full exception-handling reference table
+- [Dictionaries and sets](/guides/dicts/) — `KeyError` from a lookup is catchable
+- [UART](/stdlib/uart/) — where `E:<TypeName>` is printed

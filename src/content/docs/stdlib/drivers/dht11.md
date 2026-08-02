@@ -90,7 +90,7 @@ already; check before adding a second one.
 
 ## See also
 
-- [DS18B20](/pymcu/stdlib/drivers/ds18b20/) — 12-bit temperature only, higher precision
-- [GPIO](/pymcu/stdlib/gpio/) — `pulse_in()`, the primitive underneath the protocol
-- [Sensor dashboard example](/pymcu/examples/sensor-dashboard/) — a fuller program built on a sensor
+- [DS18B20](/stdlib/drivers/ds18b20/) — 12-bit temperature only, higher precision
+- [GPIO](/stdlib/gpio/) — `pulse_in()`, the primitive underneath the protocol
+- [Sensor dashboard example](/examples/sensor-dashboard/) — a fuller program built on a sensor
   read loop

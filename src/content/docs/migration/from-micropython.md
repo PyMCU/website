@@ -7,7 +7,7 @@ The `pymcu-micropython` compat package provides `machine`, `utime`, `micropython
 `network` and `umqtt` module names, so most MicroPython firmware ports with minimal edits —
 for **AVR (ATmega / ATtiny)** and for the **Raspberry Pi Pico / Pico 2** alike. How much of
 `machine` you get depends on the target: `Pin` and `UART` are portable, the rest is AVR-only.
-See the [module table](/pymcu/compat/micropython/#supported-modules) for the exact split.
+See the [module table](/compat/micropython/#supported-modules) for the exact split.
 
 ## Step 0: Lint the project first
 
@@ -26,7 +26,7 @@ supported in a limited form and needs a bounded rewrite: an unbounded `list.appe
 here. `INFO` means it maps ~1:1 onto the compat API. Start with the errors — they are the
 whole delta between "runs under MicroPython" and "compiles with PyMCU" — then work the
 warnings, because an unbounded `append` still has to become a fixed-size buffer before the
-program will build. Full flag list in [the CLI reference](/pymcu/driver/#pymcu-lint-path).
+program will build. Full flag list in [the CLI reference](/driver/#pymcu-lint-path).
 
 ## Step 1: Install the compat package
 
@@ -92,7 +92,7 @@ data: uint8[8] = [0, 0, 0, 0, 0, 0, 0, 0]
 `PWM`, `SPI`, `I2C`, `Timer`, `WDT`, `reset()` and the `idle` / `lightsleep` / `deepsleep`
 helpers are imported inside an `if __CHIP__.arch == "avr":` guard and therefore **do not exist
 on the Pico**. If your program uses them and you are targeting an RP chip, move those
-peripherals to [the native HAL](/pymcu/stdlib/).
+peripherals to [the native HAL](/stdlib/).
 
 `utime` splits the same way: `sleep_ms` / `sleep_us` / `sleep` are software delay loops and
 work everywhere, but `ticks_ms()`, `ticks_us()` and `ticks_cpu()` read the Timer0 counter
@@ -315,5 +315,5 @@ while True:
   for open networks: `connect()` raises a `CompileError` on a non-empty key because WPA is not
   implemented yet
 
-See the [MicroPython compatibility reference](/pymcu/compat/micropython/) for the full module
-surface and the [Pico examples](/pymcu/examples/rp2040/) for runnable programs.
+See the [MicroPython compatibility reference](/compat/micropython/) for the full module
+surface and the [Pico examples](/examples/rp2040/) for runnable programs.

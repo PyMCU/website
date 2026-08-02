@@ -9,8 +9,8 @@ come, and what is planned next. The current release is **v0.1.0a3**
 
 :::note[Alpha status]
 Core compilation is stable and test-covered, but tooling and error messages still have rough
-edges. Prefer the [MicroPython](/pymcu/compat/micropython/) or
-[CircuitPython](/pymcu/compat/circuitpython/) compat APIs wherever they cover your use case — they
+edges. Prefer the [MicroPython](/compat/micropython/) or
+[CircuitPython](/compat/circuitpython/) compat APIs wherever they cover your use case — they
 are stable and community-specified, while the native HAL (`pymcu.hal.*`) may change between
 alpha releases. Drop to `pymcu.hal.*` for what the compat APIs do not expose, and run
 `pymcu lint` to vet a port before you build it.
@@ -129,8 +129,8 @@ alpha releases. Drop to `pymcu.hal.*` for what the compat APIs do not expose, an
 | `pymcu.drivers.neopixel` | WS2812 NeoPixel |
 
 These seven are the whole of `pymcu.drivers`. There is **no** LM35 driver module — an LM35 is
-an analog sensor, so read it with [`AnalogPin`](/pymcu/stdlib/adc/). See
-[Device drivers](/pymcu/stdlib/#device-drivers) for the full table.
+an analog sensor, so read it with [`AnalogPin`](/stdlib/adc/). See
+[Device drivers](/stdlib/#device-drivers) for the full table.
 
 ### Compatibility layers
 
@@ -152,7 +152,7 @@ an analog sensor, so read it with [`AnalogPin`](/pymcu/stdlib/adc/). See
 | Tool | Notes |
 |---|---|
 | `pymcu lint` | MicroPython / CircuitPython porting assistant: flags constructs PyMCU cannot compile — unbounded `dict` / `set`, reflection, unbounded `append`, `*args` / `**kwargs`, untyped params, … — with a severity and a suggestion per finding |
-| `pymcu new` / `build` / `flash` / `clean` | Project scaffolding, compilation, upload and cleanup — see the [CLI driver](/pymcu/driver/) |
+| `pymcu new` / `build` / `flash` / `clean` | Project scaffolding, compilation, upload and cleanup — see the [CLI driver](/driver/) |
 | `pymcu-test` (AVR) | Turnkey pytest fixtures over the avr8sharp emulator |
 
 ---
@@ -259,5 +259,5 @@ wheels — no system packages needed.
 
 ---
 
-For the full list of what the compiler rejects and why, see [Limitations](/pymcu/limitations/).
-Release-by-release detail lives in the [changelog](/pymcu/changelog/).
+For the full list of what the compiler rejects and why, see [Limitations](/limitations/).
+Release-by-release detail lives in the [changelog](/changelog/).

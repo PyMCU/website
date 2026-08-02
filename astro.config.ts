@@ -5,7 +5,6 @@ import tailwind from '@astrojs/tailwind';
 
 export default defineConfig({
   site: 'https://docs.pymcu.org',
-  base: '/pymcu',
   output: 'static',
 
   integrations: [

@@ -25,7 +25,7 @@ There are two ways to reach that hardware, and they are not equal in status.
   MicroPython or CircuitPython board is close to compiling as-is, and `pymcu lint` tells you
   which constructs PyMCU cannot compile.
 
-→ [MicroPython compatibility](/pymcu/compat/micropython/) · [CircuitPython compatibility](/pymcu/compat/circuitpython/)
+→ [MicroPython compatibility](/compat/micropython/) · [CircuitPython compatibility](/compat/circuitpython/)
 
 ## `pymcu.hal.*` is the advanced layer
 
@@ -72,26 +72,26 @@ equivalent — those modules are native-HAL-only.
 
 | Module | Import | Purpose | Compat API | Architectures |
 |---|---|---|---|---|
-| [`pymcu.hal.gpio`](/pymcu/stdlib/gpio/) | `from pymcu.hal.gpio import Pin` | Digital I/O, pin interrupts | MP: `machine.Pin` · CP: `digitalio.DigitalInOut` | AVR, ARM, PIC |
-| [`pymcu.hal.uart`](/pymcu/stdlib/uart/) | `from pymcu.hal.uart import UART` | Serial communication | MP: `machine.UART` · CP: `busio.UART` | AVR, ARM, PIC |
-| [`pymcu.hal.adc`](/pymcu/stdlib/adc/) | `from pymcu.hal.adc import AnalogPin` | Analog-to-digital conversion | MP: `machine.ADC` · CP: `analogio.AnalogIn` | AVR, ARM, PIC (partial) |
-| [`pymcu.hal.timer`](/pymcu/stdlib/timer/) | `from pymcu.hal.timer import Timer` | Hardware timer/counter, `millis()` | MP: `machine.Timer` · CP: — | AVR, PIC |
-| [`pymcu.hal.pwm`](/pymcu/stdlib/pwm/) | `from pymcu.hal.pwm import PWM` | PWM output | MP: `machine.PWM` · CP: `pwmio.PWMOut` | AVR, ARM, PIC |
-| [`pymcu.hal.spi`](/pymcu/stdlib/spi/) | `from pymcu.hal.spi import SPI` | SPI bus | MP: `machine.SPI` · CP: `busio.SPI` | AVR, ARM |
-| [`pymcu.hal.i2c`](/pymcu/stdlib/i2c/) | `from pymcu.hal.i2c import I2C` | I2C / TWI bus | MP: `machine.I2C` · CP: `busio.I2C` | AVR, ARM |
-| [`pymcu.hal.eeprom`](/pymcu/stdlib/eeprom/) | `from pymcu.hal.eeprom import EEPROM` | Non-volatile byte storage | MP: `avr.EEPROM` (PyMCU extension) · CP: `microcontroller.nvm` | AVR |
-| [`pymcu.hal.watchdog`](/pymcu/stdlib/watchdog/) | `from pymcu.hal.watchdog import Watchdog` | Watchdog timer | MP: `machine.WDT` · CP: `microcontroller.watchdog` | AVR |
-| [`pymcu.hal.power`](/pymcu/stdlib/power/) | `from pymcu.hal.power import sleep_power_down` | Sleep modes | MP: `machine.idle/lightsleep/deepsleep` · CP: `alarm` | AVR |
-| [`pymcu.time`](/pymcu/stdlib/time/) | `from pymcu.time import delay_ms` | Busy-wait delays | MP: `utime` / `time` · CP: `time` | AVR, ARM, PIC, RISC-V |
+| [`pymcu.hal.gpio`](/stdlib/gpio/) | `from pymcu.hal.gpio import Pin` | Digital I/O, pin interrupts | MP: `machine.Pin` · CP: `digitalio.DigitalInOut` | AVR, ARM, PIC |
+| [`pymcu.hal.uart`](/stdlib/uart/) | `from pymcu.hal.uart import UART` | Serial communication | MP: `machine.UART` · CP: `busio.UART` | AVR, ARM, PIC |
+| [`pymcu.hal.adc`](/stdlib/adc/) | `from pymcu.hal.adc import AnalogPin` | Analog-to-digital conversion | MP: `machine.ADC` · CP: `analogio.AnalogIn` | AVR, ARM, PIC (partial) |
+| [`pymcu.hal.timer`](/stdlib/timer/) | `from pymcu.hal.timer import Timer` | Hardware timer/counter, `millis()` | MP: `machine.Timer` · CP: — | AVR, PIC |
+| [`pymcu.hal.pwm`](/stdlib/pwm/) | `from pymcu.hal.pwm import PWM` | PWM output | MP: `machine.PWM` · CP: `pwmio.PWMOut` | AVR, ARM, PIC |
+| [`pymcu.hal.spi`](/stdlib/spi/) | `from pymcu.hal.spi import SPI` | SPI bus | MP: `machine.SPI` · CP: `busio.SPI` | AVR, ARM |
+| [`pymcu.hal.i2c`](/stdlib/i2c/) | `from pymcu.hal.i2c import I2C` | I2C / TWI bus | MP: `machine.I2C` · CP: `busio.I2C` | AVR, ARM |
+| [`pymcu.hal.eeprom`](/stdlib/eeprom/) | `from pymcu.hal.eeprom import EEPROM` | Non-volatile byte storage | MP: `avr.EEPROM` (PyMCU extension) · CP: `microcontroller.nvm` | AVR |
+| [`pymcu.hal.watchdog`](/stdlib/watchdog/) | `from pymcu.hal.watchdog import Watchdog` | Watchdog timer | MP: `machine.WDT` · CP: `microcontroller.watchdog` | AVR |
+| [`pymcu.hal.power`](/stdlib/power/) | `from pymcu.hal.power import sleep_power_down` | Sleep modes | MP: `machine.idle/lightsleep/deepsleep` · CP: `alarm` | AVR |
+| [`pymcu.time`](/stdlib/time/) | `from pymcu.time import delay_ms` | Busy-wait delays | MP: `utime` / `time` · CP: `time` | AVR, ARM, PIC, RISC-V |
 | `pymcu.hal.dma` | `from pymcu.hal.dma import DMA` | Memory-to-memory DMA channels | — native HAL only | ARM |
 | `pymcu.hal.softspi` | `from pymcu.hal.softspi import SoftSPI` | Bit-banged SPI on arbitrary pins | MP: `avr.SoftSPI` (PyMCU extension) · CP: — | Any target with GPIO |
 | `pymcu.hal.softi2c` | `from pymcu.hal.softi2c import SoftI2C` | Bit-banged I2C on arbitrary pins | MP: `avr.SoftI2C` (PyMCU extension) · CP: — | Any target with GPIO |
 | `pymcu.hal.servo` | `from pymcu.hal.servo import Servo` | Hobby-servo pulse generation | — native HAL only | AVR |
 | `pymcu.hal.tone` | `from pymcu.hal.tone import tone, noTone` | Square-wave tone output | — native HAL only | AVR |
-| [`pymcu.hal.wifi`](/pymcu/stdlib/wifi/) | `from pymcu.hal.wifi import CYW43` | CYW43439 WiFi (bring-up, join, TCP, MQTT) | MP: `network.WLAN` + `umqtt` · CP: `wifi` + `socketpool` + `adafruit_minimqtt` | **Pico 2 W (RP2350) only** — open networks, no WPA |
-| [`rp2`](/pymcu/stdlib/pio/) | `import rp2` + `@rp2.asm_pio(...)` | PIO state-machine DSL, assembled at build time | MP: `rp2` · CP: — | ARM — RP2040 and RP2350 |
+| [`pymcu.hal.wifi`](/stdlib/wifi/) | `from pymcu.hal.wifi import CYW43` | CYW43439 WiFi (bring-up, join, TCP, MQTT) | MP: `network.WLAN` + `umqtt` · CP: `wifi` + `socketpool` + `adafruit_minimqtt` | **Pico 2 W (RP2350) only** — open networks, no WPA |
+| [`rp2`](/stdlib/pio/) | `import rp2` + `@rp2.asm_pio(...)` | PIO state-machine DSL, assembled at build time | MP: `rp2` · CP: — | ARM — RP2040 and RP2350 |
 | `pymcu.asyncio` | `from pymcu import asyncio` | `async`/`await`, `sleep_ms`, `run`, `gather` | — PyMCU only | AVR, ARM |
-| [`pymcu.collections`](/pymcu/stdlib/collections/) | `from pymcu.collections import FixedDict` | Fixed-capacity dict, no heap | — PyMCU only | AVR, ARM |
+| [`pymcu.collections`](/stdlib/collections/) | `from pymcu.collections import FixedDict` | Fixed-capacity dict, no heap | — PyMCU only | AVR, ARM |
 | `pymcu.math` | `from pymcu.math import map_range, constrain` | Arduino-style `map()` and `constrain()` on integers | — PyMCU only | Any target |
 | `pymcu.random` | `from pymcu.random import random, randomSeed` | Pseudo-random numbers | — PyMCU only | All |
 | `pymcu.ffi` | `from pymcu.ffi import extern` | `@extern` C interop | — native HAL only | AVR only |
@@ -129,17 +129,17 @@ MicroPython-side module.
 
 | Driver | Import | Description | Compat API | Reference page |
 |---|---|---|---|---|
-| DHT11 | `from pymcu.drivers.dht11 import DHT11` | Temperature + humidity, single-wire | — PyMCU only | [DHT11](/pymcu/stdlib/drivers/dht11/) |
-| DS18B20 | `from pymcu.drivers.ds18b20 import DS18B20` | Precision temperature, 1-Wire, 12-bit | — PyMCU only | [DS18B20](/pymcu/stdlib/drivers/ds18b20/) |
+| DHT11 | `from pymcu.drivers.dht11 import DHT11` | Temperature + humidity, single-wire | — PyMCU only | [DHT11](/stdlib/drivers/dht11/) |
+| DS18B20 | `from pymcu.drivers.ds18b20 import DS18B20` | Precision temperature, 1-Wire, 12-bit | — PyMCU only | [DS18B20](/stdlib/drivers/ds18b20/) |
 | HD44780 LCD | `from pymcu.drivers.lcd import LCD` | 4-bit parallel character LCD | — PyMCU only | — |
 | SSD1306 OLED | `from pymcu.drivers.ssd1306 import SSD1306` | 128x64 OLED over I2C | — PyMCU only | — |
 | MAX7219 | `from pymcu.drivers.max7219 import MAX7219` | 8x8 LED matrix over SPI | — PyMCU only | — |
 | BMP280 | `from pymcu.drivers.bmp280 import BMP280` | Barometric pressure + temperature over I2C | — PyMCU only | — |
 | WS2812 NeoPixel | `from pymcu.drivers.neopixel import NeoPixel` | Addressable RGB LEDs, bit-banged | CP: `neopixel.NeoPixel` | — |
-| LM35 | — | Analog temperature sensor; no `pymcu.drivers` module — read it with [`AnalogPin`](/pymcu/stdlib/adc/) | MP: `lm35` | — |
+| LM35 | — | Analog temperature sensor; no `pymcu.drivers` module — read it with [`AnalogPin`](/stdlib/adc/) | MP: `lm35` | — |
 
 Only DHT11 and DS18B20 have their own reference page so far. For the rest, the class docstring
-plus the [roadmap](/pymcu/roadmap/) entry are the current documentation.
+plus the [roadmap](/roadmap/) entry are the current documentation.
 
 ## Architecture support matrix
 
@@ -161,5 +161,5 @@ plus the [roadmap](/pymcu/roadmap/) entry are the current documentation.
 | Delays (`pymcu.time`) | Complete | Complete | Complete |
 | Drivers (DHT11, DS18B20, LCD, ...) | Complete | — | — |
 
-See [Limitations](/pymcu/limitations/) for the language-level constraints that apply on top of this,
-and the [Roadmap](/pymcu/roadmap/) for what is queued next.
+See [Limitations](/limitations/) for the language-level constraints that apply on top of this,
+and the [Roadmap](/roadmap/) for what is queued next.

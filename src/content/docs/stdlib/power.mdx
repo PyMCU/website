@@ -279,11 +279,11 @@ access to `EICRA` / `EIMSK`, and inline `asm("sei")` are native-HAL-only in ever
 
 `machine.Pin.irq()` is the one compat route to an ISR-driven wake — CircuitPython's `digitalio`
 deliberately has no interrupt support at all. Prefer
-[`machine`](/pymcu/compat/micropython/) or [`alarm`](/pymcu/compat/circuitpython/) where they cover your
+[`machine`](/compat/micropython/) or [`alarm`](/compat/circuitpython/) where they cover your
 case; the native HAL API may still change between alpha releases.
 :::
 
 ## See also
 
-- [Watchdog](/pymcu/stdlib/watchdog/) — the timer that wakes the MCU from power-down
-- [Timer](/pymcu/stdlib/timer/) — Timer2 async mode for `sleep_power_save()`
+- [Watchdog](/stdlib/watchdog/) — the timer that wakes the MCU from power-down
+- [Timer](/stdlib/timer/) — Timer2 async mode for `sleep_power_save()`

@@ -207,7 +207,7 @@ def main():
 
 ### Ultra-low-power periodic wake
 
-Combined with [power management](/pymcu/stdlib/power/), the watchdog is the cheapest periodic wake
+Combined with [power management](/stdlib/power/), the watchdog is the cheapest periodic wake
 source: the MCU sits at ~0.1 µA between ticks.
 
 ```python
@@ -244,12 +244,12 @@ either ecosystem: ISR vectors and `ptr[T]` register access are native-HAL-only.
 
 CircuitPython does expose `microcontroller.watchdog.deinit()` and reports the last reset cause as
 `microcontroller.cpu.reset_reason`, so reach for
-[`microcontroller`](/pymcu/compat/circuitpython/) before the HAL if that is all you need. The native
+[`microcontroller`](/compat/circuitpython/) before the HAL if that is all you need. The native
 HAL API may still change between alpha releases.
 :::
 
 ## See also
 
-- [Power management](/pymcu/stdlib/power/) — the watchdog is the wake source for `sleep_power_down()`
-- [Timer](/pymcu/stdlib/timer/) — a periodic interrupt when you want a tick, not a reset
-- [EEPROM](/pymcu/stdlib/eeprom/) — state that has to survive the reset the watchdog causes
+- [Power management](/stdlib/power/) — the watchdog is the wake source for `sleep_power_down()`
+- [Timer](/stdlib/timer/) — a periodic interrupt when you want a tick, not a reset
+- [EEPROM](/stdlib/eeprom/) — state that has to survive the reset the watchdog causes

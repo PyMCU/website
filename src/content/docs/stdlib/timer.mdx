@@ -15,8 +15,8 @@ CircuitPython has no timer module, so this page has two tabs rather than three.
 :::note[AVR and PIC only]
 `pymcu.hal.timer` covers **AVR** (Timer0/1/2 on ATmega, Timer0/1 on ATtiny) and **PIC**
 (Timer0). It is not implemented for the RP2040 / RP2350 — on those, use
-[`pymcu.hal.pwm`](/pymcu/stdlib/pwm/) for waveform generation and the microsecond hardware timer
-behind [`delay_us()`](/pymcu/stdlib/time/) for timing. `machine.Timer` is narrower still: **AVR only**.
+[`pymcu.hal.pwm`](/stdlib/pwm/) for waveform generation and the microsecond hardware timer
+behind [`delay_us()`](/stdlib/time/) for timing. `machine.Timer` is narrower still: **AVR only**.
 :::
 
 ## Toggle an LED from a timer interrupt
@@ -216,7 +216,7 @@ from pymcu.hal.timer import millis_init, millis
 
 `millis_init()` starts a Timer0-based free-running counter and `millis()` returns the elapsed
 milliseconds since then. Both are ATmega-only; on ATtiny85/45/25 they compile to no-ops. This is
-what backs [`utime.ticks_ms()`](/pymcu/stdlib/time/), and the build driver auto-injects `millis_init()`
+what backs [`utime.ticks_ms()`](/stdlib/time/), and the build driver auto-injects `millis_init()`
 when it sees `ticks_ms()` in your code.
 
 ### Native HAL examples
@@ -281,8 +281,8 @@ def main():
 :::caution[Advanced — native HAL only]
 CircuitPython has no timer API at all — its model is a `time.monotonic()` polling loop, not a
 periodic interrupt. Periodic timers in PyMCU are therefore reachable only through
-[`machine.Timer`](/pymcu/compat/micropython/) or the native HAL on this page. If you need code that
-compiles on both dialects, poll [`ticks_ms()` / `monotonic()`](/pymcu/stdlib/time/) instead of arming
+[`machine.Timer`](/compat/micropython/) or the native HAL on this page. If you need code that
+compiles on both dialects, poll [`ticks_ms()` / `monotonic()`](/stdlib/time/) instead of arming
 a timer.
 
 The native HAL API may still change between alpha releases, so prefer `machine.Timer` where it
@@ -291,6 +291,6 @@ covers your use case.
 
 ## See also
 
-- [PWM](/pymcu/stdlib/pwm/) — the same timers driving a waveform instead of an interrupt
-- [Time](/pymcu/stdlib/time/) — `millis()`, `ticks_ms()` and the busy-wait delays
-- [Power management](/pymcu/stdlib/power/) — Timer2 async mode keeps running in `sleep_power_save()`
+- [PWM](/stdlib/pwm/) — the same timers driving a waveform instead of an interrupt
+- [Time](/stdlib/time/) — `millis()`, `ticks_ms()` and the busy-wait delays
+- [Power management](/stdlib/power/) — Timer2 async mode keeps running in `sleep_power_save()`

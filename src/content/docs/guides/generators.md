@@ -119,8 +119,8 @@ thing is straight-line machine code plus a state variable.
 | `yield` inside a method | Use a module-level generator function and pass what it needs as arguments |
 | `yield` as an expression (`x = yield v`) | Not lowered. Generators are one-directional: they produce values, they do not receive them |
 
-See [Limitations](/pymcu/limitations/) for the full list of unsupported Python features, and the
-[Roadmap](/pymcu/roadmap/) for what is planned next.
+See [Limitations](/limitations/) for the full list of unsupported Python features, and the
+[Roadmap](/roadmap/) for what is planned next.
 
 ## Where this is tested
 
@@ -131,6 +131,6 @@ is verified — check there first if anything on this page looks out of date.
 
 ## See also
 
-- [Async and await](/pymcu/guides/async/) — the same state machine, driven by a time base
-- [f-strings](/pymcu/guides/f-strings/) — the `f"S:{total}"` formatting used above
-- [UART](/pymcu/stdlib/uart/) — the output sink
+- [Async and await](/guides/async/) — the same state machine, driven by a time base
+- [f-strings](/guides/f-strings/) — the `f"S:{total}"` formatting used above
+- [UART](/stdlib/uart/) — the output sink

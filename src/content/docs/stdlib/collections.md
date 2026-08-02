@@ -17,7 +17,7 @@ and a `digitalio` sketch both say `from pymcu.collections import FixedDict`, and
 the same code in both.
 
 For the wider picture — closed dict and set literals as zero-RAM lookup tables, and when to reach
-for which — see the [Dictionaries and sets guide](/pymcu/guides/dicts/). This page is the API reference.
+for which — see the [Dictionaries and sets guide](/guides/dicts/). This page is the API reference.
 
 ## `FixedDict(capacity)`
 
@@ -248,6 +248,6 @@ is tested on; no claim is made for any other architecture.
 
 ## See also
 
-- [Dictionaries and sets](/pymcu/guides/dicts/) — closed literals versus `FixedDict`, and how to choose
-- [Language reference](/pymcu/language-reference/) — the container support matrix
-- [Limitations](/pymcu/limitations/) — why there is no growing hash table
+- [Dictionaries and sets](/guides/dicts/) — closed literals versus `FixedDict`, and how to choose
+- [Language reference](/language-reference/) — the container support matrix
+- [Limitations](/limitations/) — why there is no growing hash table

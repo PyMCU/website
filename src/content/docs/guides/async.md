@@ -164,7 +164,7 @@ What backs it depends on the chip, and on two families **there is no backing at 
 On ATtiny, PIC and RISC-V the counter is frozen at 0, so the wait condition
 `ticks() - start < duration` never clears and the coroutine is stuck at its first `await`.
 These targets need a hardware time base before async is usable — use a plain
-`while True:` loop with [`delay_ms`](/pymcu/stdlib/time/) instead.
+`while True:` loop with [`delay_ms`](/stdlib/time/) instead.
 :::
 
 On ATmega, **Timer0 is reserved** for the async time base: `pymcu build` injects the
@@ -179,7 +179,7 @@ from Timer0 in an async program.
 | `await` as an expression (`x = await f()`) | `await` is statement-only — `await sleep_ms(n)` on its own line |
 | More than two tasks in one `gather` | Nest gathers, or write the poll loop by hand |
 
-See [Limitations](/pymcu/limitations/) and the [Roadmap](/pymcu/roadmap/).
+See [Limitations](/limitations/) and the [Roadmap](/roadmap/).
 
 ## Where this is tested
 
@@ -192,6 +192,6 @@ looks out of date.
 
 ## See also
 
-- [Generators](/pymcu/guides/generators/) — the same state-machine lowering, without a time base
-- [Time and delays](/pymcu/stdlib/time/) — the blocking alternative
-- [UART](/pymcu/stdlib/uart/)
+- [Generators](/guides/generators/) — the same state-machine lowering, without a time base
+- [Time and delays](/stdlib/time/) — the blocking alternative
+- [UART](/stdlib/uart/)

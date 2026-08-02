@@ -322,7 +322,7 @@ def main():
 ```
 
 Supported format specs include `{x:02x}`, `{x:X}`, `{x:08b}`, `{x:o}`, `{x:5d}` and `{x:04d}`.
-See [Limitations](/pymcu/limitations/) for the edges that are not covered yet.
+See [Limitations](/limitations/) for the edges that are not covered yet.
 
 #### Serial output on the Pico
 
@@ -349,12 +349,12 @@ HAL is imported unconditionally by the compat packages. The pin arguments (`boar
 are fixed in silicon.
 
 The native HAL API may still change between alpha releases, so prefer
-[`machine.UART`](/pymcu/compat/micropython/) or [`busio.UART`](/pymcu/compat/circuitpython/) wherever they
+[`machine.UART`](/compat/micropython/) or [`busio.UART`](/compat/circuitpython/) wherever they
 cover your use case.
 :::
 
 ## See also
 
-- [UART echo example](/pymcu/examples/uart-echo/) — the complete round-trip program
-- [Time](/pymcu/stdlib/time/) — `delay_ms()` for pacing a transmit loop
-- [SPI](/pymcu/stdlib/spi/) and [I2C](/pymcu/stdlib/i2c/) — the other two serial buses
+- [UART echo example](/examples/uart-echo/) — the complete round-trip program
+- [Time](/stdlib/time/) — `delay_ms()` for pacing a transmit loop
+- [SPI](/stdlib/spi/) and [I2C](/stdlib/i2c/) — the other two serial buses

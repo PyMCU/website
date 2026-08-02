@@ -236,7 +236,7 @@ bit-banger underneath.
 
 ## See also
 
-- [CircuitPython compatibility](/pymcu/compat/circuitpython/) — the `board` and `neopixel` modules
-- [GPIO](/pymcu/stdlib/gpio/) — the pin naming used by the `pin` argument
-- [Time](/pymcu/stdlib/time/) — `delay_ms()` / `delay_us()`
-- [Limitations](/pymcu/limitations/) — what interrupt masking costs you elsewhere in a program
+- [CircuitPython compatibility](/compat/circuitpython/) — the `board` and `neopixel` modules
+- [GPIO](/stdlib/gpio/) — the pin naming used by the `pin` argument
+- [Time](/stdlib/time/) — `delay_ms()` / `delay_us()`
+- [Limitations](/limitations/) — what interrupt masking costs you elsewhere in a program

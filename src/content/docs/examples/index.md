@@ -15,7 +15,7 @@ something. Where a feature has no compat equivalent at all (`@interrupt` handler
 register access through `ptr[T]`, inline `asm()`, the PIO DSL), the example is native-HAL
 only and says so in an "advanced" callout rather than inventing a tab.
 
-A handful of pages are pure language — [tuple-ops](/pymcu/examples/tuple-ops/) is the clearest
+A handful of pages are pure language — [tuple-ops](/examples/tuple-ops/) is the clearest
 case — and carry no tabs at all, because tuples, `enumerate` and multi-return are compiler
 features that read identically whichever API you import.
 
@@ -37,36 +37,36 @@ is worse than none. `pymcu build` prints the real size for your build:
 Flash: 162 / 32768 bytes (0% of program storage)
 ```
 
-See [`pymcu build`](/pymcu/driver/#pymcu-build) for what that number does and does not include.
+See [`pymcu build`](/driver/#pymcu-build) for what that number does and does not include.
 :::
 
 ## ARM — Raspberry Pi Pico / Pico 2
 
-These are walked through on the [Raspberry Pi Pico (RP2040 / RP2350)](/pymcu/examples/rp2040/)
+These are walked through on the [Raspberry Pi Pico (RP2040 / RP2350)](/examples/rp2040/)
 page, with the full source for each. `pymcu build` emits `dist/firmware.bin` plus a
 `dist/firmware.uf2` for BOOTSEL flashing.
 
 | Example | Target | Description |
 |---|---|---|
-| [blink](/pymcu/examples/rp2040/) | RP2040 / RP2350 | On-board LED (GP25) toggle with `delay_ms` |
-| [uart-echo](/pymcu/examples/rp2040/) | RP2040 / RP2350 | Echo bytes on UART0 (GP0/GP1) |
-| [pwm](/pymcu/examples/rp2040/) | RP2040 / RP2350 | 5 kHz PWM at 50% duty on GP2 |
-| [adc](/pymcu/examples/rp2040/) | RP2040 / RP2350 | ADC channel 0 (GP26) drives the LED |
-| [spi](/pymcu/examples/rp2040/) | RP2040 / RP2350 | Byte writes on SPI0 |
-| [i2c](/pymcu/examples/rp2040/) | RP2040 / RP2350 | Byte writes to an I2C0 device |
-| [dma](/pymcu/examples/rp2040/) | RP2040 / RP2350 | RAM-to-RAM word transfer, verified |
-| [pio-blink](/pymcu/examples/rp2040/) | RP2040 / RP2350 | `@rp2.asm_pio` DSL — blink with the CPU idle |
-| [exceptions](/pymcu/examples/rp2040/) | RP2040 / RP2350 | `try` / `except` / `finally` / `raise` |
-| [float](/pymcu/examples/rp2040/) | RP2040 / RP2350 | IEEE-754 f32 — bootrom fast-float / M33 FPU |
-| [fstring-value](/pymcu/examples/rp2040/) | RP2040 | f-strings as values in a fixed buffer |
-| [dict-set](/pymcu/examples/rp2040/) | RP2040 | Closed `dict` / `set` literals, catchable `KeyError` |
-| [generators](/pymcu/examples/rp2040/) | RP2040 | `yield` lowered to a state machine |
-| [async-v2](/pymcu/examples/rp2040/) | RP2040 | `await asyncio.sleep_ms` in `if` / `while` / `for`, `gather`, return values |
+| [blink](/examples/rp2040/) | RP2040 / RP2350 | On-board LED (GP25) toggle with `delay_ms` |
+| [uart-echo](/examples/rp2040/) | RP2040 / RP2350 | Echo bytes on UART0 (GP0/GP1) |
+| [pwm](/examples/rp2040/) | RP2040 / RP2350 | 5 kHz PWM at 50% duty on GP2 |
+| [adc](/examples/rp2040/) | RP2040 / RP2350 | ADC channel 0 (GP26) drives the LED |
+| [spi](/examples/rp2040/) | RP2040 / RP2350 | Byte writes on SPI0 |
+| [i2c](/examples/rp2040/) | RP2040 / RP2350 | Byte writes to an I2C0 device |
+| [dma](/examples/rp2040/) | RP2040 / RP2350 | RAM-to-RAM word transfer, verified |
+| [pio-blink](/examples/rp2040/) | RP2040 / RP2350 | `@rp2.asm_pio` DSL — blink with the CPU idle |
+| [exceptions](/examples/rp2040/) | RP2040 / RP2350 | `try` / `except` / `finally` / `raise` |
+| [float](/examples/rp2040/) | RP2040 / RP2350 | IEEE-754 f32 — bootrom fast-float / M33 FPU |
+| [fstring-value](/examples/rp2040/) | RP2040 | f-strings as values in a fixed buffer |
+| [dict-set](/examples/rp2040/) | RP2040 | Closed `dict` / `set` literals, catchable `KeyError` |
+| [generators](/examples/rp2040/) | RP2040 | `yield` lowered to a state machine |
+| [async-v2](/examples/rp2040/) | RP2040 | `await asyncio.sleep_ms` in `if` / `while` / `for`, `gather`, return values |
 | `async-blink-rp2350` | RP2350 | Two coroutines blinking GP14 / GP15 at a 4:1 ratio |
-| [wifi-cyw43](/pymcu/examples/rp2040/) | RP2350 (Pico 2 W) | CYW43439 bring-up, WLAN join, MQTT publish |
-| [dht-mqtt](/pymcu/examples/rp2040/) | RP2350 (Pico 2 W) | Sensor reading → MQTT, native / MicroPython / CircuitPython |
-| [cp-digitalio-uart](/pymcu/examples/rp2040/) | RP2040 | CircuitPython `board` / `digitalio` / `busio` |
-| [mp-uart-echo](/pymcu/examples/rp2040/) | RP2040 | MicroPython `machine.Pin` / `machine.UART` |
+| [wifi-cyw43](/examples/rp2040/) | RP2350 (Pico 2 W) | CYW43439 bring-up, WLAN join, MQTT publish |
+| [dht-mqtt](/examples/rp2040/) | RP2350 (Pico 2 W) | Sensor reading → MQTT, native / MicroPython / CircuitPython |
+| [cp-digitalio-uart](/examples/rp2040/) | RP2040 | CircuitPython `board` / `digitalio` / `busio` |
+| [mp-uart-echo](/examples/rp2040/) | RP2040 | MicroPython `machine.Pin` / `machine.UART` |
 
 The ARM projects live in
 [`pymcu-arm/examples/`](https://github.com/PyMCU/pymcu-arm). Several exist in both an
@@ -82,7 +82,7 @@ the end of this section).
 
 | Example | Description |
 |---|---|
-| [blink](/pymcu/examples/blink/) | The classic "hello world" of embedded — toggle an LED once per second |
+| [blink](/examples/blink/) | The classic "hello world" of embedded — toggle an LED once per second |
 | `multi-pin` | Six LEDs and two buttons — a small interactive light pattern |
 | `shift-register` | Bit-banged 74HC595 shift register driving a running light |
 | `button-debounce` | Software-debounced button press counter with UART telemetry |
@@ -93,7 +93,7 @@ the end of this section).
 
 | Example | Description |
 |---|---|
-| [uart-echo](/pymcu/examples/uart-echo/) | The simplest UART round-trip: echo every received byte |
+| [uart-echo](/examples/uart-echo/) | The simplest UART round-trip: echo every received byte |
 | `uart-echo-mp` | UART echo written in **MicroPython** style, compiled by PyMCU |
 | `uart-echo-cp` | UART echo written in **CircuitPython** style, compiled by PyMCU |
 | `uart-str` | UART string and character output helpers |
@@ -124,7 +124,7 @@ the end of this section).
 | `timer-interrupt` | Timer1 overflow interrupt blinking an LED at ~1 Hz |
 | `timer-ctc` | Timer1 CTC mode for a precise 1 Hz interrupt |
 | `stopwatch` | A three-interrupt stopwatch: start/stop, reset, and a timer tick |
-| [sensor-dashboard](/pymcu/examples/sensor-dashboard/) | A multi-interrupt sensor monitor with min/max tracking and live display modes |
+| [sensor-dashboard](/examples/sensor-dashboard/) | A multi-interrupt sensor monitor with min/max tracking and live display modes |
 
 ### Protocols — SPI and I2C
 
@@ -150,7 +150,7 @@ the end of this section).
 | `neopixel` | Cycle a single **WS2812B** (NeoPixel) through red, green, and blue |
 
 The drivers themselves are documented under
-[Device drivers](/pymcu/stdlib/#device-drivers).
+[Device drivers](/stdlib/#device-drivers).
 
 ### Storage, power and reliability
 
@@ -172,10 +172,10 @@ The drivers themselves are documented under
 
 | Example | Description |
 |---|---|
-| [inheritance-zca](/pymcu/examples/inheritance-zca/) | Zero-cost class inheritance and function overloading |
+| [inheritance-zca](/examples/inheritance-zca/) | Zero-cost class inheritance and function overloading |
 | `error-handling` | Exception-based error handling with `try` / `except` / `raise` |
 | `t-flag-demo` | The low-level T-flag error ABI behind `raise` / `return` |
-| [tuple-ops](/pymcu/examples/tuple-ops/) | Multi-return, tuple unpacking and `enumerate` |
+| [tuple-ops](/examples/tuple-ops/) | Multi-return, tuple unpacking and `enumerate` |
 
 :::note[tuple-ops is a walkthrough, not a project directory]
 `tuple-ops` has a page here but no directory under `examples/`. It — along with
@@ -197,7 +197,7 @@ run, but they are not packaged as standalone example projects.
 | `ffi-dsp` | Multi-file C interop: two C sources linked into one firmware |
 
 The `[tool.pymcu.ffi]` table that drives these builds is documented under
-[C / C++ interop](/pymcu/driver/#c--c-interop).
+[C / C++ interop](/driver/#c--c-interop).
 
 ### Not listed above
 
@@ -219,5 +219,5 @@ pymcu flash --port /dev/cu.usbmodem*
 Set `stdlib = ["micropython"]` or `stdlib = ["circuitpython"]` in `[tool.pymcu]` to make the
 matching compat flavour importable. Examples whose name ends in `-mp` or `-cp` already do.
 The full command and configuration reference is in the
-[CLI Driver](/pymcu/driver/) page; if the program uses `print()`, open a serial terminal to
-[see the output](/pymcu/getting-started/quickstart/#6-see-the-output).
+[CLI Driver](/driver/) page; if the program uses `print()`, open a serial terminal to
+[see the output](/getting-started/quickstart/#6-see-the-output).

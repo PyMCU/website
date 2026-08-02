@@ -7,7 +7,7 @@ The `pymcu-circuitpython` compat package makes CircuitPython migration nearly tr
 most firmware, on **AVR (ATmega / ATtiny)** and on the **Raspberry Pi Pico / Pico 2**. How much
 of the flavour you get depends on the target: `board`, `digitalio` and `busio.UART` are
 portable, the rest is AVR-only. See the
-[module table](/pymcu/compat/circuitpython/#supported-modules) for the exact split. Follow these
+[module table](/compat/circuitpython/#supported-modules) for the exact split. Follow these
 steps:
 
 ## Step 0: Lint the project first
@@ -27,7 +27,7 @@ in a limited form and needs a bounded rewrite: an unbounded `list.append` / `.ex
 means it maps ~1:1 onto the compat API — `board`, `digitalio`, `busio`, `analogio`, `pwmio`
 and `adafruit_*` imports all land in that last bucket. Work the errors first, then the
 warnings: an unbounded `append` still has to become a fixed-size buffer before the program
-will build. Full flag list in [the CLI reference](/pymcu/driver/#pymcu-lint-path).
+will build. Full flag list in [the CLI reference](/driver/#pymcu-lint-path).
 
 ## Step 1: Install the compat package
 
@@ -117,7 +117,7 @@ compile-time constant, and the resulting millisecond count must fit in a `uint16
 `pwmio`, `busio.SPI`, `busio.I2C`, `neopixel` and `microcontroller` are imported inside an
 `if __CHIP__.arch == "avr":` guard and therefore **do not exist on the Pico**. If your program
 uses them and you are targeting an RP chip, move those peripherals to
-[the native HAL](/pymcu/stdlib/).
+[the native HAL](/stdlib/).
 
 Anything that needs a millisecond counter splits the same way: `time.monotonic()`,
 `time.monotonic_ns()` and `supervisor.ticks_ms()` all read `pymcu.hal.timer`, which has no RP
@@ -303,5 +303,5 @@ while True:
   only**, and only for open networks: `connect()` raises a `CompileError` on a non-empty key
   because WPA is not implemented yet
 
-See the [CircuitPython compatibility reference](/pymcu/compat/circuitpython/) for the full module
-surface and the [Pico examples](/pymcu/examples/rp2040/) for runnable programs.
+See the [CircuitPython compatibility reference](/compat/circuitpython/) for the full module
+surface and the [Pico examples](/examples/rp2040/) for runnable programs.

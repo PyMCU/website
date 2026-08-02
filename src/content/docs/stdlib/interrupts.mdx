@@ -66,7 +66,7 @@ MicroPython `machine.Pin.irq` API or the native HAL in the next tab. Both can be
 from the same file - the compat flavours are import namespaces, not sandboxes.
 
 For the narrow case of *waking from sleep* on a pin edge, CircuitPython's `alarm` module
-is supported; see [Power management](/pymcu/stdlib/power/).
+is supported; see [Power management](/stdlib/power/).
 
 </TabItem>
 <TabItem label="Native HAL">
@@ -201,7 +201,7 @@ From the `timer-ctc` example: a `CTC` banner, then `C` once per second.
 :::note[Timer0 is spoken for when you use `ticks_ms()` or `async`]
 The build injects `millis_init()` - Timer0 in overflow mode at prescaler 64 - when it sees
 `ticks_ms()`, or an `async def` on AVR. Do not also claim Timer0 for PWM or CTC in the same
-project. See [Timers](/pymcu/stdlib/timer/).
+project. See [Timers](/stdlib/timer/).
 :::
 
 ## Interrupt-driven UART receive
@@ -379,7 +379,7 @@ The vector table lives in the runtime's `crt0.S` and points every configurable e
 a shared `Default_Handler`; there is no weak symbol for a Python function to override.
 Peripheral interrupts on the RP boards therefore mean driving the NVIC yourself with `ptr`
 and inline `asm()`, and that is not something the HAL wraps today. See
-[Limitations](/pymcu/limitations/).
+[Limitations](/limitations/).
 
 ## Writing a good ISR
 
@@ -395,9 +395,9 @@ and inline `asm()`, and that is not something the HAL wraps today. See
 
 ## Related
 
-- [GPIO](/pymcu/stdlib/gpio/) - `Pin`, including `irq()`
-- [Timers](/pymcu/stdlib/timer/) - `Timer`, prescalers and compare mode
-- [UART](/pymcu/stdlib/uart/) - the ring buffer behind `uart_rx_isr()`
-- [ADC](/pymcu/stdlib/adc/), [SPI](/pymcu/stdlib/spi/), [I2C](/pymcu/stdlib/i2c/)
-- [Power management](/pymcu/stdlib/power/) - sleeping until an interrupt wakes you
-- [Limitations](/pymcu/limitations/)
+- [GPIO](/stdlib/gpio/) - `Pin`, including `irq()`
+- [Timers](/stdlib/timer/) - `Timer`, prescalers and compare mode
+- [UART](/stdlib/uart/) - the ring buffer behind `uart_rx_isr()`
+- [ADC](/stdlib/adc/), [SPI](/stdlib/spi/), [I2C](/stdlib/i2c/)
+- [Power management](/stdlib/power/) - sleeping until an interrupt wakes you
+- [Limitations](/limitations/)

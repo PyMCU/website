@@ -151,7 +151,7 @@ docs: mark @extern as implemented in the roadmap and limitations
 3. The compiler builds (`dotnet publish ...`) and all integration tests pass.
 4. A test covers each new compiler or HAL feature.
 5. `LANGUAGE_ROADMAP.md` is updated when the feature set changes.
-6. The [Limitations](/pymcu/limitations/) and [Roadmap](/pymcu/roadmap/) pages are updated when
+6. The [Limitations](/limitations/) and [Roadmap](/roadmap/) pages are updated when
    supported / unsupported status changes.
 
 Bugs and feature requests go to the

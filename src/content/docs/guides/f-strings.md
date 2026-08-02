@@ -190,6 +190,6 @@ of date.
 
 ## See also
 
-- [UART](/pymcu/stdlib/uart/) — `write_str`, `println` and the other sinks
-- [Limitations](/pymcu/limitations/) — what else is unsupported about strings
-- [Dictionaries and sets](/pymcu/guides/dicts/)
+- [UART](/stdlib/uart/) — `write_str`, `println` and the other sinks
+- [Limitations](/limitations/) — what else is unsupported about strings
+- [Dictionaries and sets](/guides/dicts/)

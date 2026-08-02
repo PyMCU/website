@@ -9,7 +9,7 @@ Sends a startup banner then echoes every received byte back on UART0.
 
 :::note[AVR example]
 This page targets the **ATmega328P**; the register names and the UBRR0 value below are
-AVR-specific. The Pico version is on the [RP2040 / RP2350 page](/pymcu/examples/rp2040/).
+AVR-specific. The Pico version is on the [RP2040 / RP2350 page](/examples/rp2040/).
 :::
 
 ## Banner, then echo every byte
@@ -213,14 +213,14 @@ def main():
     print(f"ready n={n:03d}")
 ```
 
-See [f-strings on the Pico page](/pymcu/examples/rp2040/) for the value form (`s = f"..."`) and
+See [f-strings on the Pico page](/examples/rp2040/) for the value form (`s = f"..."`) and
 the supported format specs; the same lowering is used on AVR.
 
 :::note[Which baud rate does `print()` use?]
 Because this program constructs its own `UART(9600)`, the build leaves the hardware to it
 and `print()` comes out at **9600 baud**. In a program that calls `print()` without opening
 a UART, the build opens the console itself at `stdout_baud`, which defaults to **115200**.
-Full details under [Serial output](/pymcu/driver/#serial-output-and-print).
+Full details under [Serial output](/driver/#serial-output-and-print).
 :::
 
 ## Build
@@ -231,7 +231,7 @@ pymcu build
 pymcu flash --port /dev/cu.usbmodem*
 ```
 
-See [`pymcu build`](/pymcu/driver/#pymcu-build) for the full command reference. Then open a serial
+See [`pymcu build`](/driver/#pymcu-build) for the full command reference. Then open a serial
 terminal at **9600 baud** — `screen /dev/cu.usbmodem1401 9600` on macOS, `picocom -b 9600
 /dev/ttyACM0` on Linux — and every character you type comes straight back.
 

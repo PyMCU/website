@@ -348,9 +348,9 @@ anything on this page looks out of date.
 
 ## See also
 
-- [Language reference](/pymcu/language-reference/) — `asm()`, `ptr[T]`, `const[T]` and `__CHIP__`
+- [Language reference](/language-reference/) — `asm()`, `ptr[T]`, `const[T]` and `__CHIP__`
   in the MCU-specific extensions section
-- [Limitations](/pymcu/limitations/) — including the Z-register pointer-walk idiom
-- [C and C++ interop](/pymcu/guides/c-interop/) — when a whole C file beats a snippet
-- [Zero-cost classes](/pymcu/guides/zero-cost-classes/) — the other half of "the compiler gets out
+- [Limitations](/limitations/) — including the Z-register pointer-walk idiom
+- [C and C++ interop](/guides/c-interop/) — when a whole C file beats a snippet
+- [Zero-cost classes](/guides/zero-cost-classes/) — the other half of "the compiler gets out
   of your way"

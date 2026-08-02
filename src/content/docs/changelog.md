@@ -54,7 +54,7 @@ The entries below are the internal milestones that ran before PyMCU was publishe
 under the `0.1.0aN` scheme. They are kept for provenance; where a detail was later revised
 (the `None` literal became a real null rather than folding to `-1`, and the documentation
 site moved from MkDocs to Astro + Starlight), the current behaviour is the one described in
-the [Language Reference](/pymcu/language-reference/) and [Limitations](/pymcu/limitations/).
+the [Language Reference](/language-reference/) and [Limitations](/limitations/).
 
 ### v0.2
 

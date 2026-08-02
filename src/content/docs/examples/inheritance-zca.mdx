@@ -241,7 +241,7 @@ program is a small change. `busio.UART` has no equivalent — its API is buffer-
 version of the reporting half, and none is shown.
 
 The native HAL API may change between alpha releases; prefer
-[`machine`](/pymcu/compat/micropython/) or [`digitalio`](/pymcu/compat/circuitpython/) for the pin layer,
+[`machine`](/compat/micropython/) or [`digitalio`](/compat/circuitpython/) for the pin layer,
 as in the tabbed example above.
 :::
 
@@ -253,6 +253,6 @@ pymcu build
 pymcu flash --port /dev/cu.usbmodem*
 ```
 
-See [`pymcu build`](/pymcu/driver/#pymcu-build) for the full command reference. Open a serial
+See [`pymcu build`](/driver/#pymcu-build) for the full command reference. Open a serial
 terminal at **9600 baud** — the baud rate this program passes to `UART(...)` — to see the
 four lines above.

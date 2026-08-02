@@ -237,10 +237,10 @@ the code above is exactly what is verified.
 
 ## See also
 
-- [Language reference](/pymcu/language-reference/) — `@extern` in the decorator table, and the
+- [Language reference](/language-reference/) — `@extern` in the decorator table, and the
   full import rules
-- [Limitations](/pymcu/limitations/) — the AVR and ARM platform notes, including why this is
+- [Limitations](/limitations/) — the AVR and ARM platform notes, including why this is
   AVR-only
-- [Inline assembly](/pymcu/guides/inline-asm/) — when you need one instruction rather than a
+- [Inline assembly](/guides/inline-asm/) — when you need one instruction rather than a
   whole C file
-- [Targets](/pymcu/targets/) — what each backend supports
+- [Targets](/targets/) — what each backend supports

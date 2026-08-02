@@ -230,16 +230,16 @@ internal `"TEMP"` / `"VBG"` channels have no MicroPython or CircuitPython equiva
 `machine.ADC` and `analogio.AnalogIn` are also **AVR only** today — both compat packages import
 their ADC backend behind an `__CHIP__.arch == "avr"` guard. On the RP2040 / RP2350, use
 `pymcu.hal.adc.AnalogPin` directly. `analogio.AnalogOut` needs a hardware DAC, which AVR does
-not have; it compiles to a warning and a no-op, so use [PWM](/pymcu/stdlib/pwm/) when you want an
+not have; it compiles to a warning and a no-op, so use [PWM](/stdlib/pwm/) when you want an
 analog-like output.
 
 The native HAL API may still change between alpha releases, so prefer
-[`machine.ADC`](/pymcu/compat/micropython/) or [`analogio.AnalogIn`](/pymcu/compat/circuitpython/) wherever
+[`machine.ADC`](/compat/micropython/) or [`analogio.AnalogIn`](/compat/circuitpython/) wherever
 they cover your use case.
 :::
 
 ## See also
 
-- [PWM](/pymcu/stdlib/pwm/) — the usual companion for an analog-in / analog-out loop
-- [DS18B20](/pymcu/stdlib/drivers/ds18b20/) — a calibrated external temperature sensor when the
+- [PWM](/stdlib/pwm/) — the usual companion for an analog-in / analog-out loop
+- [DS18B20](/stdlib/drivers/ds18b20/) — a calibrated external temperature sensor when the
   on-chip one is too rough

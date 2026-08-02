@@ -207,7 +207,7 @@ def main():
 - Interrupts are not disabled during a delay. An ISR that runs mid-delay extends a counted loop
   on AVR/PIC; the RP2040/RP2350 timer poll simply resumes and still ends at the right time.
 - For scheduled work rather than blind waiting, use a hardware timer interrupt
-  ([`Timer`](/pymcu/stdlib/timer/) on AVR/PIC) or `await asyncio.sleep_ms(...)`.
+  ([`Timer`](/stdlib/timer/) on AVR/PIC) or `await asyncio.sleep_ms(...)`.
 - `delay_us(n)` is accurate for `n >= 4` on the ATmega328P at 16 MHz.
 
 :::caution[Advanced — native HAL only]
@@ -218,11 +218,11 @@ your own use, whereas `millis()` / `micros()` — and therefore `ticks_ms()`, `t
 `monotonic()` and `monotonic_ns()` — claim Timer0 on ATmega and are unavailable on ATtiny.
 
 The native HAL API may still change between alpha releases, so prefer
-[`utime`](/pymcu/compat/micropython/) or [CircuitPython's `time`](/pymcu/compat/circuitpython/) wherever they
+[`utime`](/compat/micropython/) or [CircuitPython's `time`](/compat/circuitpython/) wherever they
 cover your use case.
 :::
 
 ## See also
 
-- [Timer](/pymcu/stdlib/timer/) — `millis()` and interrupt-driven periodic work
-- [Power management](/pymcu/stdlib/power/) — sleep instead of spinning when you only need to wait
+- [Timer](/stdlib/timer/) — `millis()` and interrupt-driven periodic work
+- [Power management](/stdlib/power/) — sleep instead of spinning when you only need to wait

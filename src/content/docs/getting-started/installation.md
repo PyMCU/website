@@ -93,7 +93,7 @@ pip install --pre pymcu-circuitpython   # board, digitalio, analogio, busio, pwm
 ```
 
 In a project, add the one you want to `[project] dependencies` in `pyproject.toml` — see the
-[Quick Start](/pymcu/getting-started/quickstart/).
+[Quick Start](/getting-started/quickstart/).
 
 ## Per-target notes
 
@@ -188,10 +188,10 @@ pymcu --version
 
 Backends live in their own repositories — [`PyMCU/pymcu-avr`](https://github.com/PyMCU/pymcu-avr),
 [`PyMCU/pymcu-arm`](https://github.com/PyMCU/pymcu-arm) and
-[`PyMCU/pymcu-pic`](https://github.com/PyMCU/pymcu-pic) — see [Contributing](/pymcu/contributing/)
+[`PyMCU/pymcu-pic`](https://github.com/PyMCU/pymcu-pic) — see [Contributing](/contributing/)
 for the full layout.
 
 ## Next steps
 
-- [Quick Start](/pymcu/getting-started/quickstart/) — create a project and blink an LED
-- [Supported Targets](/pymcu/targets/) — chips, peripherals and per-architecture capabilities
+- [Quick Start](/getting-started/quickstart/) — create a project and blink an LED
+- [Supported Targets](/targets/) — chips, peripherals and per-architecture capabilities

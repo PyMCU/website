@@ -270,12 +270,12 @@ ATmega32U4 parts. These names exist so a portable driver can be written once, no
 backend implements them — check the table above before relying on one.
 
 The native HAL API may still change between alpha releases, so prefer
-[`machine.Pin`](/pymcu/compat/micropython/) or
-[`digitalio.DigitalInOut`](/pymcu/compat/circuitpython/) wherever they cover your use case.
+[`machine.Pin`](/compat/micropython/) or
+[`digitalio.DigitalInOut`](/compat/circuitpython/) wherever they cover your use case.
 :::
 
 ## See also
 
-- [Blink example](/pymcu/examples/blink/) — the shortest complete program that drives a pin
-- [PWM](/pymcu/stdlib/pwm/) — analog-like output on the pins that have a timer channel
-- [Time](/pymcu/stdlib/time/) — `delay_ms()` / `delay_us()`, the other half of every blink loop
+- [Blink example](/examples/blink/) — the shortest complete program that drives a pin
+- [PWM](/stdlib/pwm/) — analog-like output on the pins that have a timer channel
+- [Time](/stdlib/time/) — `delay_ms()` / `delay_us()`, the other half of every blink loop

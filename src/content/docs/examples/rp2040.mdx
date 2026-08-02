@@ -280,7 +280,7 @@ ADC, PWM, SPI, I2C and DMA are reached through `pymcu.hal.*` on the Pico. `machi
 usable on this target yet.
 
 The native HAL API may change between alpha releases — keep the GPIO and UART parts of your
-program on [`machine`](/pymcu/compat/micropython/) or [`digitalio`](/pymcu/compat/circuitpython/) and
+program on [`machine`](/compat/micropython/) or [`digitalio`](/compat/circuitpython/) and
 drop to the HAL for the peripherals below.
 :::
 
@@ -405,7 +405,7 @@ def main():
 This needs the MicroPython stdlib (`stdlib = ["micropython"]` in `[tool.pymcu]`), since
 `rp2` is part of that flavour. The MVP covers PIO0 / state machine 0; the FIFO methods
 (`sm.put()` / `sm.get()`) and the other blocks are not wired yet — see
-[Limitations](/pymcu/limitations/).
+[Limitations](/limitations/).
 
 :::caution[Advanced — `rp2` only]
 The PIO DSL has no CircuitPython equivalent in PyMCU (CircuitPython's own `rp2pio` is not
@@ -595,7 +595,7 @@ def main():
 ```
 
 For a **mutable** fixed-capacity mapping, use `pymcu.collections.FixedDict(capacity)`.
-Unbounded/growing dicts and sets remain unsupported — see [Limitations](/pymcu/limitations/).
+Unbounded/growing dicts and sets remain unsupported — see [Limitations](/limitations/).
 
 ### Generators
 
@@ -817,12 +817,12 @@ pymcu flash          # picotool if present, otherwise the RPI-RP2 BOOTSEL volume
 
 To enter BOOTSEL mode, hold the BOOTSEL button while plugging in USB. `pymcu flash` picks
 the artefact from the target family — the `.uf2` here, Intel HEX on AVR and PIC — so the
-same command works on every target. See [`pymcu build`](/pymcu/driver/#pymcu-build) and
-[`pymcu flash`](/pymcu/driver/#pymcu-flash) for the full reference.
+same command works on every target. See [`pymcu build`](/driver/#pymcu-build) and
+[`pymcu flash`](/driver/#pymcu-flash) for the full reference.
 
 Several of these programs `print()`. Open a serial terminal on the board at **115200 baud**
 (the `stdout_baud` default) to read the output — see
-[Serial output](/pymcu/driver/#serial-output-and-print).
+[Serial output](/driver/#serial-output-and-print).
 
 ## Validating in CI
 
@@ -833,7 +833,7 @@ the sources of that suite — each one is compiled and asserted on every CI run.
 
 ## See also
 
-- [Limitations](/pymcu/limitations/) — what the ARM backend does not do yet
-- [Roadmap](/pymcu/roadmap/) — what is next
-- [MicroPython compatibility](/pymcu/compat/micropython/) / [CircuitPython compatibility](/pymcu/compat/circuitpython/)
-- [AVR examples](/pymcu/examples/) — the rest of the gallery
+- [Limitations](/limitations/) — what the ARM backend does not do yet
+- [Roadmap](/roadmap/) — what is next
+- [MicroPython compatibility](/compat/micropython/) / [CircuitPython compatibility](/compat/circuitpython/)
+- [AVR examples](/examples/) — the rest of the gallery

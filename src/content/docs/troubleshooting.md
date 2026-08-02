@@ -5,7 +5,7 @@ description: Common PyMCU failures and what causes them - compiler error types, 
 
 Things that go wrong often, and the actual reason each one happens. For installation and
 flashing problems (`pymcu: command not found`, `avrdude` not responding, a Pico that will
-not mount), see the [CLI driver page](/pymcu/driver/#troubleshooting).
+not mount), see the [CLI driver page](/driver/#troubleshooting).
 
 ## Reading a compiler error
 
@@ -26,7 +26,7 @@ offending token underlined. The **error type** tells you which stage rejected th
 |---|---|---|
 | `LexicalError` | Lexer | A character the lexer cannot read. Non-ASCII text outside a comment is the classic cause |
 | `IndentationError` | Lexer | Mixed or inconsistent indentation, same as CPython |
-| `SyntaxError` | Parser | The grammar rejected the construct. Often a Python feature PyMCU does not implement - check [Limitations](/pymcu/limitations/) |
+| `SyntaxError` | Parser | The grammar rejected the construct. Often a Python feature PyMCU does not implement - check [Limitations](/limitations/) |
 | `NameError` | IR generation | Assigning a module-level global inside a function without a `global` declaration (Python would have made a local - the compiler makes you say which you meant), or calling `.append()` and friends on an untyped `[]` |
 | `TypeError` | IR generation | An assignment or call whose types do not line up - assigning `None` to a scalar, passing a float where a `uint8` is expected |
 | `ValueError` | IR generation | A value that is well-typed but impossible, such as a literal outside its type's range |
@@ -137,7 +137,7 @@ the advanced form, naming a chip identifier such as `atmega328p` or `rp2350` dir
 one and delete the other; the error message tells you which chip your board implies, so you
 can switch to `target` without guessing.
 
-The full key reference is on the [CLI driver page](/pymcu/driver/#configuration).
+The full key reference is on the [CLI driver page](/driver/#configuration).
 
 ## Delays and baud rates are wildly wrong
 
@@ -203,7 +203,7 @@ the `.hex` file's data bytes are the real number that gets programmed.
 
 ## Related
 
-- [CLI driver](/pymcu/driver/) - every command and every `pyproject.toml` key
-- [Limitations](/pymcu/limitations/) - what the language and the HAL do not do yet
-- [Targets](/pymcu/targets/) - per-architecture support
-- [Language reference](/pymcu/language-reference/)
+- [CLI driver](/driver/) - every command and every `pyproject.toml` key
+- [Limitations](/limitations/) - what the language and the HAL do not do yet
+- [Targets](/targets/) - per-architecture support
+- [Language reference](/language-reference/)

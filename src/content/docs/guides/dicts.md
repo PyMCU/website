@@ -221,7 +221,7 @@ before you build something on top:
 | Non-integer keys in a `FixedDict` | String keys work only in closed literals, on constant lookups |
 | Dict/set comprehensions | Build the literal explicitly |
 
-See [Limitations](/pymcu/limitations/) and the [Roadmap](/pymcu/roadmap/).
+See [Limitations](/limitations/) and the [Roadmap](/roadmap/).
 
 ## Where this is tested
 
@@ -238,6 +238,6 @@ one.
 
 ## See also
 
-- [Exceptions](/pymcu/guides/exceptions/) — catching the `KeyError` and `ValueError` above
-- [f-strings](/pymcu/guides/f-strings/) — the `print(f"G:{g}")` formatting used here
-- [Limitations](/pymcu/limitations/)
+- [Exceptions](/guides/exceptions/) — catching the `KeyError` and `ValueError` above
+- [f-strings](/guides/f-strings/) — the `print(f"G:{g}")` formatting used here
+- [Limitations](/limitations/)
