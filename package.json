@@ -10,7 +10,7 @@
     "dev": "astro dev",
     "start": "astro dev",
     "build": "astro build",
-    "deploy": "npm run build && wrangler deploy --non-interactive",
+    "deploy": "npm run build && wrangler deploy",
     "preview": "astro preview",
     "astro": "astro",
     "check": "npm run check:astro && npm run check:eslint && npm run check:prettier",
