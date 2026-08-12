@@ -4,13 +4,12 @@
 
 🚀 **The future of Python on microcontrollers is here!** 🚀
 
-**PyMCU** is a revolutionary Python-to-C compiler designed specifically for microcontrollers. This landing page showcases PyMCU's capabilities and provides early access to the Alpha release.
+**PyMCU** is an AOT compiler that turns a statically-typed subset of Python into bare-metal machine code for microcontrollers. This landing page showcases PyMCU's capabilities — the public alpha is out now on [PyPI](https://pypi.org/project/pymcu-compiler/), with documentation at [docs.pymcu.org](https://docs.pymcu.org).
 
 ## ✨ Features
 
-- ✅ **Secure & Production-Ready** - Enterprise-grade security with rate limiting, input validation, and security headers
+- ✅ **Secure by default** - Security headers (CSP, HSTS, X-Frame-Options) on every response
 - ✅ **Modern Tech Stack** - Built with **[Astro 5.0](https://astro.build/)** + **[Tailwind CSS](https://tailwindcss.com/)**
-- ✅ **Alpha Waitlist System** - Email confirmation with **Supabase** backend and **Amazon SES**
 - ✅ **Responsive Design** - Mobile-first approach with dark mode support
 - ✅ **Performance Optimized** - Lightning-fast loading with perfect Lighthouse scores
 - ✅ **SEO Optimized** - Meta tags, Open Graph, and structured data
@@ -26,21 +25,20 @@
 - [📁 Project Structure](#-project-structure)
 - [⚡ Commands](#-commands)
 - [🔒 Security Features](#-security-features)
-- [🌐 Environment Setup](#-environment-setup)
 - [🚀 Deployment](#-deployment)
 - [🤝 Contributing](#-contributing)
 - [📄 License](#-license)
 
 ## 🚀 About PyMCU
 
-**PyMCU** is a groundbreaking Python-to-C compiler that brings the simplicity and power of Python to microcontroller development. Our mission is to democratize embedded programming by allowing developers to write Python code that compiles to efficient C code for microcontrollers.
+**PyMCU** is an Ahead-Of-Time compiler that brings the simplicity of Python to microcontroller development. It compiles a statically-typed subset of Python directly into bare-metal machine code — no interpreter, no heap, no garbage collection.
 
 ### Key Benefits:
 
 - 🐍 **Write Python, Run on MCUs** - Use familiar Python syntax for embedded development
-- ⚡ **High Performance** - Compiles to optimized C code for maximum efficiency
-- 🎯 **Multiple Architectures** - Support for ARM Cortex-M, ESP32, and more
-- 🔧 **Rich HAL Support** - GPIO, Timers, UART, SPI, I²C, and wireless connectivity
+- ⚡ **Zero Runtime Overhead** - Compiles to bare-metal machine code, deterministic by design
+- 🎯 **AVR Today, More Soon** - Focused on ATmega328P (Arduino Uno); ARM Cortex-M, ESP32 and more planned
+- 🔧 **Ready-to-use HALs** - GPIO, timers, and peripherals easy to use from day one
 - 📚 **Easy Learning Curve** - Perfect for beginners transitioning to embedded development
 
 ## 🛠️ Tech Stack
@@ -48,19 +46,15 @@
 This landing page is built with modern web technologies:
 
 - **Frontend**: [Astro 5.0](https://astro.build/) + [Tailwind CSS](https://tailwindcss.com/)
-- **Backend**: [Supabase](https://supabase.com/) (PostgreSQL + RLS)
-- **Email**: [Amazon SES](https://aws.amazon.com/ses/)
 - **Language**: TypeScript (100% type-safe)
-- **Security**: Rate limiting, input validation, security headers
-- **Deployment**: Vercel/Netlify ready
+- **Security**: Security headers on every response
+- **Deployment**: Cloudflare Workers via [Wrangler](https://developers.cloudflare.com/workers/wrangler/)
 
 ## 🔧 Getting Started
 
 ### Prerequisites
 
-- **Node.js** 18+ and npm
-- **Supabase** account for database
-- **Amazon SES** account for email sending
+- **Node.js** 20+ and npm
 - **Git** for version control
 
 ### Quick Start
@@ -78,20 +72,13 @@ This landing page is built with modern web technologies:
    npm install
    ```
 
-3. **Set up environment variables**
-
-   ```bash
-   cp .env.example .env
-   # Edit .env with your Supabase and AWS SES credentials
-   ```
-
-4. **Run the development server**
+3. **Run the development server**
 
    ```bash
    npm run dev
    ```
 
-5. **Open your browser**
+4. **Open your browser**
    Navigate to `http://localhost:4321`
 
 ## 📁 Project Structure
@@ -110,38 +97,28 @@ pymcu-landing/
 │   │   ├── widgets/         # Complex components
 │   │   │   ├── Header.astro
 │   │   │   ├── Footer.astro
-│   │   │   ├── Waitlist.astro
 │   │   │   └── ...
 │   │   └── Logo.astro
 │   ├── layouts/             # Page layouts
 │   │   └── PageLayout.astro
-│   ├── pages/               # Routes and API endpoints
-│   │   ├── api/            # Backend API routes
-│   │   │   ├── waitlist.ts # Waitlist registration
-│   │   │   ├── confirm.ts  # Email confirmation
-│   │   │   └── unsubscribe.ts
+│   ├── pages/               # Routes
 │   │   ├── index.astro     # Homepage
-│   │   ├── confirm.astro   # Confirmation page
-│   │   └── unsubscribe.astro
-│   ├── types/              # TypeScript type definitions
-│   │   └── api.ts          # API response types
+│   │   └── ...
 │   ├── utils/              # Utility functions
-│   │   ├── rate-limiter.ts # Rate limiting logic
 │   │   └── security-headers.ts # Security headers
 │   ├── config.yaml         # Site configuration
 │   └── navigation.ts       # Navigation structure
-├── .env.example            # Environment variables template
 ├── package.json
 ├── astro.config.ts
+├── wrangler.jsonc          # Cloudflare Workers config
 └── README.md
 ```
 
 ### Key Directories:
 
-- **`src/pages/api/`** - Backend API endpoints for waitlist functionality
 - **`src/components/widgets/`** - PyMCU-specific UI components
 - **`src/utils/`** - Security and utility functions
-- **`src/types/`** - TypeScript type definitions for type safety
+- **`src/content/`** - Blog posts and site content
 
 <br>
 
@@ -161,21 +138,6 @@ All commands are run from the root of the project:
 
 ## 🔒 Security Features
 
-This project implements enterprise-grade security measures:
-
-### 🛡️ Rate Limiting
-
-- **IP-based rate limiting** on all API endpoints
-- **Configurable limits** per endpoint (waitlist: 5/min, confirm: 10/min, unsubscribe: 3/min)
-- **In-memory storage** with automatic cleanup
-
-### 🔐 Input Validation & Sanitization
-
-- **Email validation** with regex patterns
-- **Role and experience validation** against whitelists
-- **Token sanitization** for confirmation links
-- **XSS prevention** through input sanitization
-
 ### 🛡️ Security Headers
 
 - **Content Security Policy (CSP)** - Prevents XSS attacks
@@ -185,79 +147,15 @@ This project implements enterprise-grade security measures:
 - **HSTS** - Enforces HTTPS connections
 - **CORS** - Controlled cross-origin requests
 
-### 📝 Secure Logging
-
-- **Conditional logging** - Detailed errors only in development
-- **No sensitive data exposure** in production logs
-- **Generic error messages** for users
-
-## 🌐 Environment Setup
-
-Create a `.env` file in the root directory with the following variables:
-
-```bash
-# Supabase Configuration
-SUPABASE_URL=your_supabase_project_url
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-
-# Amazon SES Configuration
-AWS_ACCESS_KEY_ID=your_aws_access_key
-AWS_SECRET_ACCESS_KEY=your_aws_secret_key
-AWS_REGION=us-east-1
-SES_FROM_EMAIL=noreply@yourdomain.com
-
-# Site Configuration
-SITE=https://yourdomain.com
-```
-
-### Database Setup (Supabase)
-
-1. **Create a new Supabase project**
-2. **Run the SQL schema** (see `supabase-schema.sql`)
-3. **Set up Row Level Security** policies
-4. **Configure email templates** for confirmations
-
 ## 🚀 Deployment
 
-### Manual Deployment
+The site deploys to **Cloudflare Workers** with a single command:
 
-1. **Build the project**
+```bash
+npm run deploy
+```
 
-   ```bash
-   npm run build
-   ```
-
-2. **Deploy the `dist/` folder** to your hosting provider
-
-### Vercel Deployment (Recommended)
-
-1. **Connect your GitHub repository** to Vercel
-2. **Set environment variables** in Vercel dashboard
-3. **Deploy automatically** on every push to main branch
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new)
-
-### Netlify Deployment
-
-1. **Connect your GitHub repository** to Netlify
-2. **Configure build settings**:
-   - Build command: `npm run build`
-   - Publish directory: `dist`
-3. **Set environment variables** in Netlify dashboard
-
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start)
-
-### Environment Variables for Production
-
-Make sure to set these environment variables in your hosting platform:
-
-- `SUPABASE_URL`
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `AWS_ACCESS_KEY_ID`
-- `AWS_SECRET_ACCESS_KEY`
-- `AWS_REGION`
-- `SES_FROM_EMAIL`
-- `SITE`
+This builds the site and publishes it via [Wrangler](https://developers.cloudflare.com/workers/wrangler/) (see `wrangler.jsonc`). You need to be authenticated with `wrangler login` first.
 
 ## 🤝 Contributing
 
@@ -311,7 +209,6 @@ This project is licensed under the **MIT License** - see the [LICENSE.md](./LICE
 
 - **PyMCU Team** - For the vision of Python on microcontrollers
 - **Astro Team** - For the amazing web framework
-- **Supabase** - For the backend-as-a-service platform
 - **Tailwind CSS** - For the utility-first CSS framework
 
 ---
@@ -320,6 +217,6 @@ This project is licensed under the **MIT License** - see the [LICENSE.md](./LICE
 
 **Built with ❤️ for the PyMCU community**
 
-[🐍 Join the Alpha Waitlist](https://pymcu.com) • [📧 Contact Us](mailto:hello@pymcu.com) • [🐦 Follow Updates](https://twitter.com/pymcu)
+[🐍 Get the Alpha on PyPI](https://pypi.org/project/pymcu-compiler/) • [📚 Docs](https://docs.pymcu.org) • [💻 GitHub](https://github.com/PyMCU/PyMCU)
 
 </div>

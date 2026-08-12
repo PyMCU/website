@@ -23,7 +23,7 @@ const metadata = {
   <!-- Hero Widget ******************* -->
 
   <Hero
-    tagline="Public Alpha — launching soon"
+    tagline="Public Alpha 4 — out now on PyPI"
     actions={[
       {
         variant: 'primary',
@@ -46,20 +46,14 @@ const metadata = {
 
     <Fragment slot="subtitle">
       <span class="font-semibold">Python</span>, compiled to <span class="font-semibold">bare-metal machine code</span>.
-      No interpreter, no heap, no garbage collection — deterministic by design, and small enough for a
-      $2 Arduino. <span class="font-semibold">AVR</span> today, more architectures soon.
+      No interpreter, no heap, no garbage collection — deterministic by design, and small enough for a $2 Arduino. <span
+        class="font-semibold">AVR</span
+      > today, more architectures soon.
     </Fragment>
 
     <Fragment slot="image">
       <div class="relative flex justify-center m-auto max-w-5xl">
-        <img
-          src="/images/pymcu-logo.png"
-          width="512"
-          height="512"
-          alt="PyMCU Logo"
-          loading="eager"
-          decoding="async"
-        />
+        <img src="/images/pymcu-logo.png" width="512" height="512" alt="PyMCU Logo" loading="eager" decoding="async" />
       </div>
     </Fragment>
   </Hero>
@@ -159,29 +153,29 @@ const metadata = {
 
   <Steps
     id="steps"
-    title="Get your first firmware running soon with PyMCU."
+    title="Get your first firmware running with PyMCU."
     items={[
       {
         title: 'Step 1: <span class="font-medium">Install the compiler</span>',
         description:
-          'The public alpha launches this week. Install it with a single command: <code class="bg-gray-100 dark:bg-gray-800 px-1 rounded">pipx install pymcu-compiler</code>.',
+          'Install it with a single command: <code class="bg-gray-100 dark:bg-gray-800 px-1 rounded">pipx install pymcu-compiler</code>. The public alpha is live on PyPI.',
         icon: 'tabler:package',
       },
       {
-        title: 'Step 2: <span class="font-medium">Prepare your code</span>',
+        title: 'Step 2: <span class="font-medium">Write your code</span>',
         description:
-          'Get ready to write firmware in a statically-typed subset of Python. Familiar, clean, and built to compile directly to bare-metal machine code.',
+          'Write firmware in a statically-typed subset of Python. Familiar, clean, and compiled directly to bare-metal machine code. Check the <a href="https://docs.pymcu.org" target="_blank" class="underline">documentation</a> to get started.',
         icon: 'tabler:brand-python',
       },
       {
         title: 'Step 3: <span class="font-medium">Flash & test</span>',
         description:
-          'When released, you will be able to flash generated binaries to your Arduino Uno and enjoy zero runtime overhead and deterministic timing.',
+          'Flash the generated binary to your Arduino Uno and enjoy zero runtime overhead and deterministic timing.',
         icon: 'tabler:usb',
       },
       {
-        title: 'Coming Soon!',
-        icon: 'tabler:clock',
+        title: 'Ready!',
+        icon: 'tabler:check',
       },
     ]}
     image={{
@@ -235,7 +229,7 @@ const metadata = {
       {
         title: 'Is PyMCU production-ready?',
         description:
-          'PyMCU is currently in Alpha and is being prepared for its first release. Active development is focused on the AVR architecture (Arduino Uno). We will soon be opening access for makers and developers to try it out and provide feedback.',
+          'Not yet — PyMCU is in public alpha (currently Alpha 4, available on PyPI). Active development is focused on the AVR architecture (Arduino Uno). Makers and developers are welcome to try it out and share feedback.',
       },
       {
         title: 'How is PyMCU being built?',
