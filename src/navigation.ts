@@ -24,8 +24,14 @@ export const headerData = {
     },
   ],
   actions: [
-    { variant: 'tertiary', text: 'Sponsor', href: 'https://github.com/sponsors/begeistert', target: '_blank', icon: 'tabler:heart' },
-    { variant: 'primary', text: 'Get Started', href: 'https://github.com/PyMCU/PyMCU', target: '_blank' },
+    {
+      variant: 'tertiary' as const,
+      text: 'Sponsor',
+      href: 'https://github.com/sponsors/begeistert',
+      target: '_blank',
+      icon: 'tabler:heart',
+    },
+    { variant: 'primary' as const, text: 'Get Started', href: 'https://github.com/PyMCU/PyMCU', target: '_blank' },
   ],
 };
 
