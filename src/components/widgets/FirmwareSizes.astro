@@ -5,13 +5,14 @@ interface Props {
 const { id } = Astro.props;
 
 // The same blink, built three ways for an Arduino Uno. TOTAL flash (interrupt
-// vector table + startup stub included), so the comparison is apples-to-apples.
-// Figures come from the PyMCU README benchmark table. Smaller is better, so the
-// winner (PyMCU) is the shortest bar — astral.sh-style.
+// vector table + startup stub included), so the comparison is apples-to-apples:
+// every variant toggles PB5 and waits 500 ms. PyMCU and C are measured with the
+// same toolchain PyMCU ships (avr-gcc 7.3.0, -Os, F_CPU=16 MHz). Smaller is
+// better, so the winner (PyMCU) is the shortest bar — astral.sh-style.
 const max = 1024;
 const bars = [
-  { name: 'PyMCU', sub: 'native HAL / MicroPython', bytes: 162, label: '162 B', win: true },
-  { name: 'C', sub: 'avr-gcc -Os', bytes: 176, label: '176 B', win: false },
+  { name: 'PyMCU', sub: 'native HAL / MicroPython', bytes: 142, label: '142 B', win: true },
+  { name: 'C', sub: 'avr-gcc -Os', bytes: 162, label: '162 B', win: false },
   { name: 'Arduino', sub: 'IDE defaults', bytes: 1024, label: '~1,024 B', win: false },
 ];
 ---
@@ -55,12 +56,12 @@ const bars = [
     </ul>
 
     <p class="mt-9 border-t border-white/10 pt-6 text-xs text-gray-500">
-      Why 162 bytes? Most of it is the interrupt-vector table and startup stub that <em>every</em> AVR program
+      Why 142 bytes? 104 of them are the interrupt-vector table and startup stub that <em>every</em> AVR program
       carries — C included — so on that front PyMCU and hand-written C are essentially the same. The blink
-      logic itself is only a handful of instructions. Arduino's extra bytes aren't waste either; they're the
-      core's conveniences (<code>millis()</code>, preconfigured timers, one sketch for every board). PyMCU just
-      includes only what your program uses, which is why the same blink ends up roughly
-      <span class="font-semibold text-gray-300">6× lighter</span>.
+      logic itself is <span class="font-semibold text-gray-300">38 bytes</span> of code. Arduino's extra bytes
+      aren't waste either; they're the core's conveniences (<code>millis()</code>, preconfigured timers, one
+      sketch for every board). PyMCU just includes only what your program uses, which is why the same blink
+      ends up roughly <span class="font-semibold text-gray-300">7× lighter</span>.
     </p>
   </div>
 

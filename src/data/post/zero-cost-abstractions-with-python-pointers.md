@@ -141,7 +141,7 @@ Flash:  142 bytes   (vector table + startup included)
 SRAM:   0 bytes     (data = 0, bss = 0)
 ```
 
-(`pymcu build` prints `36 bytes` for this program — it reports your code *minus* the interrupt-vector table, which is fixed overhead every AVR toolchain emits. The 142 bytes above is the complete `.hex`.) That puts it right next to hand-written C — `avr-gcc -Os` produces 176 bytes for the same blink — and a fraction of Arduino's ~1 KB. Except you wrote `led.toggle()`.
+(`pymcu build` prints `38 bytes` for this program — it reports your code *minus* the interrupt-vector table, which is fixed overhead every AVR toolchain emits. The 142 bytes above is the complete `.hex`.) That puts it right next to hand-written C — `avr-gcc -Os` produces 162 bytes for the same blink — and a fraction of Arduino's ~1 KB. Except you wrote `led.toggle()`.
 
 ---
 

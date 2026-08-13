@@ -125,7 +125,7 @@ def main():
         delay_ms(500)
 ```
 
-A full blink program compiled this way is about 142 bytes of flash — vector table and startup stub included — and 0 bytes of SRAM. That sits right next to the 176 bytes `avr-gcc -Os` produces for the same blink: PyMCU emits essentially the C compiler's own output. MicroPython, by contrast, needs hundreds of kilobytes before your code even starts.
+A full blink program compiled this way is about 142 bytes of flash — vector table and startup stub included — and 0 bytes of SRAM. That sits right next to the 162 bytes `avr-gcc -Os` produces for the same blink: PyMCU emits essentially the C compiler's own output. MicroPython, by contrast, needs hundreds of kilobytes before your code even starts.
 
 **Hardware interrupt handlers.** The `@interrupt` decorator maps a Python function directly onto an AVR interrupt vector. The compiler generates the correct ISR prologue and epilogue — saving and restoring registers, clearing the interrupt flag — all from Python syntax.
 
