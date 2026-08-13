@@ -23,7 +23,7 @@ const metadata = {
   <!-- Hero Widget ******************* -->
 
   <Hero
-    tagline="Public Alpha 4 — out now on PyPI"
+    tagline="Public Alpha 5 — out now on PyPI"
     actions={[
       {
         variant: 'primary',
@@ -158,7 +158,7 @@ const metadata = {
       {
         title: 'Step 1: <span class="font-medium">Install the compiler</span>',
         description:
-          'Install it with a single command: <code class="bg-gray-100 dark:bg-gray-800 px-1 rounded">pipx install pymcu-compiler</code>. The public alpha is live on PyPI.',
+          'Install it with a single command: <code class="bg-gray-100 dark:bg-gray-800 px-1 rounded">pipx install --pip-args="--pre" "pymcu-compiler[avr]"</code>. The <code class="bg-gray-100 dark:bg-gray-800 px-1 rounded">[avr]</code> extra brings the whole AVR toolchain with it.',
         icon: 'tabler:package',
       },
       {
@@ -229,7 +229,7 @@ const metadata = {
       {
         title: 'Is PyMCU production-ready?',
         description:
-          'Not yet — PyMCU is in public alpha (currently Alpha 4, available on PyPI). Active development is focused on the AVR architecture (Arduino Uno). Makers and developers are welcome to try it out and share feedback.',
+          'Not yet — PyMCU is in public alpha (currently Alpha 5, available on PyPI). Active development is focused on the AVR architecture (Arduino Uno). Makers and developers are welcome to try it out and share feedback.',
       },
       {
         title: 'How is PyMCU being built?',
