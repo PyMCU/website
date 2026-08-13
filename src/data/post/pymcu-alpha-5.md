@@ -47,9 +47,9 @@ Toolchains and programmers are fetched at first use, and that path got serious:
 - `pymcu new` scaffolds MicroPython and CircuitPython projects with a **top-level script**,
   the way those ecosystems actually write code.
 - `pymcu new` no longer dies on machines **without a console or without git** installed.
-- The **flash metric is honest**: `pymcu build` reports 38 bytes for the blink, counting
-  the `__bad_interrupt` stub as the code it is rather than folding it into the vector
-  table. The complete `.hex` is still 142 bytes.
+- The **flash metric is honest**: `pymcu build` reports 38 bytes for the blink — everything
+  from `main` onward, once the 104-byte interrupt-vector table is deducted. The complete
+  `.hex` is still 142 bytes.
 
 ## Walked, not assumed
 

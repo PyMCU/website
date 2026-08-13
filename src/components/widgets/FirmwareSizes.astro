@@ -56,9 +56,10 @@ const bars = [
     </ul>
 
     <p class="mt-9 border-t border-white/10 pt-6 text-xs text-gray-500">
-      Why 142 bytes? 104 of them are the interrupt-vector table and startup stub that <em>every</em> AVR program
-      carries — C included — so on that front PyMCU and hand-written C are essentially the same. The blink
-      logic itself is <span class="font-semibold text-gray-300">38 bytes</span> of code. Arduino's extra bytes
+      Why 142 bytes? 104 of them are the interrupt-vector table that <em>every</em> AVR program carries — C
+      included — so on that front PyMCU and hand-written C are essentially the same. What's actually yours is
+      the remaining <span class="font-semibold text-gray-300">38 bytes</span>: the startup stub and the blink
+      loop. Arduino's extra bytes
       aren't waste either; they're the core's conveniences (<code>millis()</code>, preconfigured timers, one
       sketch for every board). PyMCU just includes only what your program uses, which is why the same blink
       ends up roughly <span class="font-semibold text-gray-300">7× lighter</span>.
