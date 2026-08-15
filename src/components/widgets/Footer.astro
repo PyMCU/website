@@ -16,7 +16,9 @@ interface Links {
 }
 
 export interface Props {
-  links: Array<Links>;
+  // The compact layout below renders the secondary and social rows only; the
+  // column grid this type once described is gone.
+  links?: Array<Links>;
   secondaryLinks: Array<Link>;
   socialLinks: Array<Link>;
   footNote?: string;
