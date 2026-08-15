@@ -1,0 +1,123 @@
+---
+import { Icon } from 'astro-icon/components';
+import { PLAYGROUND_URL } from '~/navigation';
+
+interface Props {
+  id?: string;
+}
+const { id = 'playground' } = Astro.props;
+
+// The blink from the chart above, trimmed to the lines that matter. This is the
+// single source of truth for the snippet: it is both what the card shows and
+// what the "Run this blink" link carries into the playground.
+const source = `from machine import Pin
+import time
+
+led = Pin(13, Pin.OUT)
+
+while True:
+    led.toggle()
+    time.sleep_ms(500)
+`;
+
+// The playground reads the program from the URL fragment: b=board, a=API,
+// s=sample, c=<encoding><payload>, where 'r' means raw (uncompressed) bytes in
+// base64url. No compression here — the snippet is short and this keeps the link
+// buildable without a runtime dependency.
+const toBase64Url = (text: string) => {
+  const bytes = new TextEncoder().encode(text);
+  let binary = '';
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+};
+const runUrl = `${PLAYGROUND_URL}/#b=arduino_uno&a=micropython&s=blink&c=r${toBase64Url(source)}`;
+
+// Same token colours the playground editor uses, so the card and the page it
+// opens read as one product.
+const highlighted = source
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/\b(\d+)\b/g, '<span class="text-[#e5c06a]">$1</span>')
+  .replace(/\b(from|import|while|True)\b/g, '<span class="text-[#efae70]">$1</span>');
+
+const steps = [
+  {
+    icon: 'tabler:cpu',
+    title: 'The real compiler, in your tab',
+    text: 'pymcuc itself, compiled to WebAssembly, with the AVR assembler and linker behind it. Same pipeline as your laptop, same bytes out.',
+  },
+  {
+    icon: 'tabler:code',
+    title: 'See the assembly it emits',
+    text: 'Every build shows the generated instructions and exactly how much flash the firmware takes on the chip.',
+  },
+  {
+    icon: 'tabler:bulb',
+    title: 'Watch the firmware run',
+    text: 'The result is executed on an emulated Arduino Uno or Raspberry Pi Pico — LED, pins and UART included.',
+  },
+];
+---
+
+<section {id} class="py-12 sm:py-16 lg:py-20 mx-auto max-w-5xl px-6">
+  <div class="mb-8 text-center">
+    <p class="text-base font-semibold uppercase tracking-widest text-accent mb-2">Playground</p>
+    <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
+      Don't take our word for it. Compile it.
+    </h2>
+    <p class="mt-3 text-gray-500 dark:text-gray-400 max-w-2xl mx-auto text-sm">
+      The whole toolchain runs inside your browser — nothing to install, no account, and your code never leaves the tab.
+      Write Python, read the assembly it turns into, and watch the firmware blink on an emulated board.
+    </p>
+  </div>
+
+  <div class="rounded-2xl bg-gray-900 dark:bg-gray-950 ring-1 ring-white/10 shadow-xl p-6 sm:p-10">
+    <div class="grid gap-8 lg:grid-cols-2 lg:gap-10">
+      <div>
+        <div class="flex items-baseline justify-between mb-3">
+          <span class="font-mono text-xs text-gray-400">blink.py</span>
+          <span class="text-[11px] uppercase tracking-widest text-gray-500">Arduino Uno · MicroPython API</span>
+        </div>
+        <pre
+          class="overflow-x-auto rounded-xl bg-black/40 ring-1 ring-white/10 p-4 font-mono text-[13px] leading-relaxed text-[#e5ecf6]"><code set:html={highlighted} /></pre>
+        <p class="mt-3 text-xs text-gray-500">The 142-byte program from the chart above, start to finish.</p>
+      </div>
+
+      <ul class="space-y-6 self-center">
+        {
+          steps.map((step) => (
+            <li class="flex gap-4">
+              <Icon name={step.icon} class="w-6 h-6 shrink-0 text-accent" />
+              <div>
+                <p class="font-semibold text-gray-100">{step.title}</p>
+                <p class="mt-1 text-sm text-gray-400">{step.text}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <div class="mt-9 border-t border-white/10 pt-7 flex flex-col sm:flex-row sm:items-center gap-4">
+      <a
+        class="btn-primary w-full sm:w-auto py-3 px-7 text-sm font-semibold"
+        href={runUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Run this blink
+        <Icon name="tabler:player-play" class="w-5 h-5 ml-1 -mr-1.5 inline-block" />
+      </a>
+      <a
+        class="inline-flex items-center justify-center w-full sm:w-auto rounded-full border border-white/25 py-3 px-7 text-sm font-medium text-gray-200 transition duration-200 hover:bg-white/10 hover:border-white/40"
+        href={PLAYGROUND_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Open the playground
+      </a>
+      <p class="text-xs text-gray-500 sm:ml-auto">Opens with this program already loaded.</p>
+    </div>
+  </div>
+</section>

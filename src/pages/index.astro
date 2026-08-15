@@ -12,6 +12,9 @@ import Content from '~/components/widgets/Content.astro';
 import FAQs from '~/components/widgets/FAQs.astro';
 import ComparisonCharts from '~/components/widgets/ComparisonCharts.astro';
 import FirmwareSizes from '~/components/widgets/FirmwareSizes.astro';
+import Playground from '~/components/widgets/Playground.astro';
+
+import { DOCS_URL, GITHUB_URL, PLAYGROUND_URL } from '~/navigation';
 
 const metadata = {
   title: 'PyMCU — Python to MCUs. Free. Deterministic. AOT.',
@@ -27,15 +30,15 @@ const metadata = {
     actions={[
       {
         variant: 'primary',
-        text: 'Get Started',
-        href: 'https://github.com/PyMCU/PyMCU',
+        text: 'Try it in your browser',
+        href: PLAYGROUND_URL,
         target: '_blank',
-        icon: 'tabler:brand-github',
+        icon: 'tabler:player-play',
       },
       {
         variant: 'secondary',
         text: 'Browse Docs',
-        href: 'https://docs.pymcu.org',
+        href: DOCS_URL,
         target: '_blank',
       },
     ]}
@@ -51,6 +54,17 @@ const metadata = {
       > today, more architectures soon.
     </Fragment>
 
+    <Fragment slot="content">
+      <p class="mt-5 text-sm text-muted dark:text-slate-400">
+        Nothing to install: the compiler itself runs in the browser. MIT licensed — <a
+          class="underline hover:text-link"
+          href={GITHUB_URL}
+          target="_blank"
+          rel="noopener noreferrer">read the source on GitHub</a
+        >.
+      </p>
+    </Fragment>
+
     <Fragment slot="image">
       <div class="relative flex justify-center m-auto max-w-5xl">
         <img src="/images/pymcu-logo.png" width="512" height="512" alt="PyMCU Logo" loading="eager" decoding="async" />
@@ -61,6 +75,10 @@ const metadata = {
   <!-- Firmware size comparison (C / PyMCU / Arduino) — first thing under the hero -->
 
   <FirmwareSizes />
+
+  <!-- Playground: the reader can verify the numbers above without installing anything -->
+
+  <Playground id="playground" />
 
   <!-- Note Widget ******************* -->
 
