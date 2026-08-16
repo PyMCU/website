@@ -55,6 +55,8 @@ export const footerData = {
     { text: 'Playground', href: PLAYGROUND_URL },
     { text: 'Docs', href: DOCS_URL },
     { text: 'Blog', href: getPermalink('/blog') },
+    { text: 'About', href: getPermalink('/about') },
+    { text: 'Contact', href: getPermalink('/contact') },
     { text: 'Terms', href: getPermalink('/terms') },
     { text: 'Privacy Policy', href: getPermalink('/privacy') },
   ],

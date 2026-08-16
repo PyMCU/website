@@ -1,78 +1,59 @@
 ---
 import Layout from '~/layouts/PageLayout.astro';
 import HeroText from '~/components/widgets/HeroText.astro';
-import ContactUs from '~/components/widgets/Contact.astro';
 import Features2 from '~/components/widgets/Features2.astro';
 
 const metadata = {
   title: 'Contact',
+  description:
+    'How to reach the PyMCU project: report a bug, ask a question, or get in touch about using the compiler.',
 };
 ---
 
 <Layout metadata={metadata}>
-  <!-- HeroText Widget ******************* -->
-
-  <HeroText tagline="Contact" title="Let's Connect!" />
-
-  <ContactUs
-    id="form"
-    title="Drop us a message today!"
-    subtitle="For quicker answers, explore our FAQs section. You may find the solution you're looking  for right there! If not, our support team is delighted to help you."
-    inputs={[
-      {
-        type: 'text',
-        name: 'name',
-        label: 'Name',
-      },
-      {
-        type: 'email',
-        name: 'email',
-        label: 'Email',
-      },
-    ]}
-    textarea={{
-      label: 'Message',
-    }}
-    disclaimer={{
-      label:
-        'By submitting this contact form, you acknowledge and agree to the collection of your personal information.',
-    }}
-    description="Our support team typically responds within 24 business hours."
+  <HeroText
+    tagline="Contact"
+    title="Get in touch"
+    subtitle="PyMCU is a one-person open-source project, so the fastest answer is usually a public one: someone else has probably hit the same thing."
   />
 
-  <!-- Features2 Widget ************** -->
-
   <Features2
-    title="We are here to help!"
+    title="Where to write"
     items={[
       {
-        title: 'General support',
-        description: `Chat with us for inquiries related to account management, website navigation, payment issues, accessing purchased templates or general questions about the website's functionality.`,
-      },
-      {
-        title: 'Contact sales',
+        title: 'Report a bug',
         description:
-          'Chat with us for questions about purchases, customization options, licensing for commercial use, inquiries about specific template, etc.',
+          'Open an issue on GitHub. Wrong code generated, a build that fails, a chip that misbehaves: include the Python source and the target board, and the assembly listing from dist/firmware.asm if you have it.',
+        icon: 'tabler:bug',
       },
       {
-        title: 'Technical support',
+        title: 'Ask a question',
         description:
-          'Chat with us when facing issues like template installation, problems editing difficulties, compatibility issues with software or download errors, or other technical challenges related to using the templates.',
-      },
-      {
-        title: 'Phone',
-        description: '+1 (234) 567-890',
-        icon: 'tabler:headset',
+          'GitHub Discussions is the place for "how do I do X", "is Y supported yet" and design conversations. Questions asked there help the next person who searches for the same thing.',
+        icon: 'tabler:messages',
       },
       {
         title: 'Email',
-        description: 'contact@support.com',
+        description: 'contact@pymcu.org — for anything that does not belong in public: hardware, partnerships, press.',
         icon: 'tabler:mail',
       },
       {
-        title: 'Location',
-        description: '1234 Lorem Ipsum St, 12345, Miami, EEUU',
-        icon: 'tabler:map-pin',
+        title: 'Before you write',
+        description:
+          'The Limitations page lists what PyMCU deliberately does not compile, and why. A good share of questions are answered there, and it will tell you quickly whether your use case fits.',
+        icon: 'tabler:book',
+      },
+      {
+        title: 'Response time',
+        description:
+          'One person maintains this, mostly outside working hours. Issues usually get a first reply within a few days. There is no support contract, and this page will not pretend otherwise.',
+        icon: 'tabler:clock',
+      },
+      {
+        title: 'Support the project',
+        description:
+          'PyMCU is free and MIT licensed. If it saves you time, GitHub Sponsors and Ko-fi keep the hardware coming: every backend gets validated on real silicon before it ships.',
+        icon: 'tabler:heart',
       },
     ]}
   />
