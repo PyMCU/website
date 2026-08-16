@@ -4,7 +4,12 @@ site:
   base: '/'
   trailingSlash: false
 
-  googleSiteVerificationId: orcPxI47GSa-cRvY11tUe6iGg2IO_RPvnA1q95iEM3M
+  # Vacio a proposito. Aqui venia el id de verificacion de la plantilla AstroWind,
+  # que no es nuestro: una etiqueta de verificacion concede acceso a los datos de
+  # Search Console a quien posea ese id, asi que publicar el de un tercero sobre
+  # tu propio dominio no es solo inutil, es regalarle una llave. Si algun dia hace
+  # falta verificar por meta, poner AQUI el id propio de Search Console.
+  googleSiteVerificationId: ''
 
 metadata:
   title:
@@ -17,13 +22,14 @@ metadata:
   openGraph:
     site_name: PyMCU
     images:
-      - url: '~/assets/images/default.png'
+      - url: '~/assets/images/pymcu-og.png'
         width: 1200
-        height: 628
+        height: 630
     type: website
   twitter:
-    handle: '@arthelokyo'
-    site: '@arthelokyo'
+    # Sin handle: los que habia, '@arthelokyo', son del autor de la plantilla
+    # AstroWind, no de PyMCU, y atribuian cada tarjeta compartida a un tercero.
+    # Poner aqui la cuenta propia el dia que exista.
     cardType: summary_large_image
 
 i18n:

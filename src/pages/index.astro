@@ -18,6 +18,8 @@ import { DOCS_URL, GITHUB_URL, PLAYGROUND_URL } from '~/navigation';
 
 const metadata = {
   title: 'PyMCU — Python to MCUs. Free. Deterministic. AOT.',
+  description:
+    'PyMCU compiles a subset of Python ahead of time into native microcontroller assembly. No interpreter, no heap: a blink is 38 bytes of code and 0 bytes of RAM on an Arduino Uno. AVR, ARM and PIC.',
   ignoreTitleTemplate: true,
 };
 ---
@@ -280,5 +282,29 @@ const metadata = {
           'You can help shape PyMCU by following the project on GitHub, sharing feedback, and contributing code, documentation, or testing. Every contribution helps strengthen and grow the ecosystem.',
       },
     ]}
+  />
+
+  {/* Datos estructurados. Solo hechos comprobables y visibles en la pagina: nada
+      de valoraciones ni de cifras de descarga inventadas, que es justo lo que
+      Google penaliza cuando el marcado no corresponde con lo que se ve. */}
+  <script
+    type="application/ld+json"
+    set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'PyMCU',
+      applicationCategory: 'DeveloperApplication',
+      applicationSubCategory: 'Compiler',
+      operatingSystem: 'macOS, Windows, Linux',
+      softwareVersion: '0.1.0a5',
+      url: 'https://pymcu.org',
+      downloadUrl: 'https://pypi.org/project/pymcu-compiler/',
+      codeRepository: 'https://github.com/PyMCU/PyMCU',
+      license: 'https://opensource.org/licenses/MIT',
+      description:
+        'An ahead-of-time compiler that translates a subset of Python into native microcontroller assembly, with no interpreter and no heap. Targets AVR, ARM (RP2040 / RP2350) and 8-bit PIC.',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+      author: { '@type': 'Person', name: 'Iván Montiel Cardona' },
+    })}
   />
 </Layout>
