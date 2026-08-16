@@ -3,7 +3,7 @@ publishDate: 2026-05-09T00:00:00Z
 author: PyMCU Team
 title: "Reading a DHT11 with PyMCU: Same Python, No Interpreter"
 excerpt: The DHT11 speaks a timing-sensitive 1-wire protocol. MicroPython handles it with a C function compiled into the firmware — the natural choice for an on-chip interpreter. PyMCU makes a different trade-off — it compiles the same MicroPython-style code to native AVR instructions, so the whole driver (timing and all) stays in your project as readable Python.
-image: https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80
+image: ~/assets/images/post-reading-a-dht11-with-pymcu.png
 category: Deep Dive
 tags:
   - dht11

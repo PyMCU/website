@@ -3,7 +3,7 @@ publishDate: 2026-06-02T00:00:00Z
 author: PyMCU Team
 title: "Zero-Cost Abstractions: A Python Class That Compiles to One Instruction"
 excerpt: On a chip with 2 KB of RAM you cannot afford a "Pin object." PyMCU's answer is the zero-cost abstraction — an @inline class built on the ptr[T] primitive that has no struct, no method call, and no runtime. led.toggle() compiles to a single AVR instruction. Here is exactly how, with the disassembly to prove it.
-image: https://images.unsplash.com/photo-1518770660439-4636190af475?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80
+image: ~/assets/images/post-zero-cost-abstractions-with-python-pointers.png
 category: Deep Dive
 tags:
   - zca

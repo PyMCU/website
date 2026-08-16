@@ -3,7 +3,7 @@ publishDate: 2026-08-13T00:00:00Z
 author: PyMCU Team
 title: 'PyMCU Alpha 5: Install It Anywhere, Trust What It Downloads'
 excerpt: Alpha 5 is the release that makes the first five minutes work. macOS wheels install again, every toolchain download is checked against a SHA-256 and matched to your actual architecture, and the whole tutorial was walked end to end on Ubuntu ARM64, Windows 11 ARM64 and macOS — flashing real boards, not emulators.
-image: https://images.unsplash.com/photo-1518770660439-4636190af475?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80
+image: ~/assets/images/post-pymcu-alpha-5.png
 category: Release
 tags:
   - release

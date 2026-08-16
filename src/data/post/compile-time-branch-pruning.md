@@ -3,7 +3,7 @@ publishDate: 2026-06-04T00:00:00Z
 author: PyMCU Team
 title: "Branch Pruning: How a 30-Way match Compiles to Nothing"
 excerpt: PyMCU's HAL is full of sprawling match and if statements — one Pin class that knows every pin on every supported chip. Yet a blink compiles to 142 bytes and a pin toggle to a single instruction. So where did the thirty branches go? They were pruned at compile time, and never shipped.
-image: https://images.unsplash.com/photo-1505672678657-cc7037095e60?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80
+image: ~/assets/images/post-compile-time-branch-pruning.png
 category: Deep Dive
 tags:
   - branch-pruning

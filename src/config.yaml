@@ -4,11 +4,11 @@ site:
   base: '/'
   trailingSlash: false
 
-  # Vacio a proposito. Aqui venia el id de verificacion de la plantilla AstroWind,
-  # que no es nuestro: una etiqueta de verificacion concede acceso a los datos de
-  # Search Console a quien posea ese id, asi que publicar el de un tercero sobre
-  # tu propio dominio no es solo inutil, es regalarle una llave. Si algun dia hace
-  # falta verificar por meta, poner AQUI el id propio de Search Console.
+  # Vacio A PROPOSITO: el dominio esta verificado en Search Console por DNS, que
+  # cubre todo el dominio y sobrevive a cualquier cambio de plantilla. NO reponer
+  # una etiqueta aqui: la que traia AstroWind era el id de un tercero, y una
+  # etiqueta de verificacion concede acceso a los datos de Search Console a quien
+  # posea ese id.
   googleSiteVerificationId: ''
 
 metadata:
@@ -27,9 +27,10 @@ metadata:
         height: 630
     type: website
   twitter:
-    # Sin handle: los que habia, '@arthelokyo', son del autor de la plantilla
-    # AstroWind, no de PyMCU, y atribuian cada tarjeta compartida a un tercero.
-    # Poner aqui la cuenta propia el dia que exista.
+    # Cuenta propia. Los valores que traia la plantilla, '@arthelokyo', eran del
+    # autor de AstroWind y atribuian a un tercero cada tarjeta compartida.
+    handle: '@begeistert_'
+    site: '@begeistert_'
     cardType: summary_large_image
 
 i18n:
