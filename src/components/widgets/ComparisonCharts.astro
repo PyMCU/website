@@ -10,36 +10,49 @@ const { id } = Astro.props;
 <section {id} class="py-12 sm:py-16 lg:py-20 mx-auto max-w-5xl px-6">
   <div class="mb-10 text-center">
     <p class="text-base font-semibold uppercase tracking-widest text-accent mb-2">The same blink, two worlds</p>
-    <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">One blink program. 142 bytes — or a whole interpreter.</h2>
+    <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
+      One blink program. 142 bytes — or a whole interpreter.
+    </h2>
     <p class="mt-3 text-gray-500 dark:text-gray-400 max-w-2xl mx-auto text-sm">
-      The identical program — blink an LED every 500&nbsp;ms — compiled by PyMCU versus run on
-      MicroPython's <span class="font-semibold">fastest port</span>. PyMCU's figures are total flash
-      (vector table included), measured on the firmware the compiler emits.
+      The identical program — blink an LED every 500&nbsp;ms — compiled by PyMCU versus run on MicroPython's <span
+        class="font-semibold">fastest port</span
+      >. PyMCU's figures are total flash (vector table included), measured on the firmware the compiler emits.
     </p>
   </div>
 
   <!-- Headline contrast -->
   <div class="grid grid-cols-2 gap-4 sm:gap-6 mb-10">
-    <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 sm:p-7 text-center">
+    <div
+      class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 sm:p-7 text-center"
+    >
       <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">MicroPython</p>
-      <p class="mt-2 text-4xl sm:text-6xl font-extrabold text-gray-400 dark:text-gray-500 leading-none">~640<span class="text-2xl sm:text-3xl align-top"> KB</span></p>
-      <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">interpreter firmware on the chip<br />before a single line of your code runs</p>
+      <p class="mt-2 text-4xl sm:text-6xl font-extrabold text-gray-400 dark:text-gray-500 leading-none">
+        ~640<span class="text-2xl sm:text-3xl align-top"> KB</span>
+      </p>
+      <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+        interpreter firmware on the chip<br />before a single line of your code runs
+      </p>
     </div>
     <div class="rounded-2xl border-2 border-accent bg-accent/5 dark:bg-accent/10 p-5 sm:p-7 text-center">
       <p class="text-xs font-semibold uppercase tracking-wider text-accent">PyMCU</p>
-      <p class="mt-2 text-4xl sm:text-6xl font-extrabold text-accent leading-none">142<span class="text-2xl sm:text-3xl align-top"> B</span></p>
-      <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">the entire blink firmware<br />— interpreter included, because there isn't one</p>
+      <p class="mt-2 text-4xl sm:text-6xl font-extrabold text-accent leading-none">
+        142<span class="text-2xl sm:text-3xl align-top"> B</span>
+      </p>
+      <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+        the entire blink firmware<br />— interpreter included, because there isn't one
+      </p>
     </div>
   </div>
 
   <!-- Side by side resource usage -->
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-
     <!-- MicroPython / fastest port -->
     <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm">
       <div class="flex items-center gap-2 mb-5">
         <span class="text-sm font-semibold text-gray-700 dark:text-gray-200">MicroPython</span>
-        <span class="text-xs bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 px-2 py-0.5 rounded-full">fastest port · RP2040 @ 133 MHz</span>
+        <span class="text-xs bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 px-2 py-0.5 rounded-full"
+          >fastest port · RP2040 @ 133 MHz</span
+        >
       </div>
       <div class="space-y-5">
         <div>
@@ -74,8 +87,8 @@ const { id } = Astro.props;
         </div>
       </div>
       <p class="mt-5 text-xs text-gray-400 dark:text-gray-500">
-        Even on its fastest port and with the <code>@native</code>/<code>@viper</code> emitters, the chip must still
-        carry the interpreter and a garbage-collected heap.
+        Even on its fastest port and with the <code>@native</code>/<code>@viper</code> emitters, the chip must still carry
+        the interpreter and a garbage-collected heap.
       </p>
     </div>
 
@@ -118,8 +131,8 @@ const { id } = Astro.props;
         </div>
       </div>
       <p class="mt-5 text-xs text-gray-400 dark:text-gray-500">
-        <code>led.toggle()</code> compiles to one AVR instruction. The whole program fits on a chip MicroPython
-        cannot even boot on.
+        <code>led.toggle()</code> compiles to one AVR instruction. The whole program fits on a chip MicroPython cannot even
+        boot on.
       </p>
     </div>
   </div>
@@ -145,19 +158,27 @@ const { id } = Astro.props;
   </div>
 
   <!-- See it in action callout -->
-  <div class="rounded-2xl border border-accent/30 bg-accent/5 dark:bg-accent/10 p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+  <div
+    class="rounded-2xl border border-accent/30 bg-accent/5 dark:bg-accent/10 p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4"
+  >
     <div class="flex-1">
       <p class="text-sm font-semibold text-gray-900 dark:text-white">Go deeper than blink</p>
       <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-        See how <code>led.toggle()</code> becomes a single instruction, then watch a full DHT11 sensor driver
-        compile to ~1,480 bytes with zero SRAM.
+        See how <code>led.toggle()</code> becomes a single instruction, then watch a full DHT11 sensor driver compile to
+        ~1,480 bytes with zero SRAM.
       </p>
     </div>
     <div class="flex shrink-0 gap-2">
-      <a href={getPermalink('zero-cost-abstractions-with-python-pointers', 'post')} class="inline-flex items-center gap-1.5 text-xs font-semibold text-accent border border-accent/40 rounded-lg px-4 py-2 hover:bg-accent hover:text-white transition-colors">
+      <a
+        href={getPermalink('zero-cost-abstractions-with-python-pointers', 'post')}
+        class="inline-flex items-center gap-1.5 text-xs font-semibold text-accent border border-accent/40 rounded-lg px-4 py-2 hover:bg-accent hover:text-white transition-colors"
+      >
         Zero-cost abstractions →
       </a>
-      <a href={getPermalink('reading-a-dht11-with-pymcu', 'post')} class="inline-flex items-center gap-1.5 text-xs font-semibold text-accent border border-accent/40 rounded-lg px-4 py-2 hover:bg-accent hover:text-white transition-colors">
+      <a
+        href={getPermalink('reading-a-dht11-with-pymcu', 'post')}
+        class="inline-flex items-center gap-1.5 text-xs font-semibold text-accent border border-accent/40 rounded-lg px-4 py-2 hover:bg-accent hover:text-white transition-colors"
+      >
         DHT11 deep-dive →
       </a>
     </div>

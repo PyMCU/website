@@ -1,7 +1,7 @@
 ---
 publishDate: 2026-05-09T00:00:00Z
 author: PyMCU Team
-title: "Reading a DHT11 with PyMCU: Same Python, No Interpreter"
+title: 'Reading a DHT11 with PyMCU: Same Python, No Interpreter'
 excerpt: The DHT11 speaks a timing-sensitive 1-wire protocol. MicroPython handles it with a C function compiled into the firmware — the natural choice for an on-chip interpreter. PyMCU makes a different trade-off — it compiles the same MicroPython-style code to native AVR instructions, so the whole driver (timing and all) stays in your project as readable Python.
 image: ~/assets/images/post-reading-a-dht11-with-pymcu.png
 category: Deep Dive
@@ -62,7 +62,7 @@ Inside `dht_readinto`, the C code sends the 18 ms start pulse, then calls `mp_ha
 
 The `bytearray(5)` buffer is allocated once in `__init__`, not inside `measure()` — a deliberate design choice to avoid triggering the garbage collector during or between measurements.
 
-This is well-engineered, and the design makes perfect sense for what MicroPython *is*. MicroPython runs a full, dynamic Python on the chip: an interpreter, a garbage collector, dynamic typing, runtime imports. That dynamism is the whole point — it's what makes the REPL, live code, and the "just works" experience possible. But interpreting bytecode is far too slow to time a 26-vs-70 µs pulse, so the timing-critical core is dropped into C and compiled into the firmware. The C function and the large runtime aren't shortcomings; they're the natural cost of supporting full dynamic Python on a microcontroller.
+This is well-engineered, and the design makes perfect sense for what MicroPython _is_. MicroPython runs a full, dynamic Python on the chip: an interpreter, a garbage collector, dynamic typing, runtime imports. That dynamism is the whole point — it's what makes the REPL, live code, and the "just works" experience possible. But interpreting bytecode is far too slow to time a 26-vs-70 µs pulse, so the timing-critical core is dropped into C and compiled into the firmware. The C function and the large runtime aren't shortcomings; they're the natural cost of supporting full dynamic Python on a microcontroller.
 
 That cost simply shows up as two practical facts. The interpreter needs room — hundreds of kilobytes — so MicroPython targets chips like the RP2040, ESP32, or STM32, and there is no AVR port (an ATmega328P's 32 KB couldn't hold the runtime). And the part that does the precise timing, `dht_readinto`, lives in the firmware as C rather than in your project as Python. PyMCU explores a different trade-off — giving up that on-chip dynamism in exchange for putting the whole driver, timing and all, in front of you as compiled Python.
 
@@ -161,7 +161,7 @@ class DHTBase:
         checksum: uint8 = self._read_byte()
 ```
 
-Five sequential byte reads. The `uint8` annotation is mandatory — it tells the compiler to use 8-bit registers and emit 8-bit arithmetic. Unlike the rest of the class, `_read_byte` is intentionally *not* `@inline`: it is compiled once and called five times. Inlining it would copy the bit-read loop into the firmware five times over; leaving it as a real function trades five `CALL`/`RET` pairs for a single shared copy and a smaller binary. That choice is yours to make per method — the same `@inline`-or-not decision a C programmer makes with `static inline`.
+Five sequential byte reads. The `uint8` annotation is mandatory — it tells the compiler to use 8-bit registers and emit 8-bit arithmetic. Unlike the rest of the class, `_read_byte` is intentionally _not_ `@inline`: it is compiled once and called five times. Inlining it would copy the bit-read loop into the firmware five times over; leaving it as a real function trades five `CALL`/`RET` pairs for a single shared copy and a smaller binary. That choice is yours to make per method — the same `@inline`-or-not decision a C programmer makes with `static inline`.
 
 ```python
         # 4. Checksum ──────────────────────────────────────────────────────
@@ -177,7 +177,7 @@ Five sequential byte reads. The `uint8` annotation is mandatory — it tells the
         self._temp_dec = temp_dec
 ```
 
-The checksum is the low byte of the sum of the first four data bytes. If it doesn't match, `self.failed` is set to `True` and the caller can handle it gracefully. This is a deliberate departure from MicroPython's `raise Exception("checksum error")` — but not because PyMCU can't: PyMCU *does* support `try`/`except`/`raise` via a zero-cost error ABI built on the AVR T flag (no heap, no `setjmp`/`longjmp`). For a hot loop polling a sensor every two seconds, a simple `failed` flag is the leaner idiom, and the driver author gets to make that call.
+The checksum is the low byte of the sum of the first four data bytes. If it doesn't match, `self.failed` is set to `True` and the caller can handle it gracefully. This is a deliberate departure from MicroPython's `raise Exception("checksum error")` — but not because PyMCU can't: PyMCU _does_ support `try`/`except`/`raise` via a zero-cost error ABI built on the AVR T flag (no heap, no `setjmp`/`longjmp`). For a hot loop polling a sensor every two seconds, a simple `failed` flag is the leaner idiom, and the driver author gets to make that call.
 
 ---
 
@@ -229,7 +229,7 @@ class DHT11(DHTBase):
 
 These compile to a register move. One instruction each.
 
-The same `dht.py` file also ships a `DHT22` class that inherits the identical 40-bit `measure()` from `DHTBase` and only overrides `humidity()`/`temperature()` to combine the integer and decimal bytes into a signed `float`. That reuse — one base class, two sensors — is plain single-inheritance, resolved and inlined at compile time. The DHT22 path pulls in PyMCU's soft-float routines only because *it* uses floats; the DHT11 build above never touches them, which is why it stays at 1,480 bytes.
+The same `dht.py` file also ships a `DHT22` class that inherits the identical 40-bit `measure()` from `DHTBase` and only overrides `humidity()`/`temperature()` to combine the integer and decimal bytes into a signed `float`. That reuse — one base class, two sensors — is plain single-inheritance, resolved and inlined at compile time. The DHT22 path pulls in PyMCU's soft-float routines only because _it_ uses floats; the DHT11 build above never touches them, which is why it stays at 1,480 bytes.
 
 ---
 
@@ -248,12 +248,12 @@ That is the complete `.hex`. (`pymcu build` prints `1,374 bytes` — it reports 
 
 To keep the comparison grounded, here is the same job written the way most people read a DHT11 on an Arduino — the Adafruit DHT library on an Uno — compiled with `arduino-cli`:
 
-| Build | Flash | SRAM |
-|---|---|---|
-| Arduino (Adafruit DHT library) | 5,142 B | 251 B |
+| Build                          | Flash       | SRAM    |
+| ------------------------------ | ----------- | ------- |
+| Arduino (Adafruit DHT library) | 5,142 B     | 251 B   |
 | **PyMCU (MicroPython driver)** | **1,480 B** | **0 B** |
 
-PyMCU's firmware is about **3.5× smaller** and uses **no SRAM at all**. To be fair, it isn't a perfectly even match: the Arduino sketch returns `float` humidity and temperature and pulls in the Adafruit unified-sensor layer, so some of those bytes buy convenience the integer PyMCU driver above doesn't. But it *is* the way most Arduino projects actually read a DHT11 — and the PyMCU version is smaller, leaner on RAM, and entirely readable Python you own.
+PyMCU's firmware is about **3.5× smaller** and uses **no SRAM at all**. To be fair, it isn't a perfectly even match: the Arduino sketch returns `float` humidity and temperature and pulls in the Adafruit unified-sensor layer, so some of those bytes buy convenience the integer PyMCU driver above doesn't. But it _is_ the way most Arduino projects actually read a DHT11 — and the PyMCU version is smaller, leaner on RAM, and entirely readable Python you own.
 
 ---
 
@@ -290,16 +290,16 @@ Wire the DHT11 data line to **D2** (PD2) with a 4.7 kΩ pull-up to +5 V. Open an
 
 ## Summary
 
-| | MicroPython on RP2040 | PyMCU on ATmega328P |
-|---|---|---|
-| DHT timing code | C function in firmware (`dht_readinto`) | Compiled Python in your project |
-| Where it lives | Compiled into the firmware | A `.py` file in your project |
-| To change a threshold | Rebuild MicroPython from source | Edit the `.py` and rebuild in seconds |
-| `time_pulse_us` | C loop, called at C level | Compiles to the same AVR loop |
-| IRQ handling | `mp_hal_quiet_timing_enter()` in C | No ISR overhead — no runtime |
-| Flash footprint | hundreds of KB interpreter + your code | 1,480 bytes total |
-| SRAM overhead | VM heap + GC | 0 bytes (no `.data`, no `.bss`) |
-| Chip requirement | RP2040 or better | ATmega328P (32 KB flash, 2 KB SRAM) |
+|                       | MicroPython on RP2040                   | PyMCU on ATmega328P                   |
+| --------------------- | --------------------------------------- | ------------------------------------- |
+| DHT timing code       | C function in firmware (`dht_readinto`) | Compiled Python in your project       |
+| Where it lives        | Compiled into the firmware              | A `.py` file in your project          |
+| To change a threshold | Rebuild MicroPython from source         | Edit the `.py` and rebuild in seconds |
+| `time_pulse_us`       | C loop, called at C level               | Compiles to the same AVR loop         |
+| IRQ handling          | `mp_hal_quiet_timing_enter()` in C      | No ISR overhead — no runtime          |
+| Flash footprint       | hundreds of KB interpreter + your code  | 1,480 bytes total                     |
+| SRAM overhead         | VM heap + GC                            | 0 bytes (no `.data`, no `.bss`)       |
+| Chip requirement      | RP2040 or better                        | ATmega328P (32 KB flash, 2 KB SRAM)   |
 
 MicroPython is an excellent tool, and its DHT implementation is well-engineered. Its model — full dynamic Python on the chip — is what makes it so productive, and dropping the timing core into C is exactly the right call within that model. The trade-off is simply that `sensor.measure()` runs through a C function compiled into the firmware, and it needs a chip with room for the interpreter.
 

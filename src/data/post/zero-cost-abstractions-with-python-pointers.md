@@ -1,7 +1,7 @@
 ---
 publishDate: 2026-06-02T00:00:00Z
 author: PyMCU Team
-title: "Zero-Cost Abstractions: A Python Class That Compiles to One Instruction"
+title: 'Zero-Cost Abstractions: A Python Class That Compiles to One Instruction'
 excerpt: On a chip with 2 KB of RAM you cannot afford a "Pin object." PyMCU's answer is the zero-cost abstraction — an @inline class built on the ptr[T] primitive that has no struct, no method call, and no runtime. led.toggle() compiles to a single AVR instruction. Here is exactly how, with the disassembly to prove it.
 image: ~/assets/images/post-zero-cost-abstractions-with-python-pointers.png
 category: Deep Dive
@@ -15,7 +15,7 @@ tags:
 
 Abstractions normally cost something. A `Pin` class wraps a port and a bit; calling `pin.toggle()` is a method call; the object lives somewhere in memory. On a desktop that overhead is invisible. On an ATmega328P — 32 KB of flash, **2 KB of SRAM**, no cache, no MMU — every byte of RAM and every wasted cycle is real.
 
-So embedded developers have historically faced a choice: write clean, abstracted code and pay for it, or write raw register pokes and live with the noise. PyMCU's answer is to refuse the choice. Its hardware abstraction layer is built entirely from **zero-cost abstractions (ZCAs)**: classes that read like ordinary Python but leave *nothing* behind at runtime — no struct in SRAM, no `CALL`/`RET`, no dispatch. The high-level call and the hand-written register op compile to the same machine code.
+So embedded developers have historically faced a choice: write clean, abstracted code and pay for it, or write raw register pokes and live with the noise. PyMCU's answer is to refuse the choice. Its hardware abstraction layer is built entirely from **zero-cost abstractions (ZCAs)**: classes that read like ordinary Python but leave _nothing_ behind at runtime — no struct in SRAM, no `CALL`/`RET`, no dispatch. The high-level call and the hand-written register op compile to the same machine code.
 
 This post shows how that works, starting from the one primitive everything is built on.
 
@@ -35,7 +35,7 @@ DDRB:  ptr[uint8] = ptr(0x24)   # data direction register
 PINB:  ptr[uint8] = ptr(0x23)   # input register (and toggle register — more on that later)
 ```
 
-`ptr[uint8]` is not an allocation. It's a compile-time promise that the name `PORTB` *is* the byte at address `0x25`. Bit-indexing it lowers to the AVR's single-cycle bit instructions:
+`ptr[uint8]` is not an allocation. It's a compile-time promise that the name `PORTB` _is_ the byte at address `0x25`. Bit-indexing it lowers to the AVR's single-cycle bit instructions:
 
 ```python
 DDRB[5]  = 1      # SBI 0x04, 5  — set PB5 as output
@@ -84,7 +84,7 @@ class Pin:
         self._pin[self._bit] = 1            # SBI on PINx — see below
 ```
 
-Two things make this a *zero-cost* abstraction rather than just a class:
+Two things make this a _zero-cost_ abstraction rather than just a class:
 
 1. **`@inline`** tells the compiler to expand each method body at its call site. There is no function to call — the body of `toggle()` is pasted in wherever you write `led.toggle()`.
 2. **The `self._port` / `self._bit` members are compile-time values, not SRAM.** `name` is a `str` known at compile time, so the `match` statements are resolved by the compiler — `self._port` becomes the constant address of `PORTB`, `self._bit` becomes the constant `5`. Nothing about the `Pin` object survives to runtime. There is no struct to allocate.
@@ -99,7 +99,7 @@ When you write:
 led = Pin("PB5", Pin.OUT)
 ```
 
-the compiler walks the `__init__` with `name = "PB5"` and `mode = 0` *while compiling*:
+the compiler walks the `__init__` with `name = "PB5"` and `mode = 0` _while compiling_:
 
 - The first `match` folds `self._port → PORTB (0x25)`, `self._ddr → DDRB (0x24)`, `self._pin → PINB (0x23)`.
 - The second `match` folds `self._bit → 5`.
@@ -141,7 +141,7 @@ Flash:  142 bytes   (vector table + startup included)
 SRAM:   0 bytes     (data = 0, bss = 0)
 ```
 
-(`pymcu build` prints `38 bytes` for this program — it reports your code *minus* the interrupt-vector table, which is fixed overhead every AVR toolchain emits. The 142 bytes above is the complete `.hex`.) That puts it right next to hand-written C — `avr-gcc -Os` produces 162 bytes for the same blink — and a fraction of Arduino's ~1 KB. Except you wrote `led.toggle()`.
+(`pymcu build` prints `38 bytes` for this program — it reports your code _minus_ the interrupt-vector table, which is fixed overhead every AVR toolchain emits. The 142 bytes above is the complete `.hex`.) That puts it right next to hand-written C — `avr-gcc -Os` produces 162 bytes for the same blink — and a fraction of Arduino's ~1 KB. Except you wrote `led.toggle()`.
 
 ---
 
@@ -169,24 +169,24 @@ If you've written Arduino code, you've toggled a pin like this:
 digitalWrite(13, HIGH);
 ```
 
-That one line is a big part of why a generation of people — including many of us — got into embedded at all. It is wonderfully approachable, and it is *portable*: the exact same sketch runs on an Uno, a Mega, a Leonardo, or a Nano. The reason it's portable is that `digitalWrite` figures out, **at runtime**, which port and bit pin 13 maps to — it reads pin-to-port and pin-to-bitmask tables from flash, fetches the output register, disables interrupts around the write, and turns off any PWM that might be on the pin. That work is what lets one line mean the right thing on every board.
+That one line is a big part of why a generation of people — including many of us — got into embedded at all. It is wonderfully approachable, and it is _portable_: the exact same sketch runs on an Uno, a Mega, a Leonardo, or a Nano. The reason it's portable is that `digitalWrite` figures out, **at runtime**, which port and bit pin 13 maps to — it reads pin-to-port and pin-to-bitmask tables from flash, fetches the output register, disables interrupts around the write, and turns off any PWM that might be on the pin. That work is what lets one line mean the right thing on every board.
 
 The cost of doing it every call is dozens of cycles, where a direct `PORTB |= (1 << 5)` is two. It's a deliberate trade — Arduino spends cycles to buy you portability and a gentle on-ramp, and for most projects that's exactly the right call.
 
-PyMCU doesn't take anything away from that idea; it just moves the lookup. `Pin("PB5", Pin.OUT)` does the *same* pin-to-port-and-bit resolution Arduino does — but the `match` statements run in the **compiler**, not on the chip. By the time the firmware exists, all that's left is the `sbi`:
+PyMCU doesn't take anything away from that idea; it just moves the lookup. `Pin("PB5", Pin.OUT)` does the _same_ pin-to-port-and-bit resolution Arduino does — but the `match` statements run in the **compiler**, not on the chip. By the time the firmware exists, all that's left is the `sbi`:
 
-| | Arduino `digitalWrite(13, HIGH)` | PyMCU `led.toggle()` |
-|---|---|---|
-| Pin → port/bit resolution | every call, at runtime | once, at compile time |
-| Per-call cost | dozens of cycles | one instruction (2 cycles) |
-| Readability | high | high |
-| Portability across boards | built in | recompile for the target chip |
+|                           | Arduino `digitalWrite(13, HIGH)` | PyMCU `led.toggle()`          |
+| ------------------------- | -------------------------------- | ----------------------------- |
+| Pin → port/bit resolution | every call, at runtime           | once, at compile time         |
+| Per-call cost             | dozens of cycles                 | one instruction (2 cycles)    |
+| Readability               | high                             | high                          |
+| Portability across boards | built in                         | recompile for the target chip |
 
-You keep the friendly, readable call. You just don't pay for the lookup over and over. (The same holds for footprint: the stock Arduino *Blink* sketch is around a kilobyte once the core's timers and `millis()` are set up for you — conveniences PyMCU only includes if your code actually uses them, which is how the blink here lands at 142 bytes total.)
+You keep the friendly, readable call. You just don't pay for the lookup over and over. (The same holds for footprint: the stock Arduino _Blink_ sketch is around a kilobyte once the core's timers and `millis()` are set up for you — conveniences PyMCU only includes if your code actually uses them, which is how the blink here lands at 142 bytes total.)
 
 ## Abstractions compose — still at zero cost
 
-The real payoff is that ZCAs stack. A higher-level class can *hold* a `Pin` and stay just as free:
+The real payoff is that ZCAs stack. A higher-level class can _hold_ a `Pin` and stay just as free:
 
 ```python
 class Led:

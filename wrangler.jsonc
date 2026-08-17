@@ -7,12 +7,12 @@
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
     "binding": "ASSETS",
-    "directory": "dist"
+    "directory": "dist",
   },
   "observability": {
     "logs": {
       "enabled": false,
-      "invocation_logs": true
-    }
-  }
+      "invocation_logs": true,
+    },
+  },
 }

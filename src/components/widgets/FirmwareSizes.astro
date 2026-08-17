@@ -22,9 +22,9 @@ const bars = [
     <p class="text-base font-semibold uppercase tracking-widest text-accent mb-2">Native firmware</p>
     <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">As lean as C. A fraction of Arduino.</h2>
     <p class="mt-3 text-gray-500 dark:text-gray-400 max-w-2xl mx-auto text-sm">
-      The same blink — toggle the LED, wait 500&nbsp;ms — built three ways, total flash with the vector table
-      and startup included. PyMCU emits the same native instructions a C compiler does, so it lands right
-      next to hand-written C.
+      The same blink — toggle the LED, wait 500&nbsp;ms — built three ways, total flash with the vector table and
+      startup included. PyMCU emits the same native instructions a C compiler does, so it lands right next to
+      hand-written C.
     </p>
   </div>
 
@@ -57,21 +57,24 @@ const bars = [
     </ul>
 
     <p class="mt-9 border-t border-white/10 pt-6 text-xs text-gray-500">
-      Why 142 bytes? 104 of them are the interrupt-vector table that <em>every</em> AVR program carries — C
-      included — so on that front PyMCU and hand-written C are essentially the same. What's actually yours is
-      the remaining <span class="font-semibold text-gray-300">38 bytes</span>: the startup stub and the blink
-      loop. Arduino's extra bytes
-      aren't waste either; they're the core's conveniences (<code>millis()</code>, preconfigured timers, one
-      sketch for every board). PyMCU just includes only what your program uses, which is why the same blink
-      ends up roughly <span class="font-semibold text-gray-300">7× lighter</span>.
+      Why 142 bytes? 104 of them are the interrupt-vector table that <em>every</em> AVR program carries — C included — so
+      on that front PyMCU and hand-written C are essentially the same. What's actually yours is the remaining <span
+        class="font-semibold text-gray-300">38 bytes</span
+      >: the startup stub and the blink loop. Arduino's extra bytes aren't waste either; they're the core's conveniences
+      (<code>millis()</code>, preconfigured timers, one sketch for every board). PyMCU just includes only what your
+      program uses, which is why the same blink ends up roughly <span class="font-semibold text-gray-300"
+        >7× lighter</span
+      >.
     </p>
   </div>
 
   <!-- Friendly framing: Python on MCUs is mainstream, Arduino included -->
-  <div class="mt-6 rounded-2xl border border-accent/30 bg-accent/5 dark:bg-accent/10 p-5 text-sm text-gray-600 dark:text-gray-300">
+  <div
+    class="mt-6 rounded-2xl border border-accent/30 bg-accent/5 dark:bg-accent/10 p-5 text-sm text-gray-600 dark:text-gray-300"
+  >
     Python on microcontrollers is going mainstream — Arduino itself now offers official
-    <span class="font-semibold">MicroPython</span> support. We think that direction is exactly right.
-    PyMCU shares the goal of Python-friendly embedded and takes it all the way to the bare metal:
-    the same familiar syntax, compiled to native machine code with no interpreter on the chip.
+    <span class="font-semibold">MicroPython</span> support. We think that direction is exactly right. PyMCU shares the goal
+    of Python-friendly embedded and takes it all the way to the bare metal: the same familiar syntax, compiled to native
+    machine code with no interpreter on the chip.
   </div>
 </section>

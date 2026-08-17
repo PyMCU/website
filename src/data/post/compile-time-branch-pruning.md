@@ -1,7 +1,7 @@
 ---
 publishDate: 2026-06-04T00:00:00Z
 author: PyMCU Team
-title: "Branch Pruning: How a 30-Way match Compiles to Nothing"
+title: 'Branch Pruning: How a 30-Way match Compiles to Nothing'
 excerpt: PyMCU's HAL is full of sprawling match and if statements — one Pin class that knows every pin on every supported chip. Yet a blink compiles to 142 bytes and a pin toggle to a single instruction. So where did the thirty branches go? They were pruned at compile time, and never shipped.
 image: ~/assets/images/post-compile-time-branch-pruning.png
 category: Deep Dive
@@ -33,7 +33,7 @@ class _PinRegs:
             case 'PD7':                  self._bit = 7
 ```
 
-And one level up, the HAL picks an *entire implementation* per architecture:
+And one level up, the HAL picks an _entire implementation_ per architecture:
 
 ```python
 if __CHIP__.arch == "avr":
@@ -57,7 +57,7 @@ The trick is that the values these branches switch on are **compile-time constan
 - `__CHIP__.arch` is fixed by your `pyproject.toml` (`board = "arduino_uno"` → `"avr"`).
 - The `name` passed to `Pin("PB5", Pin.OUT)` is a string literal.
 
-PyMCU's compiler runs on your PC, before any firmware exists. When it reaches a `match` or `if` whose condition it can already evaluate, it does exactly that — picks the one arm that applies, keeps it, and **discards the rest as dead code**. The arms that can't be taken aren't compiled to "skipped" instructions; they're compiled to *nothing*. They leave no comparison, no jump, no bytes.
+PyMCU's compiler runs on your PC, before any firmware exists. When it reaches a `match` or `if` whose condition it can already evaluate, it does exactly that — picks the one arm that applies, keeps it, and **discards the rest as dead code**. The arms that can't be taken aren't compiled to "skipped" instructions; they're compiled to _nothing_. They leave no comparison, no jump, no bytes.
 
 This is the same idea as C's `#ifdef` and the way an optimizer folds `if (0) { ... }` away — except there's no preprocessor and no special syntax. You write ordinary Python `match`/`if`, and because the compiler knows the value, the branch collapses.
 
@@ -89,7 +89,7 @@ No trace of the other twenty-nine arms. They were pruned. (The whole program is 
 
 ## Why write it that way at all?
 
-If only one arm survives, why not just write the one arm? Because *which* arm survives depends on the call. The same `Pin` class compiles `Pin("PB5")` to PORTB-bit-5 and `Pin("PD3")` to PORTD-bit-3 — each call site prunes to its own path. You get a single, readable abstraction that covers the whole chip, and every use pays only for the path it takes.
+If only one arm survives, why not just write the one arm? Because _which_ arm survives depends on the call. The same `Pin` class compiles `Pin("PB5")` to PORTB-bit-5 and `Pin("PD3")` to PORTD-bit-3 — each call site prunes to its own path. You get a single, readable abstraction that covers the whole chip, and every use pays only for the path it takes.
 
 It's the difference between resolving the pin **once, at compile time** and resolving it **every call, at runtime**. A runtime `digitalWrite(13, HIGH)` re-derives the port and bit on every invocation; PyMCU derives it during the build and then deletes the derivation.
 
@@ -99,7 +99,7 @@ It's the difference between resolving the pin **once, at compile time** and reso
 
 Once the compiler can prune branches on known values, a lot of things become free:
 
-- **Architecture dispatch.** One HAL, many chips. Each build keeps the arm for *your* `__CHIP__.arch` and drops the others — like compiling a cross-platform driver with every `#ifdef` already resolved.
+- **Architecture dispatch.** One HAL, many chips. Each build keeps the arm for _your_ `__CHIP__.arch` and drops the others — like compiling a cross-platform driver with every `#ifdef` already resolved.
 - **Optional features.** `if cs is not None:` for an optional chip-select pin folds away entirely when you don't pass one; the SPI driver that does and doesn't manage CS is one class.
 - **Configuration constants.** A `const[uint8]` flag used in an `if` collapses to whichever side is live, so debug toggles and capability flags cost zero bytes in the build that disables them.
 - **Lookup tables that aren't.** Mapping a board's integer pin (`Pin(13)`) to a port name is a `match` that prunes to a single assignment — the MicroPython and CircuitPython compatibility layers lean on this to turn friendly pin numbers into registers with no runtime cost.
@@ -108,6 +108,6 @@ Once the compiler can prune branches on known values, a lot of things become fre
 
 ## Dead branches don't ship
 
-Branch pruning is quiet — it's the absence of code, so there's nothing to point at in the firmware. But it's what lets PyMCU's HAL be written the way good software *should* be written: one expressive abstraction that handles every case, instead of thirty hand-specialized ones. You describe all the possibilities in plain Python; the compiler keeps the one that applies to each call and throws the rest away before it ever reaches the chip.
+Branch pruning is quiet — it's the absence of code, so there's nothing to point at in the firmware. But it's what lets PyMCU's HAL be written the way good software _should_ be written: one expressive abstraction that handles every case, instead of thirty hand-specialized ones. You describe all the possibilities in plain Python; the compiler keeps the one that applies to each call and throws the rest away before it ever reaches the chip.
 
 The branches you didn't take were never really there.
