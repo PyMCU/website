@@ -1,0 +1,23 @@
+---
+import Layout from '~/layouts/PageLayout.astro';
+import HeroText from '~/components/widgets/HeroText.astro';
+// Named HeritageCredits, not Heritage: the page file is heritage.astro and Astro
+// derives a local `Heritage` binding from it, which the import would shadow.
+import HeritageCredits from '~/components/widgets/HeritageCredits.astro';
+
+const metadata = {
+  title: 'Heritage & Credits',
+  description:
+    'The PyMCU name comes from Richard Wardlow, who built the original pyMCU board in 2012 and gave his blessing for this compiler to carry it forward. Same name, two different machines.',
+};
+---
+
+<Layout metadata={metadata}>
+  <HeroText
+    tagline="Heritage & Credits"
+    title="The name came first"
+    subtitle="PyMCU is a compiler. The original pyMCU was a board. They share a name because Richard Wardlow, who thought of it first, gave his blessing to carry it forward."
+  />
+
+  <HeritageCredits />
+</Layout>

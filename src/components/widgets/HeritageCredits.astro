@@ -1,0 +1,198 @@
+---
+import { Icon } from 'astro-icon/components';
+import { GITHUB_URL } from '~/navigation';
+
+interface Props {
+  id?: string;
+}
+const { id } = Astro.props;
+
+const ORIGINAL_URL = 'https://github.com/rwardlow/pyMCU';
+const RICHARD_URL = 'https://github.com/rwardlow';
+const PYASTRA_URL = 'https://sourceforge.net/projects/pyastra/';
+const CREDITS_URL = `${GITHUB_URL}/blob/main/CREDITS.md`;
+
+// Two columns, deliberately symmetrical: neither side is the "winner" here, so
+// unlike the benchmark card on the landing page nothing is painted in accent
+// except the links. The point is that these are different machines, not that
+// one replaced the other.
+const columns = [
+  {
+    year: '2012',
+    kicker: 'The original',
+    name: 'pyMCU',
+    by: 'Richard Wardlow',
+    byHref: RICHARD_URL,
+    repo: 'rwardlow/pyMCU',
+    repoHref: ORIGINAL_URL,
+    rows: [
+      { label: 'Python runs on', value: 'The host computer — PC, Mac or Linux' },
+      { label: 'The microcontroller', value: 'Runs Richard’s firmware and takes commands over USB' },
+      { label: 'How it works', value: 'A USB tether and a Python library on the other end of the cable' },
+      {
+        label: 'What it set out to do',
+        value: 'Let anyone drive real electronics from Python, with no embedded expertise',
+      },
+    ],
+  },
+  {
+    year: '2026',
+    kicker: 'This project',
+    name: 'PyMCU',
+    by: 'Iván Montiel Cardona',
+    byHref: GITHUB_URL,
+    repo: 'PyMCU/PyMCU',
+    repoHref: GITHUB_URL,
+    rows: [
+      { label: 'Python runs on', value: 'The microcontroller itself' },
+      { label: 'The microcontroller', value: 'Is the bare-metal target the code is compiled for' },
+      { label: 'How it works', value: 'An ahead-of-time compiler — no board of its own, no runtime, no interpreter' },
+      { label: 'What it set out to do', value: 'Make Python a first-class language for the chip itself' },
+    ],
+  },
+];
+---
+
+<section {id} class="mx-auto max-w-5xl px-6 pb-12 sm:pb-16 lg:pb-20">
+  <!-- Richard Wardlow: the reason this project is allowed to use the name. -->
+  <div class="max-w-3xl">
+    <p class="mb-2 text-base font-semibold uppercase tracking-widest text-accent">The name</p>
+    <h2 class="text-3xl sm:text-4xl font-bold tracking-tighter text-gray-900 dark:text-white">
+      Richard Wardlow and the original pyMCU
+    </h2>
+
+    <div class="mt-6 space-y-5 text-lg text-muted dark:text-slate-400">
+      <p>
+        In 2012, <a
+          class="text-accent underline underline-offset-2 hover:no-underline"
+          href={RICHARD_URL}
+          target="_blank"
+          rel="noopener noreferrer">Richard Wardlow</a
+        > built <a
+          class="text-accent underline underline-offset-2 hover:no-underline"
+          href={ORIGINAL_URL}
+          target="_blank"
+          rel="noopener noreferrer">pyMCU</a
+        >: a small USB board around a PIC 16F1939, running firmware that spoke a clean protocol, paired with a Python
+        library on the other end of the cable. You plugged it into a PC, Mac or Linux machine, wrote a few lines of
+        Python, and an LED came on. Sensors, servos, real electronics — and no embedded expertise required. It was
+        accessible, joyful and genuinely creative.
+      </p>
+      <p>
+        <span class="font-semibold text-default dark:text-slate-200">This project is not that project.</span> PyMCU today
+        is an ahead-of-time compiler: it takes a statically-typed subset of Python and emits native machine code that runs
+        on the microcontroller itself, with no host computer, no interpreter and no board of its own. The architecture is
+        new, and the authorship and the mistakes are mine. What carried over is the name, and the conviction underneath it.
+      </p>
+      <!--
+        First person from here on. This is a one-person project and the page is
+        signed at the bottom, so narrating my own email in the third person read
+        like a press office describing someone else.
+      -->
+      <p>
+        In March 2026 I wrote to Richard to ask whether this project could carry the name forward. He said yes —
+        immediately, warmly, and without conditions.
+      </p>
+      <!--
+        His reply is not quoted here, and that is deliberate. He gave permission
+        for the name; he did not offer his words for a marketing page, and asking
+        him for them afterwards would turn a generous answer into a transaction.
+        That he said yes is mine to report. How he said it is his.
+      -->
+      <p>
+        He did not have to do that. He owed this project nothing, and he answered a stranger’s email by giving away the
+        name of something he had made. That deserves to be said in public and by name, which is what this page is for.
+      </p>
+    </div>
+  </div>
+
+  <!-- Same card treatment as the firmware-size benchmark on the landing page, so
+       the comparison reads as part of the site rather than a bolted-on table. -->
+  <h3 class="mt-14 text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
+    Same name, two different machines
+  </h3>
+  <p class="mt-3 max-w-2xl text-muted dark:text-gray-400">
+    Neither approach replaced the other. They answer the same question — can Python reach real hardware? — from opposite
+    ends of the USB cable.
+  </p>
+
+  <div class="mt-8 rounded-2xl bg-gray-900 dark:bg-gray-950 ring-1 ring-white/10 shadow-xl p-6 sm:p-10">
+    <div class="grid gap-10 md:grid-cols-2 md:gap-0 md:divide-x md:divide-white/10">
+      {
+        columns.map((col, index) => (
+          <div class:list={[index === 0 ? 'md:pr-10' : 'md:pl-10']}>
+            <p class="font-mono text-4xl tabular-nums text-gray-600">{col.year}</p>
+            <p class="mt-3 text-[11px] uppercase tracking-widest text-gray-500">{col.kicker}</p>
+            <p class="text-xl font-semibold text-white">{col.name}</p>
+            <p class="mt-1 text-sm text-gray-400">
+              by{' '}
+              <a class="text-accent hover:underline" href={col.byHref} target="_blank" rel="noopener noreferrer">
+                {col.by}
+              </a>
+            </p>
+
+            <dl class="mt-7 space-y-5">
+              {col.rows.map((row) => (
+                <div>
+                  <dt class="text-[11px] uppercase tracking-widest text-gray-500">{row.label}</dt>
+                  <dd class="mt-1 text-sm leading-relaxed text-gray-200">{row.value}</dd>
+                </div>
+              ))}
+            </dl>
+
+            <a
+              class="mt-7 inline-flex items-center gap-2 font-mono text-xs text-gray-400 hover:text-accent"
+              href={col.repoHref}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Icon name="tabler:brand-github" class="h-4 w-4" />
+              {col.repo}
+            </a>
+          </div>
+        ))
+      }
+    </div>
+
+    <p class="mt-9 border-t border-white/10 pt-6 text-xs text-gray-500">
+      Two very different approaches to one shared mission: make microcontrollers reachable through Python.
+    </p>
+  </div>
+
+  <!-- Pyastra: owed the premise, not the name. Kept deliberately quieter. -->
+  <div class="mt-16 max-w-3xl">
+    <p class="mb-2 text-base font-semibold uppercase tracking-widest text-accent">The idea</p>
+    <h2 class="text-3xl sm:text-4xl font-bold tracking-tighter text-gray-900 dark:text-white">
+      Pyastra got there first
+    </h2>
+    <div class="mt-6 space-y-5 text-lg text-muted dark:text-slate-400">
+      <p>
+        Six years before either pyMCU, an open-source project on SourceForge called <a
+          class="text-accent underline underline-offset-2 hover:no-underline"
+          href={PYASTRA_URL}
+          target="_blank"
+          rel="noopener noreferrer">Pyastra</a
+        > — PYthon to ASsembler TRAnslator — was already compiling a subset of Python into Microchip PIC16 assembly. It was
+        written in Python, released under the GNU GPL v2, and it never got past alpha; the last release was around 2006,
+        years before MicroPython, CircuitPython or any of today’s Python-on-hardware ecosystems existed.
+      </p>
+      <p>
+        It proved the idea was not a dream. Compiling Python instead of interpreting it was possible on a
+        microcontroller, and someone had demonstrated it two decades ago. This compiler owes Pyastra the premise.
+      </p>
+    </div>
+  </div>
+
+  <div class="mt-14 border-t border-gray-200 dark:border-slate-800 pt-8">
+    <p class="text-lg font-medium text-gray-900 dark:text-white">Thank you, Richard. The name is in good hands.</p>
+    <p class="mt-2 text-sm uppercase tracking-widest text-muted dark:text-gray-400">Iván Montiel Cardona</p>
+    <p class="mt-6 text-sm text-muted dark:text-gray-400">
+      The same credits ship with the compiler, in <a
+        class="text-accent underline underline-offset-2 hover:no-underline"
+        href={CREDITS_URL}
+        target="_blank"
+        rel="noopener noreferrer">CREDITS.md</a
+      >.
+    </p>
+  </div>
+</section>

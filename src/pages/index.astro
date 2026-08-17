@@ -19,7 +19,7 @@ import { DOCS_URL, GITHUB_URL, PLAYGROUND_URL } from '~/navigation';
 const metadata = {
   title: 'PyMCU — Python to MCUs. Free. Deterministic. AOT.',
   description:
-    'PyMCU compiles a subset of Python ahead of time into native microcontroller assembly. No interpreter, no heap: a blink is 38 bytes of code and 0 bytes of RAM on an Arduino Uno. AVR, ARM and PIC.',
+    'PyMCU compiles a subset of Python ahead of time into native microcontroller assembly. No interpreter, no heap: a blink is 38 bytes of code and 0 bytes of RAM on an Arduino Uno. AVR, RP2040/RP2350, PIC and RISC-V.',
   ignoreTitleTemplate: true,
 };
 ---
@@ -28,7 +28,7 @@ const metadata = {
   <!-- Hero Widget ******************* -->
 
   <Hero
-    tagline="Public Alpha 5 — out now on PyPI"
+    tagline="Public alpha — out now on PyPI"
     actions={[
       {
         variant: 'primary',
@@ -51,14 +51,27 @@ const metadata = {
 
     <Fragment slot="subtitle">
       <span class="font-semibold">Python</span>, compiled to <span class="font-semibold">bare-metal machine code</span>.
-      No interpreter, no heap, no garbage collection — deterministic by design, and small enough for a $2 Arduino. <span
-        class="font-semibold">AVR</span
-      > today, more architectures soon.
+      No interpreter, no heap, no garbage collection — deterministic by design, and small enough for a $2 Arduino.
+      <span class="font-semibold">AVR</span>, <span class="font-semibold">RP2040 / RP2350</span>,
+      <span class="font-semibold">PIC</span> and <span class="font-semibold">RISC-V</span>.
     </Fragment>
 
     <Fragment slot="content">
+      <!--
+        The subject has to be the playground, not PyMCU. Sitting directly under a
+        subtitle about the compiler, "nothing to install — it runs in the browser"
+        read as a promise about the product, and PyMCU is an ahead-of-time
+        compiler you install and run over your sources. It is the playground that
+        is browser-only, and that is worth saying precisely: it is the real
+        compiler built to WASM, with no backend, not a mock or a remote build.
+      -->
       <p class="mt-5 text-sm text-muted dark:text-slate-400">
-        Nothing to install: the compiler itself runs in the browser. MIT licensed — <a
+        The <a class="underline hover:text-link" href={PLAYGROUND_URL} target="_blank" rel="noopener noreferrer"
+          >playground</a
+        > runs the real compiler in your browser — no sign-up, no backend. On your own machine it installs with
+        <code class="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-xs dark:bg-slate-800"
+          >pipx install pymcu-compiler</code
+        >. MIT licensed — <a
           class="underline hover:text-link"
           href={GITHUB_URL}
           target="_blank"
@@ -111,9 +124,9 @@ const metadata = {
         icon: 'tabler:gauge',
       },
       {
-        title: 'AVR Support',
+        title: 'Four Architectures',
         description:
-          'Current development is focused on the AVR architecture (Arduino Uno), bringing Python to the most popular 8-bit devices.',
+          'AVR, the RP2040 and RP2350, PIC and RISC-V — from a $2 ATtiny to a dual-core Pico 2, from the same source.',
         icon: 'tabler:cpu',
       },
       {
@@ -158,9 +171,9 @@ const metadata = {
           'Built for applications where timing is critical. Your firmware runs predictably without OS interruptions.',
       },
       {
-        title: 'Focused on AVR',
+        title: 'One Language, Many Chips',
         description:
-          'Currently optimized for the ATmega328P (Arduino Uno), providing a clean path from high-level Python to 8-bit hardware.',
+          'The same Python compiles for an 8-bit ATmega and a 32-bit Cortex-M33. Pick the board; the compiler picks the backend.',
       },
     ]}
   >
@@ -249,7 +262,7 @@ const metadata = {
       {
         title: 'Is PyMCU production-ready?',
         description:
-          'Not yet — PyMCU is in public alpha (currently Alpha 5, available on PyPI). Active development is focused on the AVR architecture (Arduino Uno). Makers and developers are welcome to try it out and share feedback.',
+          'Not yet — PyMCU is in public alpha, available on PyPI. It compiles for AVR, the RP2040 and RP2350, PIC and RISC-V, and the language and error messages are still moving between releases. Makers and developers are welcome to try it out and share feedback.',
       },
       {
         title: 'How is PyMCU being built?',
@@ -284,9 +297,11 @@ const metadata = {
     ]}
   />
 
-  {/* Datos estructurados. Solo hechos comprobables y visibles en la pagina: nada
+  {
+    /* Datos estructurados. Solo hechos comprobables y visibles en la pagina: nada
       de valoraciones ni de cifras de descarga inventadas, que es justo lo que
-      Google penaliza cuando el marcado no corresponde con lo que se ve. */}
+      Google penaliza cuando el marcado no corresponde con lo que se ve. */
+  }
   <script
     type="application/ld+json"
     set:html={JSON.stringify({

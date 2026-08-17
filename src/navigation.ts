@@ -32,6 +32,10 @@ export const headerData = {
       text: 'Blog',
       href: getPermalink('/blog'),
     },
+    {
+      text: 'Heritage',
+      href: getPermalink('/heritage'),
+    },
   ],
   actions: [
     {
@@ -56,6 +60,7 @@ export const footerData = {
     { text: 'Docs', href: DOCS_URL },
     { text: 'Blog', href: getPermalink('/blog') },
     { text: 'About', href: getPermalink('/about') },
+    { text: 'Heritage', href: getPermalink('/heritage') },
     { text: 'Contact', href: getPermalink('/contact') },
     { text: 'Terms', href: getPermalink('/terms') },
     { text: 'Privacy Policy', href: getPermalink('/privacy') },
