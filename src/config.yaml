@@ -2,7 +2,9 @@ site:
   name: PyMCU
   site: 'https://pymcu.org'
   base: '/'
-  trailingSlash: false
+  # true = los canonicals y enlaces internos llevan barra final, igual que la URL
+  # que sirve el hosting (la variante sin barra responde 307 hacia la con barra).
+  trailingSlash: true
 
   # Vacio A PROPOSITO: el dominio esta verificado en Search Console por DNS, que
   # cubre todo el dominio y sobrevive a cualquier cambio de plantilla. NO reponer
