@@ -211,8 +211,8 @@ This is what lets an entire device driver be a ZCA. In [the DHT11 deep-dive](/re
 Two rules describe the whole system:
 
 - **`ptr[T]` means "this name is this address."** It collapses to the AVR's `SBI`/`CBI`/`LDS`/`STS` instructions with nothing in between.
-- **`@inline` means "expand this here."** It removes the function boundary, so an abstraction has no call cost and no object to store.
+- **[`@inline`](https://docs.pymcu.org/guides/zero-cost-classes/) means "expand this here."** It removes the function boundary, so an abstraction has no call cost and no object to store.
 
 Put them together and you can write code that reads like Python — `led = Pin("PB5", Pin.OUT)`, `led.toggle()` — and ships code that reads like hand-tuned assembly — `sbi 0x04, 5`, `sbi 0x03, 5`. The abstraction is real where you work, in the source, and gone where it would cost you, on the chip.
 
-That is the whole idea behind PyMCU's HAL: every peripheral — GPIO, UART, SPI, I2C, ADC, PWM, timers — is a zero-cost abstraction over `ptr[T]`. You get to think in objects. The ATmega328P only ever sees instructions.
+That is the whole idea behind [PyMCU's HAL](https://docs.pymcu.org/stdlib/): every peripheral — GPIO, UART, SPI, I2C, ADC, PWM, timers — is a zero-cost abstraction over `ptr[T]`. You get to think in objects. The ATmega328P only ever sees instructions.

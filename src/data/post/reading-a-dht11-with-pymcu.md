@@ -12,7 +12,7 @@ tags:
   - avr
 ---
 
-The DHT11 is one of the first sensors most people wire up to a microcontroller. It's cheap, common, and conceptually simple: pull the data line low for 18 ms, release it, and the sensor responds by clocking out 40 bits of humidity and temperature data — each bit encoded as a pulse of either ~26 µs (logic 0) or ~70 µs (logic 1).
+The [DHT11](https://docs.pymcu.org/stdlib/drivers/dht11/) is one of the first sensors most people wire up to a microcontroller. It's cheap, common, and conceptually simple: pull the data line low for 18 ms, release it, and the sensor responds by clocking out 40 bits of humidity and temperature data — each bit encoded as a pulse of either ~26 µs (logic 0) or ~70 µs (logic 1).
 
 That sounds simple. But measuring those pulses accurately requires native-speed code. This post walks through what MicroPython actually does under the hood, what PyMCU does instead, and why the difference matters when you want to understand — and own — everything running on your hardware.
 

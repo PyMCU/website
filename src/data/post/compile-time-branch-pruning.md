@@ -13,7 +13,7 @@ tags:
   - avr
 ---
 
-Open PyMCU's GPIO HAL and you'll find code that looks far too heavy for a microcontroller. The `Pin` class has to know, for every pin on the chip, which port, direction, and input registers it maps to — so its constructor is a thirty-arm `match`:
+Open [PyMCU's GPIO HAL](https://docs.pymcu.org/stdlib/gpio/) and you'll find code that looks far too heavy for a microcontroller. The `Pin` class has to know, for every pin on the chip, which port, direction, and input registers it maps to — so its constructor is a thirty-arm `match`:
 
 ```python
 class _PinRegs:

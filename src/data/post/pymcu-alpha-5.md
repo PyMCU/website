@@ -13,7 +13,7 @@ tags:
 ---
 
 Alpha 4 could compile. Alpha 5 is about everything that happens _before_ the compiler
-runs — installing, downloading a toolchain, scaffolding a project — on machines that
+runs — [installing](https://docs.pymcu.org/getting-started/installation/), downloading a toolchain, scaffolding a project — on machines that
 aren't the one PyMCU was developed on.
 
 ```bash

@@ -110,7 +110,7 @@ SINE_TABLE: const[uint8[8]] = [0, 90, 180, 255, 180, 90, 0, 0]
 val: uint8 = SINE_TABLE[i]   # LPM Z — reads from flash, not SRAM
 ```
 
-**Zero-Cost Abstractions with `@inline`.** The `ptr[T]` primitive is powerful but verbose for full peripherals. PyMCU's HAL is built on `@inline` classes — classes that have no SRAM representation at all. Every method expands inline at the call site, exactly like writing the register operations by hand.
+**Zero-Cost Abstractions with `@inline`.** The `ptr[T]` primitive is powerful but verbose for full peripherals. PyMCU's HAL is built on [`@inline` classes](https://docs.pymcu.org/guides/zero-cost-classes/) — classes that have no SRAM representation at all. Every method expands inline at the call site, exactly like writing the register operations by hand.
 
 ```python
 from pymcu.hal.gpio import Pin
@@ -133,7 +133,7 @@ A full blink program compiled this way is about 142 bytes of flash — vector ta
 
 That single idea has since grown into something much larger than a way to poke a register. Everything below exists today, and every piece compiles down to the same kind of lean native code as the `ptr` dereference that started it:
 
-- **A real hardware abstraction layer.** GPIO, UART, SPI, I2C, ADC, PWM, timers, EEPROM, the watchdog, and sleep modes — all `@inline` zero-cost classes — plus device drivers for parts like the DHT11/DHT22, SSD1306 OLED, BMP280, MAX7219, and WS2812B. The `ptr[T]` primitive is still down there; the HAL just gives it a friendly face.
+- **A real [hardware abstraction layer](https://docs.pymcu.org/stdlib/).** GPIO, UART, SPI, I2C, ADC, PWM, timers, EEPROM, the watchdog, and sleep modes — all `@inline` zero-cost classes — plus device drivers for parts like the DHT11/DHT22, SSD1306 OLED, BMP280, MAX7219, and WS2812B. The `ptr[T]` primitive is still down there; the HAL just gives it a friendly face.
 - **Zero-cost error handling.** `try` / `except` / `raise` work on the chip, implemented through a tiny ABI that rides on the AVR T flag — no heap, no `setjmp`/`longjmp`, no exception objects. A `raise` is three instructions, not a runtime.
 - **C interoperability.** An `@extern` decorator lets PyMCU call C functions compiled by `avr-gcc` and linked into the same firmware, so you can drop down to C or reuse an existing library exactly where you need to — and stay in Python everywhere else.
 - **Familiar front doors.** Compatibility layers let you write in **MicroPython** style (`machine`, `utime`) or **CircuitPython** style (`board`, `digitalio`, `busio`) and compile _that_ to native code. The DHT11 deep-dive on this blog is one such example.
