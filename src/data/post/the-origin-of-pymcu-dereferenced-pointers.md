@@ -11,8 +11,6 @@ tags:
   - pointers
   - embedded
   - python
-metadata:
-  canonical: https://pymcu.org/the-origin-of-pymcu-dereferenced-pointers
 ---
 
 ## A Concept Hiding in Plain Sight
