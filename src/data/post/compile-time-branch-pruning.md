@@ -83,7 +83,7 @@ The disassembly of a complete `led = Pin("PB5", Pin.OUT)` / `led.toggle()` blink
   8c:  rjmp .-22
 ```
 
-No trace of the other twenty-nine arms. They were pruned. (The whole program is 142 bytes total, vector table included — see [the zero-cost abstractions post](/zero-cost-abstractions-with-python-pointers) for the full breakdown.)
+No trace of the other twenty-nine arms. They were pruned. (The whole program is 142 bytes total, vector table included — see [the zero-cost abstractions post](/zero-cost-abstractions-with-python-pointers/) for the full breakdown.)
 
 ---
 

@@ -19,7 +19,7 @@ So embedded developers have historically faced a choice: write clean, abstracted
 
 This post shows how that works, starting from the one primitive everything is built on.
 
-> If you haven't read [the origin story of `ptr[T]`](/the-origin-of-pymcu-dereferenced-pointers), it's a good five-minute primer on the pointer concept this post builds on.
+> If you haven't read [the origin story of `ptr[T]`](/the-origin-of-pymcu-dereferenced-pointers/), it's a good five-minute primer on the pointer concept this post builds on.
 
 ---
 
@@ -202,7 +202,7 @@ class Led:
 
 `Led` has no more runtime presence than `Pin` did. `self._pin` is not a stored object — it's the same folded constants, one level up. `led.blink()` inlines `self._pin.toggle()`, which inlines to `sbi 0x03, 5`. Single inheritance, `@property` setters, and methods calling sibling methods all behave the same way: the compiler flattens the whole tower before it emits a single instruction.
 
-This is what lets an entire device driver be a ZCA. In [the DHT11 deep-dive](/reading-a-dht11-with-pymcu), a complete temperature-and-humidity driver — a base class, two subclasses, a five-byte protocol read — compiles to ~1,480 bytes and **0 bytes of SRAM**. The sensor's mutable state lives in registers; the class hierarchy exists only in the source.
+This is what lets an entire device driver be a ZCA. In [the DHT11 deep-dive](/reading-a-dht11-with-pymcu/), a complete temperature-and-humidity driver — a base class, two subclasses, a five-byte protocol read — compiles to ~1,480 bytes and **0 bytes of SRAM**. The sensor's mutable state lives in registers; the class hierarchy exists only in the source.
 
 ---
 
