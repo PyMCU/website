@@ -1,4 +1,4 @@
-import { isUnpicCompatible, unpicOptimizer, astroAssetsOptimizer } from './images-optimization';
+import { isUnpicCompatible, unpicOptimizer } from './images-optimization';
 import type { ImageMetadata } from 'astro';
 import type { OpenGraph } from '@astrolib/seo';
 import type { ImagesOptimizer } from './images-optimization';
@@ -82,12 +82,21 @@ export const adaptOpenGraphImages = async (
           isUnpicCompatible(resolvedImage)
         ) {
           _image = (await unpicOptimizer(resolvedImage, [defaultWidth], defaultWidth, defaultHeight, 'jpg'))[0];
+        } else if (typeof resolvedImage !== 'string') {
+          // Do not route the social image through the runtime /_image endpoint: on
+          // Cloudflare it answers 522, so crawlers never fetch the image and skip the
+          // card. The asset as built is already served at its own URL.
+          return {
+            url: String(new URL(resolvedImage.src, astroSite)),
+            width: resolvedImage.width,
+            height: resolvedImage.height,
+          };
         } else if (resolvedImage) {
-          const dimensions =
-            typeof resolvedImage !== 'string' && resolvedImage?.width <= defaultWidth
-              ? [resolvedImage?.width, resolvedImage?.height]
-              : [defaultWidth, defaultHeight];
-          _image = (await astroAssetsOptimizer(resolvedImage, [dimensions[0]], dimensions[0], dimensions[1], 'jpg'))[0];
+          return {
+            url: String(new URL(resolvedImage, astroSite)),
+            width: defaultWidth,
+            height: defaultHeight,
+          };
         }
 
         if (typeof _image === 'object') {
