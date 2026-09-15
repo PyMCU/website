@@ -10,7 +10,6 @@ import Features from '~/components/widgets/Features.astro';
 import Steps from '~/components/widgets/Steps.astro';
 import Content from '~/components/widgets/Content.astro';
 import FAQs from '~/components/widgets/FAQs.astro';
-import ComparisonCharts from '~/components/widgets/ComparisonCharts.astro';
 import FirmwareSizes from '~/components/widgets/FirmwareSizes.astro';
 import Playground from '~/components/widgets/Playground.astro';
 
@@ -19,7 +18,7 @@ import { DOCS_URL, PLAYGROUND_URL } from '~/navigation';
 const metadata = {
   title: 'PyMCU: Python Compiler for Microcontrollers (Arduino, AVR, RP2040, PIC)',
   description:
-    'PyMCU compiles Python ahead of time to native microcontroller assembly. No interpreter, no heap: a blink is 38 bytes on an Arduino Uno. AVR, RP2040, PIC, RISC-V.',
+    'PyMCU compiles Python ahead of time to native microcontroller assembly. No interpreter, no heap: a blink is 40 bytes of code on an Arduino Uno. AVR, RP2040, PIC, RISC-V.',
   ignoreTitleTemplate: true,
 };
 ---
@@ -77,10 +76,6 @@ const metadata = {
 
   <Note title="Philosophy:" description="Determinism, No OS and High Performance" />
 
-  <!-- Comparison Charts ************* -->
-
-  <ComparisonCharts />
-
   <!-- Features Widget *************** -->
 
   <Features
@@ -104,7 +99,7 @@ const metadata = {
       {
         title: 'Four Architectures',
         description:
-          'AVR, the RP2040 and RP2350, PIC and RISC-V — from a $2 ATtiny to a dual-core Pico 2, from the same source.',
+          'AVR is the mature, production-tested backend. ARM (RP2040 / RP2350), PIC and RISC-V compile and run today as alpha backends — from a $2 ATtiny to a dual-core Pico 2, from the same source.',
         icon: 'tabler:cpu',
       },
       {
@@ -240,7 +235,7 @@ const metadata = {
       {
         title: 'Is PyMCU production-ready?',
         description:
-          'Not yet — PyMCU is in public alpha, available on PyPI. It compiles for AVR, the RP2040 and RP2350, PIC and RISC-V, and the language and error messages are still moving between releases. Makers and developers are welcome to try it out and share feedback.',
+          'Not yet — PyMCU is in public alpha, available on PyPI. It installs and compiles for AVR (the mature backend), the RP2040/RP2350 and PIC (alpha backends); RISC-V (CH32V003) has a working backend in the source tree but is not yet on PyPI. The language and error messages are still moving between releases. Makers and developers are welcome to try it out and share feedback.',
       },
       {
         title: 'How is PyMCU being built?',
@@ -255,17 +250,17 @@ const metadata = {
       {
         title: 'Will it support official toolchains?',
         description:
-          'Yes, the long-term plan is to align with official toolchains provided by each vendor (such as those for PIC, AVR, ARM Cortex-M, and ESP32). This will let developers combine PyMCU with trusted ecosystems they already know.',
+          'Yes, the long-term plan is to align with official toolchains provided by each vendor (such as those for PIC, AVR, and ARM Cortex-M). This will let developers combine PyMCU with trusted ecosystems they already know.',
       },
       {
         title: 'Which architectures are supported?',
         description:
-          'The primary focus of current development is AVR (ATmega328P/Arduino Uno). Support for other architectures like PIC, ARM Cortex-M, and ESP32 is planned for future releases.',
+          'Four today, at different levels of maturity. AVR (ATmega328P/Arduino Uno and the wider ATmega/ATtiny family) is the mature backend, continuously validated on real silicon. ARM (RP2040/RP2350, the Raspberry Pi Pico family) and 8-bit PIC compile and run, and are alpha. RISC-V (CH32V003) has a working backend in the compiler source tree, proven in emulation, but is not yet published as an installable package.',
       },
       {
         title: 'How does it differ from MicroPython or CircuitPython?',
         description:
-          'PyMCU is not an interpreter. It doesn’t run a VM or rely on dynamic memory. Instead, it compiles directly to machine code, with deterministic timing and no garbage collection. It is designed for developers who need Python’s clarity but require bare-metal reliability.',
+          'They are not rivals: MicroPython and CircuitPython are the languages and APIs PyMCU compiles, and PyMCU’s own compatibility layers replicate their machine/board APIs as libraries. The difference is where the Python runs. MicroPython and CircuitPython bring an interpreter onto the chip, which needs enough flash and RAM to hold it. PyMCU compiles the same kind of source ahead of time into native machine code, so it reaches chips too small for an interpreter (the ATmega328P, ATtiny, PIC, CH32V003) and cases where timing has to be exact, like an interrupt handler or a bit-banged sensor protocol.',
       },
       {
         title: 'How can I get involved?',
