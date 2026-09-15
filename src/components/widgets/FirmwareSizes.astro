@@ -7,13 +7,16 @@ const { id } = Astro.props;
 // The same blink, built three ways for an Arduino Uno. TOTAL flash (interrupt
 // vector table + startup stub included), so the comparison is apples-to-apples:
 // every variant toggles PB5 and waits 500 ms. PyMCU and C are measured with the
-// same toolchain PyMCU ships (avr-gcc 7.3.0, -Os, F_CPU=16 MHz). Smaller is
+// same toolchain PyMCU ships (avr-gcc 7.3.0, -Os, F_CPU=16 MHz); Arduino is the
+// IDE's own AVR core (avr-gcc 7.3.0-atmel3.6.1) via arduino-cli. Smaller is
 // better, so the winner (PyMCU) is the shortest bar — astral.sh-style.
-const max = 1024;
+// Measured 2026-09-15 with pymcu-compiler 0.1.0a10 and arduino-cli 1.5.1 /
+// Arduino AVR core 1.8.8.
+const max = 1058;
 const bars = [
   { name: 'PyMCU', sub: 'native HAL / MicroPython', bytes: 142, label: '142 B', win: true },
   { name: 'C', sub: 'avr-gcc -Os', bytes: 162, label: '162 B', win: false },
-  { name: 'Arduino', sub: 'IDE defaults', bytes: 1024, label: '~1,024 B', win: false },
+  { name: 'Arduino', sub: 'IDE defaults', bytes: 1058, label: '1,058 B', win: false },
 ];
 ---
 
@@ -57,9 +60,9 @@ const bars = [
     </ul>
 
     <p class="mt-9 border-t border-white/10 pt-6 text-xs text-gray-500">
-      Why 142 bytes? 104 of them are the interrupt-vector table that <em>every</em> AVR program carries — C included — so
+      Why 142 bytes? 102 of them are the interrupt-vector table that <em>every</em> AVR program carries — C included — so
       on that front PyMCU and hand-written C are essentially the same. What's actually yours is the remaining <span
-        class="font-semibold text-gray-300">38 bytes</span
+        class="font-semibold text-gray-300">40 bytes</span
       >: the startup stub and the blink loop. Arduino's extra bytes aren't waste either; they're the core's conveniences
       (<code>millis()</code>, preconfigured timers, one sketch for every board). PyMCU just includes only what your
       program uses, which is why the same blink ends up roughly <span class="font-semibold text-gray-300"
@@ -75,6 +78,9 @@ const bars = [
     Python on microcontrollers is going mainstream — Arduino itself now offers official
     <span class="font-semibold">MicroPython</span> support. We think that direction is exactly right. PyMCU shares the goal
     of Python-friendly embedded and takes it all the way to the bare metal: the same familiar syntax, compiled to native
-    machine code with no interpreter on the chip.
+    machine code with no interpreter on the chip. On September 15, 2026, Adafruit's own unmodified
+    <code>adafruit_hcsr04</code> library, running its own example verbatim, compiled and read distances on an Arduino
+    Uno in 4,454&nbsp;bytes of flash. It's the first library to make that jump unedited, not a claim that every
+    library does yet.
   </div>
 </section>
