@@ -26,7 +26,7 @@ const columns = [
     repo: 'rwardlow/pyMCU',
     repoHref: ORIGINAL_URL,
     rows: [
-      { label: 'Python runs on', value: 'The host computer — PC, Mac or Linux' },
+      { label: 'Python runs on', value: 'The host computer: PC, Mac or Linux' },
       { label: 'The microcontroller', value: 'Runs Richard’s firmware and takes commands over USB' },
       { label: 'How it works', value: 'A USB tether and a Python library on the other end of the cable' },
       {
@@ -46,7 +46,7 @@ const columns = [
     rows: [
       { label: 'Python runs on', value: 'The microcontroller itself' },
       { label: 'The microcontroller', value: 'Is the bare-metal target the code is compiled for' },
-      { label: 'How it works', value: 'An ahead-of-time compiler — no board of its own, no runtime, no interpreter' },
+      { label: 'How it works', value: 'An ahead-of-time compiler: no board of its own, no runtime, no interpreter' },
       { label: 'What it set out to do', value: 'Make Python a first-class language for the chip itself' },
     ],
   },
@@ -75,7 +75,7 @@ const columns = [
           rel="noopener noreferrer">pyMCU</a
         >: a small USB board around a PIC 16F1939, running firmware that spoke a clean protocol, paired with a Python
         library on the other end of the cable. You plugged it into a PC, Mac or Linux machine, wrote a few lines of
-        Python, and an LED came on. Sensors, servos, real electronics — and no embedded expertise required. It was
+        Python, and an LED came on. Sensors, servos, real electronics, and no embedded expertise required. It was
         accessible, joyful and genuinely creative.
       </p>
       <p>
@@ -90,7 +90,7 @@ const columns = [
         like a press office describing someone else.
       -->
       <p>
-        In March 2026 I wrote to Richard to ask whether this project could carry the name forward. He said yes —
+        In March 2026 I wrote to Richard to ask whether this project could carry the name forward. He said yes:
         immediately, warmly, and without conditions.
       </p>
       <!--
@@ -112,8 +112,8 @@ const columns = [
     Same name, two different machines
   </h3>
   <p class="mt-3 max-w-2xl text-muted dark:text-gray-400">
-    Neither approach replaced the other. They answer the same question — can Python reach real hardware? — from opposite
-    ends of the USB cable.
+    Neither approach replaced the other. They answer the same question, from opposite ends of the USB cable: can
+    Python reach real hardware?
   </p>
 
   <div class="mt-8 rounded-2xl bg-gray-900 dark:bg-gray-950 ring-1 ring-white/10 shadow-xl p-6 sm:p-10">
@@ -172,7 +172,7 @@ const columns = [
           href={PYASTRA_URL}
           target="_blank"
           rel="noopener noreferrer">Pyastra</a
-        > — PYthon to ASsembler TRAnslator — was already compiling a subset of Python into Microchip PIC16 assembly. It was
+        >, PYthon to ASsembler TRAnslator, was already compiling a subset of Python into Microchip PIC16 assembly. It was
         written in Python, released under the GNU GPL v2, and it never got past alpha; the last release was around 2006,
         years before MicroPython, CircuitPython or any of today’s Python-on-hardware ecosystems existed.
       </p>

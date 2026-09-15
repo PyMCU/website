@@ -7,7 +7,7 @@ const { id } = Astro.props;
 // The same blink, built three ways for an Arduino Uno. TOTAL flash (interrupt
 // vector table + startup stub included), so the numbers are apples-to-apples:
 // every variant toggles PB5 and waits 500 ms. This is not a "PyMCU vs. C"
-// benchmark — PyMCU isn't trying to out-compile C. The hand-written C number
+// benchmark. PyMCU isn't trying to out-compile C. The hand-written C number
 // is shown only as a neutral size floor, not a target. PyMCU and C are
 // measured with the same toolchain PyMCU ships (avr-gcc 7.3.0, -Os,
 // F_CPU=16 MHz); Arduino is the IDE's own AVR core (avr-gcc
@@ -29,7 +29,7 @@ const bars = [
       Python, sized for the chips that never had room for it
     </h2>
     <p class="mt-3 text-gray-500 dark:text-gray-400 max-w-2xl mx-auto text-sm">
-      The same blink — toggle the LED, wait 500&nbsp;ms — total flash with the vector table and startup included.
+      The same blink, toggle the LED and wait 500&nbsp;ms, as total flash with the vector table and startup included.
       Hand-written C is on the chart only as a size reference: PyMCU isn't trying to out-compile C, it's trying to
       bring Python to the boards an interpreter can't fit on.
     </p>
@@ -38,7 +38,7 @@ const bars = [
   <!-- astral.sh-style benchmark card -->
   <div class="rounded-2xl bg-gray-900 dark:bg-gray-950 ring-1 ring-white/10 shadow-xl p-6 sm:p-10">
     <p class="mb-8 text-xs sm:text-sm text-gray-400 tracking-wide">
-      Blink firmware for an Arduino Uno — smaller is better.
+      Blink firmware for an Arduino Uno: smaller is better.
     </p>
 
     <ul class="space-y-7">
@@ -78,7 +78,7 @@ const bars = [
   <div
     class="mt-6 rounded-2xl border border-accent/30 bg-accent/5 dark:bg-accent/10 p-5 text-sm text-gray-600 dark:text-gray-300"
   >
-    Python on microcontrollers is going mainstream — Arduino itself now offers official
+    Python on microcontrollers is going mainstream: Arduino itself now offers official
     <span class="font-semibold">MicroPython</span> support. We think that direction is exactly right. PyMCU shares the goal
     of Python-friendly embedded and takes it all the way to the bare metal: the same familiar syntax, compiled to native
     machine code with no interpreter on the chip. On September 15, 2026, Adafruit's own unmodified

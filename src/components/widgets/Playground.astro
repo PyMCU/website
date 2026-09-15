@@ -22,7 +22,7 @@ while True:
 
 // The playground reads the program from the URL fragment: b=board, a=API,
 // s=sample, c=<encoding><payload>, where 'r' means raw (uncompressed) bytes in
-// base64url. No compression here — the snippet is short and this keeps the link
+// base64url. No compression here: the snippet is short and this keeps the link
 // buildable without a runtime dependency.
 const toBase64Url = (text: string) => {
   const bytes = new TextEncoder().encode(text);
@@ -55,7 +55,7 @@ const steps = [
   {
     icon: 'tabler:bulb',
     title: 'Watch the firmware run',
-    text: 'The result is executed on an emulated Arduino Uno or Raspberry Pi Pico — LED, pins and UART included.',
+    text: 'The result is executed on an emulated Arduino Uno or Raspberry Pi Pico: LED, pins and UART included.',
   },
 ];
 ---
@@ -67,7 +67,7 @@ const steps = [
       Don't take our word for it. Compile it.
     </h2>
     <p class="mt-3 text-gray-500 dark:text-gray-400 max-w-2xl mx-auto text-sm">
-      The whole toolchain runs inside your browser — nothing to install, no account, and your code never leaves the tab.
+      The whole toolchain runs inside your browser: nothing to install, no account, and your code never leaves the tab.
       Write Python, read the assembly it turns into, and watch the firmware blink on an emulated board.
     </p>
   </div>
