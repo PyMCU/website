@@ -68,9 +68,9 @@ const bars = [
       actually yours is the remaining <span class="font-semibold text-gray-300">40 bytes</span>: the startup stub and
       the blink loop. Arduino's extra bytes aren't waste either; they're the core's conveniences (<code
         >millis()</code
-      >, preconfigured timers, one sketch for every board). PyMCU just includes only what your program uses, which is
-      why the same blink ends up roughly <span class="font-semibold text-gray-300">7× smaller</span> than the Arduino
-      default.
+      >, preconfigured timers, one sketch for every board). PyMCU includes only what your program uses, which is why
+      a whole program can fit in a few hundred bytes: on a chip with 32&nbsp;KB of flash total, that is what leaves
+      room for the parts that matter, like a sensor driver or a protocol handler, without running out of space.
     </p>
   </div>
 
