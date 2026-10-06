@@ -12,6 +12,7 @@ import Content from '~/components/widgets/Content.astro';
 import FAQs from '~/components/widgets/FAQs.astro';
 import FirmwareSizes from '~/components/widgets/FirmwareSizes.astro';
 import Playground from '~/components/widgets/Playground.astro';
+import Button from '~/components/ui/Button.astro';
 
 import { DOCS_URL, PLAYGROUND_URL } from '~/navigation';
 
@@ -65,6 +66,41 @@ const metadata = {
       </div>
     </Fragment>
   </Hero>
+
+  <!-- From the gallery: Game of Life on an SSD1306, rendered from the actual I2C
+       bytes the firmware sends in the emulator. -->
+
+  <Content id="game-of-life" tagline="From the gallery" title="Conway's Game of Life on an OLED">
+    <Fragment slot="content">
+      <p class="mb-4 text-lg dark:text-slate-400">
+        Conway's Game of Life on an SSD1306 OLED with Adafruit's unmodified CircuitPython drivers, about 10 KB on an
+        Arduino Uno.
+      </p>
+      <p class="mb-8 text-sm text-muted dark:text-slate-500">
+        Rendered from the I2C bytes the firmware sends in the emulator.
+      </p>
+      <div class="flex flex-wrap gap-4">
+        <Button
+          variant="primary"
+          text="Read the example"
+          href="https://docs.pymcu.org/examples/game-of-life/"
+          target="_blank"
+        />
+        <Button variant="secondary" text="How it works" href="/blog/the-oled-that-froze" />
+      </div>
+    </Fragment>
+    <Fragment slot="image">
+      <img
+        src="/images/examples/game-of-life.gif"
+        width="512"
+        height="128"
+        loading="lazy"
+        decoding="async"
+        alt="Conway's Game of Life evolving on a 128x32 SSD1306 OLED, rendered from the I2C bytes an emulated Arduino Uno sends"
+        class="mx-auto w-full max-w-md rounded-lg shadow-lg"
+      />
+    </Fragment>
+  </Content>
 
   <!-- Firmware size comparison (C / PyMCU / Arduino): first thing under the hero -->
 
@@ -213,9 +249,8 @@ const metadata = {
   <!--
   <BlogLatestPosts
     title="Find out more content in our Blog"
-    information={`The blog is used to display AstroWind documentation.
-                        Each new article will be an important step that you will need to know to be an expert in creating a website using Astro + Tailwind CSS.
-                        Astro is a very interesting technology. Thanks.
+    information={`Deep dives into how PyMCU's compiler works, release notes, and the real bugs
+                        found and fixed on the way to a working firmware.
                 `}
   />
   -->
