@@ -73,8 +73,8 @@ const metadata = {
   <Content id="game-of-life" tagline="From the gallery" title="Conway's Game of Life on an OLED">
     <Fragment slot="content">
       <p class="mb-4 text-lg dark:text-slate-400">
-        Conway's Game of Life on a 128x64 SSD1306 OLED with Adafruit's unmodified CircuitPython drivers, 9,906 bytes
-        (about 10 KB) on an Arduino Uno.
+        Conway's Game of Life on a 128x64 SSD1306 OLED with Adafruit's unmodified CircuitPython drivers, 13,126 bytes
+        (about 13 KB) on an Arduino Uno.
       </p>
       <p class="mb-8 text-sm text-muted dark:text-slate-500">
         Rendered from the I2C bytes the firmware sends in the emulator.
@@ -90,27 +90,29 @@ const metadata = {
       </div>
     </Fragment>
     <Fragment slot="image">
-      <div class="mx-auto" style="max-width: 100%; overflow-x: auto; padding: 4px;">
-        <div style="width: 450px; height: 348px; margin: 0 auto;">
-          <wokwi-ssd1306
-            id="gol-home-screen"
-            data-gol-frames="/data/game-of-life-frames.json"
-            style="display: inline-block; transform: scale(3); transform-origin: top left;"></wokwi-ssd1306>
-        </div>
+      <div class="mx-auto" style="position: relative; width: 450px; max-width: 100%; aspect-ratio: 27.7 / 22.6;">
+        <img
+          src="/images/wokwi-ssd1306-board.svg"
+          alt="SSD1306 OLED module"
+          style="position: absolute; inset: 0; width: 100%; height: 100%; display: block;"
+        />
+        <canvas
+          id="gol-home-screen"
+          width="128"
+          height="64"
+          data-gol-frames="/data/game-of-life-frames.json"
+          style="position: absolute; left: 5.271%; top: 23.319%; width: 89.531%; height: 54.867%; image-rendering: pixelated;"
+        ></canvas>
       </div>
       <p class="mt-2 text-center text-xs text-muted dark:text-slate-500">
-        OLED module artwork from
-        <a href="https://github.com/wokwi/wokwi-elements" target="_blank" class="underline">wokwi-elements</a>
-        (MIT). The real, unmodified component, live in your browser.
+        OLED board artwork by
+        <a href="https://github.com/wokwi/wokwi-boards" target="_blank" class="underline">Wokwi</a>
+        (wokwi-boards, Uri Shaked). The real, unmodified board art, live in your browser.
       </p>
     </Fragment>
   </Content>
 
-  <script
-    is:inline
-    type="module"
-    src="https://cdn.jsdelivr.net/npm/@wokwi/elements@1.9.2/dist/wokwi-elements.bundle.min.js"></script>
-  <script is:inline type="module" src="/scripts/wokwi-gol-animate.js"></script>
+  <script is:inline type="module" src="/scripts/gol-board-animate.js"></script>
 
   <!-- Firmware size comparison (C / PyMCU / Arduino): first thing under the hero -->
 
