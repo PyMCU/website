@@ -61,9 +61,11 @@ With the fix in, the variant that used to freeze came up and stayed up. The seri
 
 The animation below is not a recreation. It comes from decoding the real I2C bytes the compiled firmware sends on the wire, the same `SET_COL_ADDR` / `SET_PAGE_ADDR` / framebuffer-write sequence a real SSD1306 module receives, captured by running the firmware on an emulated Arduino Uno and recording the bus. The firmware was checked pixel for pixel against the same unmodified driver sources run under plain CPython with a fake I2C bus standing in for the hardware, across all 46 frames: it reproduces exactly the board the program computes, not an approximation of it.
 
+It shows the current version of the example, which targets a 128x64 panel rather than the 128x32 one the hang described above happened on, and which has not itself been flashed to a real board yet; only the emulator and the CPython comparison back it so far.
+
 <img
   src="/images/examples/game-of-life.gif"
-  alt="Conway's Game of Life evolving on a 128x32 SSD1306 OLED, rendered from the I2C bytes an emulated Arduino Uno sends"
+  alt="Conway's Game of Life evolving on a 128x64 SSD1306 OLED, rendered from the I2C bytes an emulated Arduino Uno sends"
 />
 
 <small>OLED module artwork from [wokwi-elements](https://github.com/wokwi/wokwi-elements) (MIT)</small>
