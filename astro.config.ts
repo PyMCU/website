@@ -34,7 +34,9 @@ const themeConfig = yaml.load(fs.readFileSync(path.resolve(__dirname, './src/con
 const noindexBasePaths = Object.values(themeConfig?.apps?.blog ?? {})
   .filter((section): section is Required<BlogSection> => {
     const candidate = section as BlogSection;
-    return typeof candidate === 'object' && candidate !== null && candidate.robots?.index === false && !!candidate.pathname;
+    return (
+      typeof candidate === 'object' && candidate !== null && candidate.robots?.index === false && !!candidate.pathname
+    );
   })
   .map((section) => `/${section.pathname.replace(/^\/|\/$/g, '')}/`);
 

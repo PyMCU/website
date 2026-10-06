@@ -30,8 +30,8 @@ const bars = [
     </h2>
     <p class="mt-3 text-gray-500 dark:text-gray-400 max-w-2xl mx-auto text-sm">
       The same blink, toggle the LED and wait 500&nbsp;ms, as total flash with the vector table and startup included.
-      Hand-written C is on the chart only as a size reference: PyMCU isn't trying to out-compile C, it's trying to
-      bring Python to the boards an interpreter can't fit on.
+      Hand-written C is on the chart only as a size reference: PyMCU isn't trying to out-compile C, it's trying to bring
+      Python to the boards an interpreter can't fit on.
     </p>
   </div>
 
@@ -66,11 +66,10 @@ const bars = [
     <p class="mt-9 border-t border-white/10 pt-6 text-xs text-gray-500">
       Why 142 bytes? 102 of them are the interrupt-vector table every AVR program carries, whatever wrote it. What's
       actually yours is the remaining <span class="font-semibold text-gray-300">40 bytes</span>: the startup stub and
-      the blink loop. Arduino's extra bytes aren't waste either; they're the core's conveniences (<code
-        >millis()</code
-      >, preconfigured timers, one sketch for every board). PyMCU includes only what your program uses, which is why
-      a whole program can fit in a few hundred bytes: on a chip with 32&nbsp;KB of flash total, that is what leaves
-      room for the parts that matter, like a sensor driver or a protocol handler, without running out of space.
+      the blink loop. Arduino's extra bytes aren't waste either; they're the core's conveniences (<code>millis()</code>,
+      preconfigured timers, one sketch for every board). PyMCU includes only what your program uses, which is why a
+      whole program can fit in a few hundred bytes: on a chip with 32&nbsp;KB of flash total, that is what leaves room
+      for the parts that matter, like a sensor driver or a protocol handler, without running out of space.
     </p>
   </div>
 
@@ -82,9 +81,9 @@ const bars = [
     <span class="font-semibold">MicroPython</span> support. We think that direction is exactly right. PyMCU shares the goal
     of Python-friendly embedded and takes it all the way to the bare metal: the same familiar syntax, compiled to native
     machine code with no interpreter on the chip. On September 15, 2026, Adafruit's own unmodified
-    <code>adafruit_hcsr04</code> library, running its own example verbatim, compiled and read distances on an Arduino
-    Uno in 3,432&nbsp;bytes of flash (measured against compiler commit <code>2bc83f4b</code>; the number has already
-    dropped twice today as bugs closed, and will keep moving). It's the first library to make that jump unedited, not
-    a claim that every library does yet.
+    <code>adafruit_hcsr04</code> library, running its own example verbatim, compiled and read distances on an Arduino Uno
+    in 3,432&nbsp;bytes of flash (measured against compiler commit <code>2bc83f4b</code>; the number has already dropped
+    twice today as bugs closed, and will keep moving). It's the first library to make that jump unedited, not a claim
+    that every library does yet.
   </div>
 </section>

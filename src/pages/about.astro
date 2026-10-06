@@ -24,11 +24,11 @@ const metadata = {
 
     <Fragment slot="subtitle">
       MicroPython and CircuitPython bring an interpreter to boards with enough flash and RAM to hold one, and that's
-      most of why Python runs on hardware at all. PyMCU takes the other route: it's an ahead-of-time (AOT) compiler,
-      so it turns a statically-typed subset of Python straight into native machine code at build time. No
-      interpreter, no bytecode, no heap, no garbage collector, no filesystem on the device. That trade reaches boards
-      an interpreter can't fit on, like the ATmega328P or an ATtiny, and places where timing has to be exact, like an
-      interrupt handler or a bit-banged protocol. The Python you read is the firmware you flash.
+      most of why Python runs on hardware at all. PyMCU takes the other route: it's an ahead-of-time (AOT) compiler, so
+      it turns a statically-typed subset of Python straight into native machine code at build time. No interpreter, no
+      bytecode, no heap, no garbage collector, no filesystem on the device. That trade reaches boards an interpreter
+      can't fit on, like the ATmega328P or an ATtiny, and places where timing has to be exact, like an interrupt handler
+      or a bit-banged protocol. The Python you read is the firmware you flash.
     </Fragment>
   </Hero>
 
@@ -62,7 +62,7 @@ const metadata = {
       {
         title: 'MicroPython and CircuitPython compatibility layers',
         description:
-          "PyMCU replicates the machine and board APIs those two projects define, as libraries the compiler understands. Code written against the parts of that API PyMCU supports carries over: you write the API you already know, and PyMCU compiles it instead of interpreting it.",
+          'PyMCU replicates the machine and board APIs those two projects define, as libraries the compiler understands. Code written against the parts of that API PyMCU supports carries over: you write the API you already know, and PyMCU compiles it instead of interpreting it.',
         icon: 'tabler:brand-python',
       },
       {
