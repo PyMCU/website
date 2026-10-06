@@ -63,12 +63,20 @@ The animation below is not a recreation. It comes from decoding the real I2C byt
 
 It shows the current version of the example, which targets a 128x64 panel rather than the 128x32 one the hang described above happened on, and which has not itself been flashed to a real board yet; only the emulator and the CPython comparison back it so far.
 
-<img
-  src="/images/examples/game-of-life.gif"
-  alt="Conway's Game of Life evolving on a 128x64 SSD1306 OLED, rendered from the I2C bytes an emulated Arduino Uno sends"
-/>
+<div style="max-width: 100%; overflow-x: auto; padding: 4px;">
+  <div style="width: 450px; height: 348px;">
+    <wokwi-ssd1306
+      id="gol-post-screen"
+      data-gol-frames="/data/game-of-life-frames.json"
+      style="display: inline-block; transform: scale(3); transform-origin: top left;"
+    ></wokwi-ssd1306>
+  </div>
+</div>
 
-<small>OLED module artwork from [wokwi-elements](https://github.com/wokwi/wokwi-elements) (MIT)</small>
+<script type="module" src="https://cdn.jsdelivr.net/npm/@wokwi/elements@1.9.2/dist/wokwi-elements.bundle.min.js"></script>
+<script type="module" src="/scripts/wokwi-gol-animate.js"></script>
+
+<small>OLED module artwork from [wokwi-elements](https://github.com/wokwi/wokwi-elements) (MIT). This is the real, unmodified `<wokwi-ssd1306>` component, live in your browser, not a recording.</small>
 
 Two single frames from the same run, an early generation and a later, sparser one:
 
