@@ -90,22 +90,27 @@ const metadata = {
       </div>
     </Fragment>
     <Fragment slot="image">
-      <img
-        src="/images/examples/game-of-life.gif"
-        width="1000"
-        height="800"
-        loading="lazy"
-        decoding="async"
-        alt="Conway's Game of Life evolving on a 128x64 SSD1306 OLED, rendered from the I2C bytes an emulated Arduino Uno sends"
-        class="mx-auto w-full max-w-md rounded-lg shadow-lg"
-      />
+      <div class="mx-auto" style="max-width: 100%; overflow-x: auto; padding: 4px;">
+        <div style="width: 450px; height: 348px; margin: 0 auto;">
+          <wokwi-ssd1306
+            id="gol-home-screen"
+            data-gol-frames="/data/game-of-life-frames.json"
+            style="display: inline-block; transform: scale(3); transform-origin: top left;"></wokwi-ssd1306>
+        </div>
+      </div>
       <p class="mt-2 text-center text-xs text-muted dark:text-slate-500">
         OLED module artwork from
         <a href="https://github.com/wokwi/wokwi-elements" target="_blank" class="underline">wokwi-elements</a>
-        (MIT)
+        (MIT). The real, unmodified component, live in your browser.
       </p>
     </Fragment>
   </Content>
+
+  <script
+    is:inline
+    type="module"
+    src="https://cdn.jsdelivr.net/npm/@wokwi/elements@1.9.2/dist/wokwi-elements.bundle.min.js"></script>
+  <script is:inline type="module" src="/scripts/wokwi-gol-animate.js"></script>
 
   <!-- Firmware size comparison (C / PyMCU / Arduino): first thing under the hero -->
 
