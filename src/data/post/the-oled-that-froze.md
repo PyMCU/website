@@ -71,12 +71,12 @@ Two single frames from the same run, an early generation and a later, sparser on
 <img
   src="/images/examples/game-of-life-frame-early.png"
   alt="An early generation of the Game of Life grid on the OLED"
-  width="256"
+  width="480"
 />
 <img
   src="/images/examples/game-of-life-frame-late.png"
   alt="A later, sparser generation of the Game of Life grid on the OLED"
-  width="256"
+  width="480"
 />
 
 The full example, with the unmodified Adafruit drivers and instructions for building it, is in the [docs gallery](https://docs.pymcu.org/examples/game-of-life/).
