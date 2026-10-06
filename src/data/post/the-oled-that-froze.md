@@ -63,20 +63,24 @@ The animation below is not a recreation. It comes from decoding the real I2C byt
 
 It shows the current version of the example, which targets a 128x64 panel rather than the 128x32 one the hang described above happened on, and which has not itself been flashed to a real board yet; only the emulator and the CPython comparison back it so far.
 
-<div style="max-width: 100%; overflow-x: auto; padding: 4px;">
-  <div style="width: 450px; height: 348px;">
-    <wokwi-ssd1306
-      id="gol-post-screen"
-      data-gol-frames="/data/game-of-life-frames.json"
-      style="display: inline-block; transform: scale(3); transform-origin: top left;"
-    ></wokwi-ssd1306>
-  </div>
+<div style="position: relative; width: 450px; max-width: 100%; aspect-ratio: 27.7 / 22.6;">
+  <img
+    src="/images/wokwi-ssd1306-board.svg"
+    alt="SSD1306 OLED module"
+    style="position: absolute; inset: 0; width: 100%; height: 100%; display: block;"
+  />
+  <canvas
+    id="gol-post-screen"
+    width="128"
+    height="64"
+    data-gol-frames="/data/game-of-life-frames.json"
+    style="position: absolute; left: 5.271%; top: 23.319%; width: 89.531%; height: 54.867%; image-rendering: pixelated;"
+  ></canvas>
 </div>
 
-<script type="module" src="https://cdn.jsdelivr.net/npm/@wokwi/elements@1.9.2/dist/wokwi-elements.bundle.min.js"></script>
-<script type="module" src="/scripts/wokwi-gol-animate.js"></script>
+<script type="module" src="/scripts/gol-board-animate.js"></script>
 
-<small>OLED module artwork from [wokwi-elements](https://github.com/wokwi/wokwi-elements) (MIT). This is the real, unmodified `<wokwi-ssd1306>` component, live in your browser, not a recording.</small>
+<small>OLED board artwork by [Wokwi](https://github.com/wokwi/wokwi-boards) (wokwi-boards, Uri Shaked). The real, unmodified board art, live in your browser, not a recording.</small>
 
 Two single frames from the same run, an early generation and a later, sparser one:
 
