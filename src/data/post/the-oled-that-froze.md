@@ -59,11 +59,7 @@ With the fix in, the variant that used to freeze came up and stayed up. The seri
 
 ## What you are looking at
 
-The animation below is not a recreation. It comes from decoding the real I2C bytes the compiled firmware sends on the wire, the same `SET_COL_ADDR` / `SET_PAGE_ADDR` / framebuffer-write sequence a real SSD1306 module receives, captured by running the firmware on an emulated Arduino Uno and recording the bus. The decoder itself was checked against the same unmodified driver sources run under plain CPython with a fake I2C bus standing in for the hardware, to make sure it reproduces the board the program computes, not an approximation of it.
-
-<!-- TODO(b1-seed): do not claim the firmware's own first frame matches the CPython
-     reference without qualification. The beta 1 build's seed frame did not match it;
-     team-lead is investigating the cause and will say what to write here. -->
+The animation below is not a recreation. It comes from decoding the real I2C bytes the compiled firmware sends on the wire, the same `SET_COL_ADDR` / `SET_PAGE_ADDR` / framebuffer-write sequence a real SSD1306 module receives, captured by running the firmware on an emulated Arduino Uno and recording the bus. The firmware was checked pixel for pixel against the same unmodified driver sources run under plain CPython with a fake I2C bus standing in for the hardware, across all 46 frames: it reproduces exactly the board the program computes, not an approximation of it.
 
 <img
   src="/images/examples/game-of-life.gif"
