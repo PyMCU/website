@@ -66,6 +66,8 @@ The animation below is not a recreation. It comes from decoding the real I2C byt
   alt="Conway's Game of Life evolving on a 128x32 SSD1306 OLED, rendered from the I2C bytes an emulated Arduino Uno sends"
 />
 
+<small>OLED module artwork from [wokwi-elements](https://github.com/wokwi/wokwi-elements) (MIT)</small>
+
 Two single frames from the same run, an early generation and a later, sparser one:
 
 <img
