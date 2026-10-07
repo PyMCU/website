@@ -67,14 +67,14 @@ It shows the current version of the example, which targets a 128x64 panel rather
   <img
     src="/images/wokwi-ssd1306-board.svg"
     alt="SSD1306 OLED module"
-    style="position: absolute; inset: 0; width: 100%; height: 100%; display: block;"
+    style="position: absolute; inset: 0; width: 100%; height: 100%; display: block; margin: 0;"
   />
   <canvas
     id="gol-post-screen"
     width="128"
     height="64"
     data-gol-frames="/data/game-of-life-frames.json"
-    style="position: absolute; left: 5.271%; top: 23.319%; width: 89.531%; height: 54.867%; image-rendering: pixelated;"
+    style="position: absolute; left: 5.271%; top: 23.319%; width: 89.531%; height: 54.867%; image-rendering: pixelated; margin: 0;"
   ></canvas>
 </div>
 
