@@ -15,6 +15,8 @@ import Playground from '~/components/widgets/Playground.astro';
 import Button from '~/components/ui/Button.astro';
 
 import { DOCS_URL, PLAYGROUND_URL } from '~/navigation';
+import { findPostsBySlugs } from '~/utils/blog';
+import { getPermalink } from '~/utils/permalinks';
 
 const metadata = {
   title: 'PyMCU: Python Compiler for Microcontrollers (Arduino, AVR, RP2040, PIC)',
@@ -22,6 +24,12 @@ const metadata = {
     'PyMCU compiles Python ahead of time to native microcontroller assembly. No interpreter, no heap: a blink is 40 bytes of code on an Arduino Uno. AVR, RP2040, PIC, RISC-V.',
   ignoreTitleTemplate: true,
 };
+
+// "How it works" below links to the OLED post. fetchPosts() (which this goes
+// through) already filters out drafts, so oledPost is undefined while the
+// post is draft: true, and the button is skipped rather than pointing at a
+// route that does not exist yet on the deployed site.
+const [oledPost] = await findPostsBySlugs(['the-oled-that-froze']);
 ---
 
 <Layout metadata={metadata}>
@@ -86,7 +94,7 @@ const metadata = {
           href="https://docs.pymcu.org/examples/game-of-life/"
           target="_blank"
         />
-        <Button variant="secondary" text="How it works" href="/blog/the-oled-that-froze" />
+        {oledPost && <Button variant="secondary" text="How it works" href={getPermalink(oledPost.slug, 'post')} />}
       </div>
     </Fragment>
     <Fragment slot="image">
