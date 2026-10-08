@@ -1,6 +1,6 @@
 ---
 publishDate: 2026-10-06T00:00:00Z
-draft: true
+draft: false
 author: PyMCU Team
 title: 'The OLED That Froze'
 excerpt: A Game of Life demo ran for thousands of generations in the emulator without a hitch, then locked up solid on a real Arduino Uno. The cause was not a loose wire. It was a boolean that lived in a register the startup code never promised to zero, and an optimization pass that only ever looked at one function at a time.
